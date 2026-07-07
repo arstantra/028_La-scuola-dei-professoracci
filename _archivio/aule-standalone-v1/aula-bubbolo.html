@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aula di Scienze — Prof. Bubbolo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;700;800;900&family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root { --wall:#d2e9e6; --accent:#2aa198; --accent-d:#1f7d76; --accent-dd:#175f5a; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:'Nunito',sans-serif; min-height:100vh;
+  background:linear-gradient(var(--wall) 0 55%, #8a5a33 55% 56.5%, #a9743f 56.5%);
+  overflow-x:hidden;
+}
+body::after {
+  content:""; position:fixed; left:0; right:0; bottom:0; height:44vh; z-index:-1;
+  background:
+    linear-gradient(rgba(0,0,0,.16), transparent 30%),
+    repeating-linear-gradient(90deg, #a9743f 0 110px, #9a652f 110px 116px);
+}
+.wrap { max-width:1100px; margin:0 auto; padding:16px 24px 60px; position:relative; }
+
+.topbar { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+.back {
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:15px; text-decoration:none;
+  color:#fff; background:#8a5a33; border:3px solid #6b4423; border-radius:99px;
+  padding:8px 18px; box-shadow:0 4px 0 #4a2d15; transition:transform .12s, box-shadow .12s;
+}
+.back:hover { transform:translateY(2px); box-shadow:0 2px 0 #4a2d15; }
+.roomtitle { font-family:'Fredoka',sans-serif; font-weight:700; font-size:clamp(20px,3vw,28px); color:var(--accent-d); margin-right:auto; }
+.score {
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:19px; color:#fff;
+  background:#3b6ea5; border-radius:99px; padding:9px 22px;
+  box-shadow:0 4px 0 #2c4f78; white-space:nowrap;
+}
+.score b { color:#ffe14d; }
+@keyframes scorepop { 0%{transform:scale(1);} 40%{transform:scale(1.22) rotate(-2deg);} 100%{transform:scale(1);} }
+.score.pop { animation:scorepop .5s ease; }
+
+.clock { position:absolute; top:70px; right:40px; z-index:1; }
+.clock .hand { transform-origin:30px 30px; animation:tick 12s linear infinite; }
+.clock .hand.slow { animation-duration:80s; }
+@keyframes tick { to { transform:rotate(360deg); } }
+/* poster atomo */
+.poster {
+  position:absolute; top:76px; left:34px; z-index:1; transform:rotate(-3deg);
+  background:#fdf6df; border:3px solid var(--accent-d); border-radius:6px;
+  padding:8px 16px; box-shadow:0 6px 14px rgba(0,0,0,.2);
+  font-family:'Caveat',cursive; font-weight:700; font-size:20px; color:var(--accent-d);
+  text-align:center;
+  animation:notewave 5s ease-in-out infinite;
+}
+.poster small { display:block; font-size:14px; color:#8a7658; line-height:1.1; }
+.poster svg { display:block; margin:2px auto 0; }
+.poster .orbit { animation:orb 5s linear infinite; transform-origin:30px 22px; }
+@keyframes orb { to { transform:rotate(360deg); } }
+@keyframes notewave { 0%,100%{transform:rotate(-3deg);} 50%{transform:rotate(-1.2deg);} }
+/* alambicco con bolle */
+.flask { position:absolute; z-index:4; bottom:-8px; left:-20px; pointer-events:none; }
+.bubbleup { position:absolute; border-radius:50%; border:2px solid var(--accent); opacity:0; animation:rise 3s ease-in infinite; }
+@keyframes rise {
+  0% { transform:translateY(0) scale(.5); opacity:0; }
+  20% { opacity:.9; }
+  100% { transform:translateY(-70px) scale(1.15); opacity:0; }
+}
+.plant { position:fixed; bottom:12px; right:22px; z-index:2; animation:sway 5s ease-in-out infinite; transform-origin:bottom center; }
+@keyframes sway { 0%,100%{transform:rotate(-2deg);} 50%{transform:rotate(2.5deg);} }
+.mote { position:fixed; border-radius:50%; background:rgba(255,250,220,.7); pointer-events:none; animation:drift linear infinite; z-index:0; }
+@keyframes drift { 0%{transform:translateY(0);opacity:0;} 15%{opacity:.8;} 85%{opacity:.3;} 100%{transform:translateY(-110px) translateX(28px);opacity:0;} }
+
+.scene { position:relative; z-index:2; display:flex; align-items:flex-end; gap:26px; margin-top:70px; }
+@media (max-width:760px){ .scene{ flex-direction:column; align-items:center; } }
+.board {
+  flex:1; position:relative; border-radius:8px; width:100%;
+  border:14px solid transparent;
+  border-image:linear-gradient(150deg,#9a6b3d,#6b4423 50%,#84582e) 1;
+  background:
+    radial-gradient(ellipse 200px 60px at 75% 85%, rgba(255,255,255,.05), transparent 70%),
+    radial-gradient(ellipse 260px 70px at 20% 25%, rgba(255,255,255,.045), transparent 70%),
+    radial-gradient(ellipse at 40% 30%, #2f4a3b, #24382d 75%, #1d2e25);
+  box-shadow:inset 0 0 45px rgba(0,0,0,.5), 0 12px 30px rgba(0,0,0,.35);
+  padding:26px 32px 44px; min-height:320px;
+}
+.boardtitle { font-family:'Caveat',cursive; font-weight:700; font-size:34px; color:#f2d98c; text-shadow:0 0 3px rgba(242,217,140,.35); }
+.chalktext {
+  font-family:'Caveat',cursive; font-weight:600; font-size:clamp(24px,2.8vw,31px);
+  line-height:1.5; color:#f6f3e9; text-shadow:0 0 3px rgba(246,243,233,.3);
+  margin-top:14px; min-height:170px;
+}
+.chalktext .evid { color:#f2d98c; text-decoration:underline wavy rgba(242,217,140,.75) 2.5px; }
+.chalkcursor { display:inline-block; width:9px; height:22px; margin-left:3px; background:#f6f3e9; vertical-align:-3px; border-radius:2px; animation:blink 1s steps(1) infinite; }
+@keyframes blink { 50%{opacity:0;} }
+.tray {
+  position:absolute; left:6%; right:6%; bottom:-26px; height:26px;
+  background:linear-gradient(#7a4e2a,#5e3a1e); border-radius:0 0 6px 6px;
+  box-shadow:0 6px 12px rgba(0,0,0,.3);
+  display:flex; align-items:center; gap:12px; padding:0 24px;
+}
+.chalkpiece { width:44px; height:8px; border-radius:4px; background:#f2efe4; box-shadow:0 2px 3px rgba(0,0,0,.4); }
+.chalkpiece.y { background:#eeda9a; width:32px; transform:rotate(2deg); }
+.eraser { margin-left:auto; width:70px; height:18px; border-radius:4px; background:linear-gradient(#3b6ea5,#2c4f78); box-shadow:0 3px 5px rgba(0,0,0,.45); transform:rotate(-3deg); }
+.chalkspin { display:none; width:34px; height:34px; margin-top:20px; border:4px dashed rgba(246,243,233,.7); border-radius:50%; animation:spin 1.6s linear infinite; }
+.board.loading .chalkspin { display:block; }
+@keyframes spin { to{transform:rotate(360deg);} }
+
+.profcol { flex:0 0 230px; position:relative; text-align:center; }
+.prof { width:210px; animation:teach 2.2s ease-in-out infinite; transform-origin:bottom center; transition:filter .3s; }
+@keyframes teach { 0%,100%{transform:rotate(-1.6deg) translateY(0);} 50%{transform:rotate(2deg) translateY(-6px);} }
+.profcol.felice .prof { animation:cheer .55s ease-in-out infinite; }
+@keyframes cheer { 0%,100%{transform:rotate(-4deg) translateY(0);} 50%{transform:rotate(4deg) translateY(-16px);} }
+.profcol.sconfitto .prof { animation:droop 3s ease-in-out infinite; filter:saturate(.75); }
+@keyframes droop { 0%,100%{transform:rotate(4deg) translateY(4px);} 50%{transform:rotate(5.5deg) translateY(6px);} }
+.bubble {
+  position:relative; margin-bottom:10px; z-index:5; text-align:left;
+  font-family:'Nunito',sans-serif; font-weight:800; font-size:15px; line-height:1.45; color:#333;
+  background:#fff; border-radius:16px; padding:12px 16px;
+  box-shadow:0 6px 16px rgba(0,0,0,.22); min-height:52px;
+}
+.bubble::after { content:""; position:absolute; bottom:-9px; left:50%; transform:translateX(-50%); border:10px solid transparent; border-top-color:#fff; border-bottom:0; }
+.bubble.pop { animation:bpop .4s cubic-bezier(.2,.8,.3,1.3); }
+@keyframes bpop { from{transform:scale(.6); opacity:0;} to{transform:scale(1); opacity:1;} }
+.nameplate {
+  display:inline-block; margin-top:6px;
+  font-family:'Caveat',cursive; font-weight:700; font-size:22px; color:#3a2c18;
+  background:#fdf6df; border:2px solid #b8923f; border-radius:6px; padding:0 16px;
+  box-shadow:0 3px 6px rgba(0,0,0,.25); transform:rotate(-1deg);
+}
+.starburst { position:absolute; top:30%; left:50%; pointer-events:none; z-index:8; }
+.starburst span { position:absolute; font-size:26px; animation:fly 1s ease-out forwards; }
+@keyframes fly { from { transform:translate(0,0) scale(.4) rotate(0); opacity:1; } to { transform:translate(var(--dx), var(--dy)) scale(1.25) rotate(60deg); opacity:0; } }
+
+.controls { position:relative; z-index:3; margin-top:44px; display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
+.levels { display:flex; gap:8px; align-items:center; }
+.levels .lab { font-family:'Caveat',cursive; font-weight:700; font-size:22px; color:#5d4426; }
+.lvl {
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:14px; cursor:pointer;
+  color:#5d4426; background:#fdf6df; border:3px solid #d9bd8a; border-radius:99px;
+  padding:8px 16px; transition:all .15s;
+}
+.lvl.on { background:var(--accent); border-color:var(--accent-d); color:#fff; box-shadow:0 3px 0 var(--accent-dd); }
+.btn { font-family:'Fredoka',sans-serif; font-weight:700; font-size:17px; cursor:pointer; border-radius:14px; padding:12px 24px; transition:transform .12s, box-shadow .12s; }
+.btn:disabled { opacity:.55; cursor:wait; }
+.btn.red { color:#fff; background:#e2574c; border:3px solid #b03a31; box-shadow:0 5px 0 #8f2d26; }
+.btn.red:hover:not(:disabled) { transform:translateY(3px); box-shadow:0 2px 0 #8f2d26; }
+.btn.blue { color:#fff; background:#3b6ea5; border:3px solid #2c4f78; box-shadow:0 5px 0 #223d5c; }
+.btn.blue:hover:not(:disabled) { transform:translateY(3px); box-shadow:0 2px 0 #223d5c; }
+.answerrow { position:relative; z-index:3; display:flex; gap:14px; margin-top:16px; flex-wrap:wrap; }
+.answer {
+  flex:1; min-width:260px;
+  font-family:'Nunito',sans-serif; font-weight:700; font-size:17px; color:#3a2c18;
+  background:#fdf6df; border:3px solid #8a5a33; border-radius:14px;
+  padding:13px 18px; box-shadow:0 5px 0 #6b4423;
+}
+.answer:focus { outline:none; border-color:var(--accent); }
+.answer::placeholder { color:#b3a27f; }
+
+.nokey {
+  display:none; position:relative; z-index:4; max-width:560px; margin:60px auto; text-align:center;
+  background:#fdf6df; border:3px solid #c94f44; border-radius:16px;
+  padding:26px 30px; box-shadow:0 8px 0 #a33d34, 0 16px 32px rgba(0,0,0,.25);
+}
+.nokey h2 { font-family:'Fredoka',sans-serif; color:#c94f44; font-size:22px; }
+.nokey p { font-size:15px; color:#8a7658; margin:10px 0 16px; }
+body.senzachiave .nokey { display:block; }
+body.senzachiave .scene, body.senzachiave .controls, body.senzachiave .answerrow { display:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a class="back" href="../index.html">← corridoio</a>
+    <div class="roomtitle">Aula di Scienze</div>
+    <div class="score" id="score">★ <b id="pts">0</b> punti</div>
+  </div>
+
+  <svg class="clock" width="60" height="60" viewBox="0 0 60 60">
+    <circle cx="30" cy="30" r="26" fill="#fff" stroke="#6b4423" stroke-width="5"/>
+    <line class="hand slow" x1="30" y1="30" x2="30" y2="16" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+    <line class="hand" x1="30" y1="30" x2="42" y2="30" stroke="#e2574c" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="30" cy="30" r="2.5" fill="#333"/>
+  </svg>
+  <div class="poster">L'ATOMO!
+    <svg width="60" height="44" viewBox="0 0 60 44">
+      <circle cx="30" cy="22" r="5" fill="#e2574c"/>
+      <g class="orbit"><ellipse cx="30" cy="22" rx="26" ry="10" fill="none" stroke="#2aa198" stroke-width="2"/><circle cx="56" cy="22" r="3.5" fill="#3b6ea5"/></g>
+      <ellipse cx="30" cy="22" rx="26" ry="10" fill="none" stroke="#2aa198" stroke-width="1.5" transform="rotate(60 30 22)" opacity=".6"/>
+    </svg>
+    <small>(più o meno così)</small>
+  </div>
+
+  <div class="nokey">
+    <h2>Ops! Manca la chiave della scuola</h2>
+    <p>Il Prof. Bubbolo ha analizzato l'aula al microscopio: la tua chiave non c'è! Torna in corridoio e consegnala in segreteria.</p>
+    <a class="btn blue" style="text-decoration:none;" href="../index.html">VAI IN SEGRETERIA</a>
+  </div>
+
+  <div class="scene">
+    <div class="board" id="board">
+      <div class="boardtitle">Scienze — trova l'errore!</div>
+      <div class="chalktext" id="chalktext">Premi «NUOVA SPIEGAZIONE» e preparati: la scienza è STRAORDINARIA! I miei esperimenti riescono sempre... al novanta percento. Va bene, al settanta.</div>
+      <div class="chalkspin"></div>
+      <div class="tray">
+        <div class="chalkpiece"></div><div class="chalkpiece y"></div><div class="eraser"></div>
+      </div>
+      <div class="flask">
+        <svg width="80" height="100" viewBox="0 0 80 100">
+          <path d="M34 12 h12 v26 L66 78 q4 10 -6 12 h-40 q-10 -2 -6 -12 L34 38 Z" fill="rgba(42,161,152,.25)" stroke="var(--accent-d)" stroke-width="3"/>
+          <path d="M22 74 L58 74 q6 8 -2 12 h-32 q-8 -4 -6 -12 Z" fill="rgba(42,161,152,.55)"/>
+          <rect x="30" y="6" width="20" height="8" rx="4" fill="#8a5a33"/>
+        </svg>
+        <span class="bubbleup" style="left:34px; bottom:26px; width:8px; height:8px;"></span>
+        <span class="bubbleup" style="left:44px; bottom:22px; width:6px; height:6px; animation-delay:-1s;"></span>
+        <span class="bubbleup" style="left:26px; bottom:20px; width:10px; height:10px; animation-delay:-2s;"></span>
+      </div>
+    </div>
+
+    <div class="profcol" id="profcol">
+      <div class="bubble" id="bubble">CIAO! Io sono il Prof. Bubbolo e la scienza è STRAORDINARIA! Anche quando esplode. SOPRATTUTTO quando esplode!</div>
+      <svg class="prof" viewBox="0 0 190 260">
+        <ellipse cx="95" cy="250" rx="60" ry="9" fill="rgba(0,0,0,.25)"/>
+        <rect x="70" y="196" width="18" height="48" rx="8" fill="#546e7a"/>
+        <rect x="102" y="196" width="18" height="48" rx="8" fill="#546e7a"/>
+        <rect x="64" y="240" width="30" height="12" rx="6" fill="#2e3d45"/>
+        <rect x="96" y="240" width="30" height="12" rx="6" fill="#2e3d45"/>
+        <path d="M50 202 Q48 118 95 114 Q142 118 140 202 L126 202 L122 140 L68 140 L64 202 Z" fill="#f2efe8"/>
+        <path d="M68 140 h54 l-4 62 h-46 Z" fill="#e3ded2"/>
+        <path d="M95 128 l-7 14 7 12 7-12 z" fill="#2aa198"/>
+        <circle cx="86" cy="168" r="3" fill="#8a8a7a"/><circle cx="86" cy="184" r="3" fill="#8a8a7a"/>
+        <rect x="100" y="158" width="14" height="18" rx="2" fill="#fff" stroke="#8a8a7a" stroke-width="2"/>
+        <path d="M103 162 h8 M103 167 h8 M103 172 h5" stroke="#2aa198" stroke-width="1.5"/>
+        <path d="M38 192 Q26 148 58 130 L68 146 Q46 160 52 190 Z" fill="#f2efe8"/>
+        <path d="M152 192 Q172 140 132 126 L126 144 Q152 154 140 188 Z" fill="#f2efe8"/>
+        <circle cx="146" cy="198" r="10" fill="#7fd4cc"/>
+        <path d="M140 152 l10 40" stroke="#7fd4cc" stroke-width="0" />
+        <rect x="138" y="140" width="10" height="46" rx="5" fill="rgba(42,161,152,.35)" stroke="#1f7d76" stroke-width="2.5" transform="rotate(16 143 163)"/>
+        <path d="M139 176 q6 6 10 -1" stroke="#1f7d76" stroke-width="0"/>
+        <circle cx="95" cy="74" r="40" fill="#ffd9b3"/>
+        <path d="M60 52 Q66 40 74 44 M130 52 Q124 40 116 44" stroke="#bdbdbd" stroke-width="4" stroke-linecap="round" fill="none"/>
+        <path d="M62 34 Q95 20 128 34 L128 26 Q95 12 62 26 Z" fill="#e5b93c"/>
+        <circle cx="74" cy="30" r="8" fill="#cfeef0" stroke="#546e7a" stroke-width="3"/>
+        <circle cx="116" cy="30" r="8" fill="#cfeef0" stroke="#546e7a" stroke-width="3"/>
+        <circle cx="79" cy="68" r="11" fill="#cfeef0" stroke="#546e7a" stroke-width="3.5"/>
+        <circle cx="112" cy="68" r="11" fill="#cfeef0" stroke="#546e7a" stroke-width="3.5"/>
+        <line x1="90" y1="68" x2="101" y2="68" stroke="#546e7a" stroke-width="3.5"/>
+        <circle cx="80" cy="69" r="3.5" fill="#2e2645"/><circle cx="113" cy="69" r="3.5" fill="#2e2645"/>
+        <path d="M74 94 Q95 112 118 92" stroke="#2e2645" stroke-width="4" fill="none" stroke-linecap="round"/>
+      </svg>
+      <div><span class="nameplate">Prof. Bubbolo</span></div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="levels">
+      <span class="lab">Classe:</span>
+      <button class="lvl on" data-lvl="facile">1ª – 2ª</button>
+      <button class="lvl" data-lvl="media">3ª – 4ª</button>
+      <button class="lvl" data-lvl="difficile">5ª e oltre</button>
+    </div>
+    <button class="btn blue" id="speak">🔊 ASCOLTA</button>
+    <button class="btn red" id="nuova" style="margin-left:auto;">NUOVA SPIEGAZIONE</button>
+  </div>
+
+  <div class="answerrow">
+    <input class="answer" id="answer" placeholder="Quale esperimento non torna? Scrivi qui la tua correzione..." autocomplete="off">
+    <button class="btn red" id="verifica">HO TROVATO L'ERRORE!</button>
+  </div>
+
+  <svg class="plant" width="70" height="90" viewBox="0 0 70 90">
+    <path d="M22 60 h26 l-4 28 h-18 Z" fill="#c0603f"/>
+    <path d="M35 60 Q20 30 8 26 Q26 24 36 44 Q40 18 58 12 Q46 34 40 58 Z" fill="#4d8f4d"/>
+    <path d="M35 58 Q35 34 35 20 Q44 36 38 58 Z" fill="#63a863"/>
+  </svg>
+</div>
+
+<script type="module">
+import { GoogleGenAI } from 'https://esm.sh/@google/genai@0.14.1';
+
+const apiKey = localStorage.getItem('professoracci_apikey') || '';
+if (!apiKey) document.body.classList.add('senzachiave');
+
+const MODEL = 'gemini-2.5-flash-lite';
+const RECENTI_KEY = 'bubb_recenti';
+const VOCE = { pitch:1.5, rate:1.1 };
+let livello = 'facile';
+let lezione = null;
+let punti = +(localStorage.getItem('professoracci_punti') || 0);
+let erroriRecenti = JSON.parse(sessionStorage.getItem(RECENTI_KEY) || '[]');
+let occupato = false;
+
+const $ = id => document.getElementById(id);
+$('pts').textContent = punti;
+
+const PERSONA = `Sei il Prof. Bubbolo, insegnante di scienze in una scuola immaginaria per bambini.
+CARATTERE: entusiasta esplosivo! Tutto è "STRAORDINARIO!", "INCREDIBILE!", "FANTASCIENTIFICO!". Usi spesso i punti esclamativi e le parole in maiuscolo. NON ammetti mai spontaneamente di sbagliare. Quando un bambino ti corregge giustamente, ammetti l'errore a malincuore con scuse buffe ("era tutto parte dell'esperimento!", "la provetta mi ha distratto!", "colpa della gravità!").
+LINGUA: scrivi SOLO in italiano. Mai una parola in inglese.
+PUBBLICO: bambini della scuola primaria. Frasi brevi, lessico semplice, tono giocoso, mai spaventoso o umiliante.
+REGOLA D'ORO: rispondi SOLO con il JSON richiesto, senza testo prima o dopo.`;
+
+const LIVELLI = {
+  facile:    'bambini di 6-7 anni (classe 1ª-2ª): errori evidentissimi e buffi su animali e piante (es. i pesci che respirano fuori dall’acqua, le piante che mangiano la merenda, i gatti che nascono dalle uova)',
+  media:     'bambini di 8-9 anni (classe 3ª-4ª): errori su corpo umano, stati dell’acqua, catene alimentari (es. il cuore che serve per pensare, il ghiaccio più caldo dell’acqua, i leoni che mangiano l’erba)',
+  difficile: 'bambini di 10-12 anni (classe 5ª e prima media): errori più sottili su sistema solare, energia, ecosistemi, fotosintesi (es. il Sole che gira intorno alla Terra, le piante che respirano solo ossigeno, la Luna che brilla di luce propria)'
+};
+
+async function chiamaGemini(prompt, temperature) {
+  const ai = new GoogleGenAI({ apiKey });
+  const res = await ai.models.generateContent({
+    model: MODEL, contents: prompt,
+    config: { temperature, maxOutputTokens: 800 }
+  });
+  const testo = res.text ?? res.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+  const m = testo.match(/\{[\s\S]*\}/);
+  if (!m) throw new Error('Risposta senza JSON: ' + testo.slice(0, 120));
+  return JSON.parse(m[0]);
+}
+
+async function nuovaSpiegazione() {
+  if (occupato) return;
+  occupato = true;
+  speechSynthesis.cancel();
+  setProf('');
+  bolla('ESPERIMENTO IN CORSO! Non toccate NIENTE!');
+  $('board').classList.add('loading');
+  $('chalktext').innerHTML = '';
+  $('answer').value = '';
+  $('nuova').disabled = true; $('verifica').disabled = true;
+
+  const prompt = `${PERSONA}
+
+COMPITO: scrivi una breve spiegazione di scienze (2-4 frasi, massimo 60 parole) rivolta a ${LIVELLI[livello]}.
+La spiegazione deve contenere ESATTAMENTE UN errore scientifico deliberato e riconoscibile, annunciato con entusiasmo travolgente da professore convinto di avere ragione. Tutto il resto deve essere scientificamente corretto.
+NON usare questi errori già fatti di recente: ${erroriRecenti.length ? erroriRecenti.join('; ') : 'nessuno'}.
+
+Rispondi SOLO con questo JSON:
+{"spiegazione":"il testo che scrivi alla lavagna, errore incluso","errore":"la parte sbagliata, citata esatta","correzione":"la versione corretta","indizio":"un piccolo aiuto senza svelare la soluzione"}`;
+
+  try {
+    lezione = await chiamaGemini(prompt, 1.0);
+    erroriRecenti = [...erroriRecenti.slice(-7), lezione.errore];
+    sessionStorage.setItem(RECENTI_KEY, JSON.stringify(erroriRecenti));
+    bolla('EUREKA! Lezione pronta! Scienza pura al 100%! Ho controllato con il microscopio! Quello rotto, ma ho controllato!');
+    typewrite(lezione.spiegazione, () => { parla(lezione.spiegazione); });
+  } catch (e) {
+    console.error(e);
+    const msg = /503|UNAVAILABLE/i.test(String(e)) ?
+      'Il laboratorio è AFFOLLATISSIMO (server pieni)! Riprova tra un momento!' :
+      /429/.test(String(e)) ?
+      'TROPPI ESPERIMENTI! Il laboratorio fuma: aspetta un minutino e riprova!' :
+      'Il gesso è ESPLOSO! (' + String(e).slice(0, 90) + ')';
+    bolla(msg);
+    $('chalktext').textContent = 'Ops... la lavagna è evaporata. Riprova!';
+  }
+  $('board').classList.remove('loading');
+  $('nuova').disabled = false; $('verifica').disabled = false;
+  occupato = false;
+}
+
+async function verifica() {
+  if (occupato) return;
+  if (!lezione) { bolla('Prima chiedimi una spiegazione, piccolo scienziato!'); return; }
+  const risposta = $('answer').value.trim();
+  if (!risposta) { bolla('La casella è VUOTA come il vuoto cosmico! Scrivi la tua correzione!'); return; }
+  occupato = true;
+  $('verifica').disabled = true; $('nuova').disabled = true;
+  bolla('ANALISI IN CORSO... controllo con tutti i miei strumenti!');
+
+  const prompt = `${PERSONA}
+
+Nella tua spiegazione c'era questo errore deliberato: "${lezione.errore}" (versione corretta: "${lezione.correzione}").
+Il bambino ha risposto: "${risposta}"
+
+Valuta la risposta:
+- "bravo" se ha individuato l'errore o scritto la correzione giusta (anche con parole sue o piccoli errori di battitura)
+- "quasi" se ha intuito la zona giusta ma la correzione è incompleta o imprecisa
+- "sbagliato" se non ha trovato l'errore
+
+Poi scrivi un commento nel tuo personaggio (2-3 frasi): se "bravo" ammetti l'errore a malincuore con una scusa buffa da scienziato pasticcione e fai i complimenti; se "quasi" incoraggia e dai questo indizio: "${lezione.indizio}"; se "sbagliato" gongola bonariamente e invita a riprovare con l'indizio.
+
+Rispondi SOLO con questo JSON:
+{"esito":"bravo|quasi|sbagliato","commento":"..."}`;
+
+  try {
+    const v = await chiamaGemini(prompt, 0.7);
+    if (v.esito === 'bravo') {
+      aggiornaPunti(10);
+      setProf('sconfitto');
+      stelle();
+      evidenziaErrore();
+      bolla('✅ ' + v.commento + ' (+10 punti!)');
+      lezione = null;
+    } else if (v.esito === 'quasi') {
+      aggiornaPunti(2);
+      setProf('');
+      bolla('🤏 ' + v.commento + ' (+2 punti, riprova!)');
+    } else {
+      setProf('felice');
+      bolla('❌ ' + v.commento);
+      setTimeout(() => setProf(''), 3500);
+    }
+    parla(v.commento);
+  } catch (e) {
+    console.error(e);
+    bolla('Il registro si è sciolto nell’acido! Riprova a consegnarmi la risposta.');
+  }
+  $('verifica').disabled = false; $('nuova').disabled = false;
+  occupato = false;
+}
+
+let twTimer = null;
+function typewrite(testo, fine) {
+  clearInterval(twTimer);
+  const el = $('chalktext');
+  let i = 0;
+  twTimer = setInterval(() => {
+    i++;
+    el.innerHTML = testo.slice(0, i) + '<span class="chalkcursor"></span>';
+    if (i >= testo.length) {
+      clearInterval(twTimer);
+      el.textContent = testo;
+      if (fine) fine();
+    }
+  }, 32);
+}
+function evidenziaErrore() {
+  if (!lezione) return;
+  const el = $('chalktext');
+  const t = el.textContent;
+  const idx = t.indexOf(lezione.errore);
+  if (idx < 0) return;
+  el.innerHTML = t.slice(0, idx) + '<span class="evid">' + lezione.errore + '</span>' + t.slice(idx + lezione.errore.length)
+    + '  <span class="evid" style="font-size:.85em;">→ ' + lezione.correzione + '</span>';
+}
+function bolla(t) {
+  const b = $('bubble');
+  b.textContent = t;
+  b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
+}
+function setProf(stato) {
+  const p = $('profcol');
+  p.classList.remove('felice', 'sconfitto');
+  if (stato) p.classList.add(stato);
+}
+function aggiornaPunti(n) {
+  punti += n;
+  localStorage.setItem('professoracci_punti', punti);
+  $('pts').textContent = punti;
+  const s = $('score');
+  s.classList.remove('pop'); void s.offsetWidth; s.classList.add('pop');
+}
+function stelle() {
+  const box = document.createElement('div');
+  box.className = 'starburst';
+  for (let i = 0; i < 8; i++) {
+    const s = document.createElement('span');
+    s.textContent = ['⭐', '✨', '🌟'][i % 3];
+    const a = (i / 8) * Math.PI * 2;
+    s.style.setProperty('--dx', Math.cos(a) * 110 + 'px');
+    s.style.setProperty('--dy', Math.sin(a) * 110 - 40 + 'px');
+    box.appendChild(s);
+  }
+  $('profcol').appendChild(box);
+  setTimeout(() => box.remove(), 1100);
+}
+
+function parla(testo) {
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(testo);
+  u.lang = 'it-IT'; u.pitch = VOCE.pitch; u.rate = VOCE.rate;
+  const voce = speechSynthesis.getVoices().find(v => v.lang.startsWith('it'));
+  if (voce) u.voice = voce;
+  speechSynthesis.speak(u);
+}
+speechSynthesis.getVoices();
+
+document.querySelectorAll('.lvl').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.lvl').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  livello = b.dataset.lvl;
+}));
+$('nuova').addEventListener('click', nuovaSpiegazione);
+$('verifica').addEventListener('click', verifica);
+$('answer').addEventListener('keydown', e => { if (e.key === 'Enter') verifica(); });
+$('speak').addEventListener('click', () => {
+  const t = $('chalktext').textContent;
+  if (t) parla(t);
+});
+
+for (let i = 0; i < 14; i++) {
+  const m = document.createElement('span');
+  m.className = 'mote';
+  const s = 1.5 + Math.random() * 3;
+  m.style.width = m.style.height = s + 'px';
+  m.style.left = Math.random() * 100 + 'vw';
+  m.style.top = 5 + Math.random() * 50 + 'vh';
+  m.style.animationDuration = 7 + Math.random() * 10 + 's';
+  m.style.animationDelay = -Math.random() * 12 + 's';
+  document.body.appendChild(m);
+}
+</script>
+</body>
+</html>

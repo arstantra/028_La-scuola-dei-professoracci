@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aula di Storia — Prof. Confusione</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;700;800;900&family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root { --wall:#ecd9b5; --accent:#b3622e; --accent-d:#8f4e24; --accent-dd:#6e3c1b; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:'Nunito',sans-serif; min-height:100vh;
+  background:linear-gradient(var(--wall) 0 55%, #8a5a33 55% 56.5%, #a9743f 56.5%);
+  overflow-x:hidden;
+}
+body::after {
+  content:""; position:fixed; left:0; right:0; bottom:0; height:44vh; z-index:-1;
+  background:
+    linear-gradient(rgba(0,0,0,.16), transparent 30%),
+    repeating-linear-gradient(90deg, #a9743f 0 110px, #9a652f 110px 116px);
+}
+.wrap { max-width:1100px; margin:0 auto; padding:16px 24px 60px; position:relative; }
+
+.topbar { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+.back {
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:15px; text-decoration:none;
+  color:#fff; background:#8a5a33; border:3px solid #6b4423; border-radius:99px;
+  padding:8px 18px; box-shadow:0 4px 0 #4a2d15; transition:transform .12s, box-shadow .12s;
+}
+.back:hover { transform:translateY(2px); box-shadow:0 2px 0 #4a2d15; }
+.roomtitle { font-family:'Fredoka',sans-serif; font-weight:700; font-size:clamp(20px,3vw,28px); color:var(--accent-d); margin-right:auto; }
+.score {
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:19px; color:#fff;
+  background:#3b6ea5; border-radius:99px; padding:9px 22px;
+  box-shadow:0 4px 0 #2c4f78; white-space:nowrap;
+}
+.score b { color:#ffe14d; }
+@keyframes scorepop { 0%{transform:scale(1);} 40%{transform:scale(1.22) rotate(-2deg);} 100%{transform:scale(1);} }
+.score.pop { animation:scorepop .5s ease; }
+
+.clock { position:absolute; top:70px; right:40px; z-index:1; }
+.clock .hand { transform-origin:30px 30px; animation:tick 12s linear infinite; }
+.clock .hand.slow { animation-duration:80s; }
+@keyframes tick { to { transform:rotate(360deg); } }
+/* pergamena */
+.poster {
+  position:absolute; top:76px; left:34px; z-index:1; transform:rotate(-3deg);
+  background:#f5e7c0; border:3px solid var(--accent-d); border-radius:4px 14px 4px 14px;
+  padding:8px 16px; box-shadow:0 6px 14px rgba(0,0,0,.2);
+  font-family:'Caveat',cursive; font-weight:700; font-size:22px; color:var(--accent-d);
+  animation:notewave 5s ease-in-out infinite;
+}
+.poster small { display:block; font-size:15px; color:#8a7658; line-height:1; }
+@keyframes notewave { 0%,100%{transform:rotate(-3deg);} 50%{transform:rotate(-1.2deg);} }
+/* fogli che volano intorno al professore */
+.paper {
+  position:absolute; width:26px; height:34px; z-index:4; pointer-events:none;
+  background:#fdf6df; border:2px solid #d9bd8a; border-radius:2px;
+  animation:flyaround 6s ease-in-out infinite;
+}
+.paper::before { content:""; position:absolute; inset:6px 5px auto; height:2px; background:#d9bd8a; box-shadow:0 6px 0 #d9bd8a, 0 12px 0 #d9bd8a; }
+@keyframes flyaround {
+  0%,100% { transform:translate(0,0) rotate(-8deg); }
+  25% { transform:translate(-14px,-22px) rotate(7deg); }
+  50% { transform:translate(8px,-34px) rotate(-5deg); }
+  75% { transform:translate(16px,-12px) rotate(10deg); }
+}
+.plant { position:fixed; bottom:12px; right:22px; z-index:2; animation:sway 5s ease-in-out infinite; transform-origin:bottom center; }
+@keyframes sway { 0%,100%{transform:rotate(-2deg);} 50%{transform:rotate(2.5deg);} }
+.mote { position:fixed; border-radius:50%; background:rgba(255,250,220,.7); pointer-events:none; animation:drift linear infinite; z-index:0; }
+@keyframes drift { 0%{transform:translateY(0);opacity:0;} 15%{opacity:.8;} 85%{opacity:.3;} 100%{transform:translateY(-110px) translateX(28px);opacity:0;} }
+
+.scene { position:relative; z-index:2; display:flex; align-items:flex-end; gap:26px; margin-top:70px; }
+@media (max-width:760px){ .scene{ flex-direction:column; align-items:center; } }
+.board {
+  flex:1; position:relative; border-radius:8px; width:100%;
+  border:14px solid transparent;
+  border-image:linear-gradient(150deg,#9a6b3d,#6b4423 50%,#84582e) 1;
+  background:
+    radial-gradient(ellipse 200px 60px at 75% 85%, rgba(255,255,255,.05), transparent 70%),
+    radial-gradient(ellipse 260px 70px at 20% 25%, rgba(255,255,255,.045), transparent 70%),
+    radial-gradient(ellipse at 40% 30%, #2f4a3b, #24382d 75%, #1d2e25);
+  box-shadow:inset 0 0 45px rgba(0,0,0,.5), 0 12px 30px rgba(0,0,0,.35);
+  padding:26px 32px 44px; min-height:320px;
+}
+.boardtitle { font-family:'Caveat',cursive; font-weight:700; font-size:34px; color:#f2d98c; text-shadow:0 0 3px rgba(242,217,140,.35); }
+.chalktext {
+  font-family:'Caveat',cursive; font-weight:600; font-size:clamp(24px,2.8vw,31px);
+  line-height:1.5; color:#f6f3e9; text-shadow:0 0 3px rgba(246,243,233,.3);
+  margin-top:14px; min-height:170px;
+}
+.chalktext .evid { color:#f2d98c; text-decoration:underline wavy rgba(242,217,140,.75) 2.5px; }
+.chalkcursor { display:inline-block; width:9px; height:22px; margin-left:3px; background:#f6f3e9; vertical-align:-3px; border-radius:2px; animation:blink 1s steps(1) infinite; }
+@keyframes blink { 50%{opacity:0;} }
+.tray {
+  position:absolute; left:6%; right:6%; bottom:-26px; height:26px;
+  background:linear-gradient(#7a4e2a,#5e3a1e); border-radius:0 0 6px 6px;
+  box-shadow:0 6px 12px rgba(0,0,0,.3);
+  display:flex; align-items:center; gap:12px; padding:0 24px;
+}
+.chalkpiece { width:44px; height:8px; border-radius:4px; background:#f2efe4; box-shadow:0 2px 3px rgba(0,0,0,.4); }
+.chalkpiece.y { background:#eeda9a; width:32px; transform:rotate(2deg); }
+.eraser { margin-left:auto; width:70px; height:18px; border-radius:4px; background:linear-gradient(#3b6ea5,#2c4f78); box-shadow:0 3px 5px rgba(0,0,0,.45); transform:rotate(-3deg); }
+.chalkspin { display:none; width:34px; height:34px; margin-top:20px; border:4px dashed rgba(246,243,233,.7); border-radius:50%; animation:spin 1.6s linear infinite; }
+.board.loading .chalkspin { display:block; }
+@keyframes spin { to{transform:rotate(360deg);} }
+
+.profcol { flex:0 0 230px; position:relative; text-align:center; }
+.prof { width:210px; animation:teach 1.9s ease-in-out infinite; transform-origin:bottom center; transition:filter .3s; }
+@keyframes teach { 0%,100%{transform:rotate(-2deg);} 50%{transform:rotate(2.5deg) translateY(-5px);} }
+.profcol.felice .prof { animation:cheer .6s ease-in-out infinite; }
+@keyframes cheer { 0%,100%{transform:rotate(-4deg) translateY(0);} 50%{transform:rotate(4deg) translateY(-14px);} }
+.profcol.sconfitto .prof { animation:droop 3s ease-in-out infinite; filter:saturate(.75); }
+@keyframes droop { 0%,100%{transform:rotate(4deg) translateY(4px);} 50%{transform:rotate(5.5deg) translateY(6px);} }
+.bubble {
+  position:relative; margin-bottom:10px; z-index:5; text-align:left;
+  font-family:'Nunito',sans-serif; font-weight:800; font-size:15px; line-height:1.45; color:#333;
+  background:#fff; border-radius:16px; padding:12px 16px;
+  box-shadow:0 6px 16px rgba(0,0,0,.22); min-height:52px;
+}
+.bubble::after { content:""; position:absolute; bottom:-9px; left:50%; transform:translateX(-50%); border:10px solid transparent; border-top-color:#fff; border-bottom:0; }
+.bubble.pop { animation:bpop .4s cubic-bezier(.2,.8,.3,1.3); }
+@keyframes bpop { from{transform:scale(.6); opacity:0;} to{transform:scale(1); opacity:1;} }
+.nameplate {
+  display:inline-block; margin-top:6px;
+  font-family:'Caveat',cursive; font-weight:700; font-size:22px; color:#3a2c18;
+  background:#fdf6df; border:2px solid #b8923f; border-radius:6px; padding:0 16px;
+  box-shadow:0 3px 6px rgba(0,0,0,.25); transform:rotate(-1deg);
+}
+.starburst { position:absolute; top:30%; left:50%; pointer-events:none; z-index:8; }
+.starburst span { position:absolute; font-size:26px; animation:fly 1s ease-out forwards; }
+@keyframes fly { from { transform:translate(0,0) scale(.4) rotate(0); opacity:1; } to { transform:translate(var(--dx), var(--dy)) scale(1.25) rotate(60deg); opacity:0; } }
+
+.controls { position:relative; z-index:3; margin-top:44px; display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
+.levels { display:flex; gap:8px; align-items:center; }
+.levels .lab { font-family:'Caveat',cursive; font-weight:700; font-size:22px; color:#5d4426; }
+.lvl {
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:14px; cursor:pointer;
+  color:#5d4426; background:#fdf6df; border:3px solid #d9bd8a; border-radius:99px;
+  padding:8px 16px; transition:all .15s;
+}
+.lvl.on { background:var(--accent); border-color:var(--accent-d); color:#fff; box-shadow:0 3px 0 var(--accent-dd); }
+.btn { font-family:'Fredoka',sans-serif; font-weight:700; font-size:17px; cursor:pointer; border-radius:14px; padding:12px 24px; transition:transform .12s, box-shadow .12s; }
+.btn:disabled { opacity:.55; cursor:wait; }
+.btn.red { color:#fff; background:#e2574c; border:3px solid #b03a31; box-shadow:0 5px 0 #8f2d26; }
+.btn.red:hover:not(:disabled) { transform:translateY(3px); box-shadow:0 2px 0 #8f2d26; }
+.btn.blue { color:#fff; background:#3b6ea5; border:3px solid #2c4f78; box-shadow:0 5px 0 #223d5c; }
+.btn.blue:hover:not(:disabled) { transform:translateY(3px); box-shadow:0 2px 0 #223d5c; }
+.answerrow { position:relative; z-index:3; display:flex; gap:14px; margin-top:16px; flex-wrap:wrap; }
+.answer {
+  flex:1; min-width:260px;
+  font-family:'Nunito',sans-serif; font-weight:700; font-size:17px; color:#3a2c18;
+  background:#fdf6df; border:3px solid #8a5a33; border-radius:14px;
+  padding:13px 18px; box-shadow:0 5px 0 #6b4423;
+}
+.answer:focus { outline:none; border-color:var(--accent); }
+.answer::placeholder { color:#b3a27f; }
+
+.nokey {
+  display:none; position:relative; z-index:4; max-width:560px; margin:60px auto; text-align:center;
+  background:#fdf6df; border:3px solid #c94f44; border-radius:16px;
+  padding:26px 30px; box-shadow:0 8px 0 #a33d34, 0 16px 32px rgba(0,0,0,.25);
+}
+.nokey h2 { font-family:'Fredoka',sans-serif; color:#c94f44; font-size:22px; }
+.nokey p { font-size:15px; color:#8a7658; margin:10px 0 16px; }
+body.senzachiave .nokey { display:block; }
+body.senzachiave .scene, body.senzachiave .controls, body.senzachiave .answerrow { display:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a class="back" href="../index.html">← corridoio</a>
+    <div class="roomtitle">Aula di Storia</div>
+    <div class="score" id="score">★ <b id="pts">0</b> punti</div>
+  </div>
+
+  <svg class="clock" width="60" height="60" viewBox="0 0 60 60">
+    <circle cx="30" cy="30" r="26" fill="#fff" stroke="#6b4423" stroke-width="5"/>
+    <line class="hand slow" x1="30" y1="30" x2="30" y2="16" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+    <line class="hand" x1="30" y1="30" x2="42" y2="30" stroke="#e2574c" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="30" cy="30" r="2.5" fill="#333"/>
+  </svg>
+  <div class="poster">Linea del tempo<small>(più o meno in ordine)</small></div>
+
+  <div class="nokey">
+    <h2>Ops! Manca la chiave della scuola</h2>
+    <p>Il Prof. Confusione non trova la porta... e tu non hai la chiave! Torna in corridoio e consegnala in segreteria.</p>
+    <a class="btn blue" style="text-decoration:none;" href="../index.html">VAI IN SEGRETERIA</a>
+  </div>
+
+  <div class="scene">
+    <div class="board" id="board">
+      <div class="boardtitle">Storia — trova l'errore!</div>
+      <div class="chalktext" id="chalktext">Premi «NUOVA SPIEGAZIONE»! Vi racconterò la storia ESATTAMENTE com'è andata... o quasi. Anzi: esattamente quasi!</div>
+      <div class="chalkspin"></div>
+      <div class="tray">
+        <div class="chalkpiece"></div><div class="chalkpiece y"></div><div class="eraser"></div>
+      </div>
+    </div>
+
+    <div class="profcol" id="profcol">
+      <div class="bubble" id="bubble">Benvenuto, benvenuto! Io sono il Prof. Confusione: ho vissuto TUTTE le epoche! ...o quasi.</div>
+      <span class="paper" style="top:90px; left:-6px;"></span>
+      <span class="paper" style="top:150px; right:-4px; animation-delay:-2s;"></span>
+      <span class="paper" style="top:60px; right:26px; animation-delay:-4s; width:20px; height:26px;"></span>
+      <svg class="prof" viewBox="0 0 190 260">
+        <ellipse cx="95" cy="250" rx="60" ry="9" fill="rgba(0,0,0,.25)"/>
+        <rect x="70" y="196" width="18" height="48" rx="8" fill="#6e4520"/>
+        <rect x="102" y="196" width="18" height="48" rx="8" fill="#6e4520"/>
+        <rect x="64" y="240" width="30" height="12" rx="6" fill="#3d2712"/>
+        <rect x="96" y="240" width="30" height="12" rx="6" fill="#3d2712"/>
+        <path d="M52 200 Q50 120 95 116 Q140 120 138 200 Z" fill="#a06a38"/>
+        <path d="M78 122 l17 16 17-16 -6 34 h-22 Z" fill="#f5e7c0"/>
+        <path d="M95 130 l-6 16 6 12 6-12 z" fill="#4d8f4d"/>
+        <path d="M40 190 Q26 148 58 128 L68 144 Q46 160 54 188 Z" fill="#a06a38"/>
+        <path d="M150 190 Q172 138 132 124 L126 142 Q150 154 138 186 Z" fill="#a06a38"/>
+        <circle cx="146" cy="192" r="9" fill="#ffd9b3"/>
+        <rect x="136" y="146" width="9" height="48" rx="4.5" fill="#f5e7c0" transform="rotate(18 140 170)"/>
+        <rect x="132" y="142" width="17" height="8" rx="4" fill="#d9bd8a" transform="rotate(18 140 146)"/>
+        <circle cx="95" cy="74" r="40" fill="#ffd9b3"/>
+        <path d="M56 54 Q46 30 66 34 Q60 14 82 24 Q88 8 100 22 Q118 10 116 30 Q136 26 128 48 Q140 52 130 62 Q116 44 95 46 Q74 44 60 62 Q50 58 56 54 Z" fill="#d97a2e"/>
+        <circle cx="79" cy="70" r="8" fill="#fff"/><circle cx="112" cy="68" r="10" fill="#fff"/>
+        <circle cx="81" cy="71" r="3.5" fill="#2e2645"/><circle cx="114" cy="69" r="4.2" fill="#2e2645"/>
+        <ellipse cx="95" cy="96" rx="9" ry="6" fill="#7a4a2a"/>
+        <path d="M68 58 l10 -7 M124 56 l-10 -6" stroke="#d97a2e" stroke-width="3.5" stroke-linecap="round"/>
+      </svg>
+      <div><span class="nameplate">Prof. Confusione</span></div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="levels">
+      <span class="lab">Classe:</span>
+      <button class="lvl on" data-lvl="facile">1ª – 2ª</button>
+      <button class="lvl" data-lvl="media">3ª – 4ª</button>
+      <button class="lvl" data-lvl="difficile">5ª e oltre</button>
+    </div>
+    <button class="btn blue" id="speak">🔊 ASCOLTA</button>
+    <button class="btn red" id="nuova" style="margin-left:auto;">NUOVA SPIEGAZIONE</button>
+  </div>
+
+  <div class="answerrow">
+    <input class="answer" id="answer" placeholder="Cosa non torna nella storia? Scrivi qui la tua correzione..." autocomplete="off">
+    <button class="btn red" id="verifica">HO TROVATO L'ERRORE!</button>
+  </div>
+
+  <svg class="plant" width="70" height="90" viewBox="0 0 70 90">
+    <path d="M22 60 h26 l-4 28 h-18 Z" fill="#c0603f"/>
+    <path d="M35 60 Q20 30 8 26 Q26 24 36 44 Q40 18 58 12 Q46 34 40 58 Z" fill="#4d8f4d"/>
+    <path d="M35 58 Q35 34 35 20 Q44 36 38 58 Z" fill="#63a863"/>
+  </svg>
+</div>
+
+<script type="module">
+import { GoogleGenAI } from 'https://esm.sh/@google/genai@0.14.1';
+
+const apiKey = localStorage.getItem('professoracci_apikey') || '';
+if (!apiKey) document.body.classList.add('senzachiave');
+
+const MODEL = 'gemini-2.5-flash-lite';
+const RECENTI_KEY = 'conf_recenti';
+const VOCE = { pitch:1.0, rate:1.3 };
+let livello = 'facile';
+let lezione = null;
+let punti = +(localStorage.getItem('professoracci_punti') || 0);
+let erroriRecenti = JSON.parse(sessionStorage.getItem(RECENTI_KEY) || '[]');
+let occupato = false;
+
+const $ = id => document.getElementById(id);
+$('pts').textContent = punti;
+
+const PERSONA = `Sei il Prof. Confusione, insegnante di storia in una scuola immaginaria per bambini.
+CARATTERE: frenetico, entusiasta, travolgente. Parli veloce, salti da un'epoca all'altra, e sei SICURISSIMO delle tue date anche quando sono assurde. NON ammetti mai spontaneamente di sbagliare. Quando un bambino ti corregge giustamente, ammetti l'errore a malincuore con scuse buffe ("colpa della macchina del tempo!", "i miei appunti erano capovolti!", "quel secolo si è spostato!").
+LINGUA: scrivi SOLO in italiano. Mai una parola in inglese.
+PUBBLICO: bambini della scuola primaria. Frasi brevi, lessico semplice, tono giocoso, mai spaventoso o umiliante.
+REGOLA D'ORO: rispondi SOLO con il JSON richiesto, senza testo prima o dopo.`;
+
+const LIVELLI = {
+  facile:    'bambini di 6-7 anni (classe 1ª-2ª): anacronismi evidentissimi e buffi (es. i dinosauri che giocano con i cavalieri, gli uomini primitivi col telefonino, i romani in automobile)',
+  media:     'bambini di 8-9 anni (classe 3ª-4ª): personaggi, popoli o invenzioni al posto sbagliato (es. le piramidi costruite dai vichinghi, Colombo che parte in aereo, gli egizi che scrivono al computer)',
+  difficile: 'bambini di 10-12 anni (classe 5ª e prima media): date, sequenze e cause-effetto più sottili (es. ordine sbagliato di epoche o eventi, un personaggio storico nel secolo sbagliato, una scoperta attribuita alla persona sbagliata)'
+};
+
+async function chiamaGemini(prompt, temperature) {
+  const ai = new GoogleGenAI({ apiKey });
+  const res = await ai.models.generateContent({
+    model: MODEL, contents: prompt,
+    config: { temperature, maxOutputTokens: 800 }
+  });
+  const testo = res.text ?? res.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+  const m = testo.match(/\{[\s\S]*\}/);
+  if (!m) throw new Error('Risposta senza JSON: ' + testo.slice(0, 120));
+  return JSON.parse(m[0]);
+}
+
+async function nuovaSpiegazione() {
+  if (occupato) return;
+  occupato = true;
+  speechSynthesis.cancel();
+  setProf('');
+  bolla('Un attimo... dove ho messo i miei appunti? Ah, eccoli! FORSE.');
+  $('board').classList.add('loading');
+  $('chalktext').innerHTML = '';
+  $('answer').value = '';
+  $('nuova').disabled = true; $('verifica').disabled = true;
+
+  const prompt = `${PERSONA}
+
+COMPITO: scrivi una breve spiegazione di storia (2-4 frasi, massimo 60 parole) rivolta a ${LIVELLI[livello]}.
+La spiegazione deve contenere ESATTAMENTE UN errore storico deliberato e riconoscibile, inserito con naturalezza nel tuo racconto da professore convinto di avere ragione. Tutto il resto deve essere storicamente corretto.
+NON usare questi errori già fatti di recente: ${erroriRecenti.length ? erroriRecenti.join('; ') : 'nessuno'}.
+
+Rispondi SOLO con questo JSON:
+{"spiegazione":"il testo che scrivi alla lavagna, errore incluso","errore":"la parte sbagliata, citata esatta","correzione":"la versione corretta","indizio":"un piccolo aiuto senza svelare la soluzione"}`;
+
+  try {
+    lezione = await chiamaGemini(prompt, 1.0);
+    erroriRecenti = [...erroriRecenti.slice(-7), lezione.errore];
+    sessionStorage.setItem(RECENTI_KEY, JSON.stringify(erroriRecenti));
+    bolla('Eccola! Storia pura, verificata di persona: c’ero anch’io! Nessun errore, garantito al 99%... anzi 100!');
+    typewrite(lezione.spiegazione, () => { parla(lezione.spiegazione); });
+  } catch (e) {
+    console.error(e);
+    const msg = /503|UNAVAILABLE/i.test(String(e)) ?
+      'Troppa folla nella macchina del tempo (server pieni)! Riprova tra un momento.' :
+      /429/.test(String(e)) ?
+      'Ho viaggiato troppo nel tempo! Devo riposare: aspetta un minutino e riprova.' :
+      'Il gesso si è perso in un’altra epoca! (' + String(e).slice(0, 90) + ')';
+    bolla(msg);
+    $('chalktext').textContent = 'Ops... la lavagna è rimasta nel Medioevo. Riprova!';
+  }
+  $('board').classList.remove('loading');
+  $('nuova').disabled = false; $('verifica').disabled = false;
+  occupato = false;
+}
+
+async function verifica() {
+  if (occupato) return;
+  if (!lezione) { bolla('Prima chiedimi una spiegazione, giovane viaggiatore del tempo!'); return; }
+  const risposta = $('answer').value.trim();
+  if (!risposta) { bolla('La casella è vuota! Scrivi cosa non torna nella mia storia... se ci riesci!'); return; }
+  occupato = true;
+  $('verifica').disabled = true; $('nuova').disabled = true;
+  bolla('Mmm... fammi controllare sui miei appunti... quelli giusti, stavolta...');
+
+  const prompt = `${PERSONA}
+
+Nella tua spiegazione c'era questo errore deliberato: "${lezione.errore}" (versione corretta: "${lezione.correzione}").
+Il bambino ha risposto: "${risposta}"
+
+Valuta la risposta:
+- "bravo" se ha individuato l'errore o scritto la correzione giusta (anche con parole sue o piccoli errori di battitura)
+- "quasi" se ha intuito la zona giusta ma la correzione è incompleta o imprecisa
+- "sbagliato" se non ha trovato l'errore
+
+Poi scrivi un commento nel tuo personaggio (2-3 frasi): se "bravo" ammetti l'errore a malincuore con una scusa buffa da viaggiatore del tempo e fai i complimenti; se "quasi" incoraggia e dai questo indizio: "${lezione.indizio}"; se "sbagliato" gongola bonariamente e invita a riprovare con l'indizio.
+
+Rispondi SOLO con questo JSON:
+{"esito":"bravo|quasi|sbagliato","commento":"..."}`;
+
+  try {
+    const v = await chiamaGemini(prompt, 0.7);
+    if (v.esito === 'bravo') {
+      aggiornaPunti(10);
+      setProf('sconfitto');
+      stelle();
+      evidenziaErrore();
+      bolla('✅ ' + v.commento + ' (+10 punti!)');
+      lezione = null;
+    } else if (v.esito === 'quasi') {
+      aggiornaPunti(2);
+      setProf('');
+      bolla('🤏 ' + v.commento + ' (+2 punti, riprova!)');
+    } else {
+      setProf('felice');
+      bolla('❌ ' + v.commento);
+      setTimeout(() => setProf(''), 3500);
+    }
+    parla(v.commento);
+  } catch (e) {
+    console.error(e);
+    bolla('Il registro è finito nel 1200! Riprova a consegnarmi la risposta.');
+  }
+  $('verifica').disabled = false; $('nuova').disabled = false;
+  occupato = false;
+}
+
+let twTimer = null;
+function typewrite(testo, fine) {
+  clearInterval(twTimer);
+  const el = $('chalktext');
+  let i = 0;
+  twTimer = setInterval(() => {
+    i++;
+    el.innerHTML = testo.slice(0, i) + '<span class="chalkcursor"></span>';
+    if (i >= testo.length) {
+      clearInterval(twTimer);
+      el.textContent = testo;
+      if (fine) fine();
+    }
+  }, 32);
+}
+function evidenziaErrore() {
+  if (!lezione) return;
+  const el = $('chalktext');
+  const t = el.textContent;
+  const idx = t.indexOf(lezione.errore);
+  if (idx < 0) return;
+  el.innerHTML = t.slice(0, idx) + '<span class="evid">' + lezione.errore + '</span>' + t.slice(idx + lezione.errore.length)
+    + '  <span class="evid" style="font-size:.85em;">→ ' + lezione.correzione + '</span>';
+}
+function bolla(t) {
+  const b = $('bubble');
+  b.textContent = t;
+  b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
+}
+function setProf(stato) {
+  const p = $('profcol');
+  p.classList.remove('felice', 'sconfitto');
+  if (stato) p.classList.add(stato);
+}
+function aggiornaPunti(n) {
+  punti += n;
+  localStorage.setItem('professoracci_punti', punti);
+  $('pts').textContent = punti;
+  const s = $('score');
+  s.classList.remove('pop'); void s.offsetWidth; s.classList.add('pop');
+}
+function stelle() {
+  const box = document.createElement('div');
+  box.className = 'starburst';
+  for (let i = 0; i < 8; i++) {
+    const s = document.createElement('span');
+    s.textContent = ['⭐', '✨', '🌟'][i % 3];
+    const a = (i / 8) * Math.PI * 2;
+    s.style.setProperty('--dx', Math.cos(a) * 110 + 'px');
+    s.style.setProperty('--dy', Math.sin(a) * 110 - 40 + 'px');
+    box.appendChild(s);
+  }
+  $('profcol').appendChild(box);
+  setTimeout(() => box.remove(), 1100);
+}
+
+function parla(testo) {
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(testo);
+  u.lang = 'it-IT'; u.pitch = VOCE.pitch; u.rate = VOCE.rate;
+  const voce = speechSynthesis.getVoices().find(v => v.lang.startsWith('it'));
+  if (voce) u.voice = voce;
+  speechSynthesis.speak(u);
+}
+speechSynthesis.getVoices();
+
+document.querySelectorAll('.lvl').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.lvl').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  livello = b.dataset.lvl;
+}));
+$('nuova').addEventListener('click', nuovaSpiegazione);
+$('verifica').addEventListener('click', verifica);
+$('answer').addEventListener('keydown', e => { if (e.key === 'Enter') verifica(); });
+$('speak').addEventListener('click', () => {
+  const t = $('chalktext').textContent;
+  if (t) parla(t);
+});
+
+for (let i = 0; i < 14; i++) {
+  const m = document.createElement('span');
+  m.className = 'mote';
+  const s = 1.5 + Math.random() * 3;
+  m.style.width = m.style.height = s + 'px';
+  m.style.left = Math.random() * 100 + 'vw';
+  m.style.top = 5 + Math.random() * 50 + 'vh';
+  m.style.animationDuration = 7 + Math.random() * 10 + 's';
+  m.style.animationDelay = -Math.random() * 12 + 's';
+  document.body.appendChild(m);
+}
+</script>
+</body>
+</html>

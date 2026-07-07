@@ -1,0 +1,16 @@
+# Contenuto riservato, non ancora pubblico (vedi CONTESTO.md)
+_archivio/sinossi-erickson.md
+
+# Chiavi/segreti: l'API key Gemini è inserita a runtime dall'utente
+# (localStorage lato browser) e non deve MAI essere committata
+.env
+.env.local
+*.key
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/

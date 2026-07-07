@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Scuola dei Professoracci — Aula</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;700;800;900&family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/aula.css">
+<link rel="modulepreload" href="https://esm.sh/@google/genai@0.14.1">
+<script src="../assets/professoracci.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a class="back" href="../index.html">← corridoio</a>
+    <div class="roomtitle" id="roomtitle">Aula</div>
+    <button class="calmbtn" id="calmbtn" title="Riduce le animazioni e gli stimoli visivi">🌿 modalità tranquilla</button>
+    <div class="score" id="score">★ <b id="pts">0</b> punti</div>
+  </div>
+
+  <svg class="clock" width="60" height="60" viewBox="0 0 60 60">
+    <circle cx="30" cy="30" r="26" fill="#fff" stroke="#6b4423" stroke-width="5"/>
+    <line class="hand slow" x1="30" y1="30" x2="30" y2="16" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+    <line class="hand" x1="30" y1="30" x2="42" y2="30" stroke="#e2574c" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="30" cy="30" r="2.5" fill="#333"/>
+  </svg>
+  <div id="decor"></div>
+
+  <div class="noprof">
+    <h2>Aula non trovata!</h2>
+    <p>Questa porta non porta da nessuna parte. Torna in corridoio e scegli un'aula.</p>
+    <a class="btn blue" style="text-decoration:none;" href="../index.html">TORNA IN CORRIDOIO</a>
+  </div>
+
+  <div class="nokey">
+    <h2>Ops! Manca la chiave della scuola</h2>
+    <p id="nokeymsg">Il professore non apre l'aula senza la chiave. Torna in corridoio e consegnala in segreteria.</p>
+    <a class="btn blue" style="text-decoration:none;" href="../index.html">VAI IN SEGRETERIA</a>
+  </div>
+
+  <div class="scene">
+    <div class="board" id="board">
+      <div class="matbadge" id="matbadge">📎 materiale</div>
+      <div class="boardtitle" id="boardtitle">Trova l'errore!</div>
+      <div class="chalktext" id="chalktext"></div>
+      <div class="chalkspin"></div>
+      <div class="tray" id="tray">
+        <div class="chalkpiece"></div><div class="chalkpiece y"></div><div class="eraser"></div>
+      </div>
+    </div>
+
+    <div class="profcol" id="profcol">
+      <div class="bubble" id="bubble"></div>
+      <svg class="prof" id="profsvg" viewBox="0 0 190 260"></svg>
+      <div><span class="nameplate" id="nameplate"></span></div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="levels">
+      <span class="lab">Classe:</span>
+      <button class="lvl on" data-lvl="facile">1ª – 2ª</button>
+      <button class="lvl" data-lvl="media">3ª – 4ª</button>
+      <button class="lvl" data-lvl="difficile">5ª e medie</button>
+    </div>
+    <button class="btn blue" id="speak">🔊 ASCOLTA</button>
+    <button class="btn wood" id="stopaudio">🔇 STOP AUDIO</button>
+    <button class="btn red" id="nuova" style="margin-left:auto;" disabled>NUOVA SPIEGAZIONE</button>
+  </div>
+
+  <div class="answerrow">
+    <input class="answer" id="answer" placeholder="Dov'è l'errore? Scrivi qui la tua correzione..." autocomplete="off">
+    <button class="btn red" id="verifica" disabled>HO TROVATO L'ERRORE!</button>
+  </div>
+
+  <!-- ============ CATTEDRA: materiale dell'insegnante ============ -->
+  <details class="cattedra" id="cattedra">
+    <summary>
+      🍎 Cattedra — materiale dell'insegnante
+      <span class="stato" id="matstato">nessun materiale: il professore inventa gli argomenti</span>
+    </summary>
+    <div class="inner">
+      <p class="hint">
+        Incolla il testo della lezione oppure carica un file <b>.txt</b>, <b>.md</b> o <b>.pdf</b>:
+        gli errori del professore verranno presi <b>solo da questo materiale</b>, così il gioco
+        segue esattamente la lezione fatta in classe. Il materiale resta salvato su questo
+        computer, per questa aula.
+      </p>
+      <input type="text" id="mattitolo" placeholder="Titolo della lezione (facoltativo, es. «Il ciclo dell'acqua»)">
+      <textarea id="mattesto" placeholder="Incolla qui il testo della lezione..."></textarea>
+      <div class="riga">
+        <label class="filelbl" for="matfile">📄 CARICA FILE (.txt .md .pdf)</label>
+        <input type="file" id="matfile" accept=".txt,.md,.markdown,.pdf">
+        <button class="btn blue" id="matsalva">USA QUESTO MATERIALE</button>
+        <button class="btn wood" id="matrimuovi">RIMUOVI</button>
+      </div>
+      <div class="msgmat" id="matmsg"></div>
+    </div>
+  </details>
+
+  <svg class="plant" width="70" height="90" viewBox="0 0 70 90">
+    <path d="M22 60 h26 l-4 28 h-18 Z" fill="#c0603f"/>
+    <path d="M35 60 Q20 30 8 26 Q26 24 36 44 Q40 18 58 12 Q46 34 40 58 Z" fill="#4d8f4d"/>
+    <path d="M35 58 Q35 34 35 20 Q44 36 38 58 Z" fill="#63a863"/>
+  </svg>
+</div>
+
+<script type="module">
+import { GoogleGenAI } from 'https://esm.sh/@google/genai@0.14.1';
+
+const P = window.Professoracci;
+const $ = id => document.getElementById(id);
+
+/* ============ QUALE PROFESSORE? ============ */
+const profId = new URLSearchParams(location.search).get('prof') || '';
+const cfg = P.getProf(profId);
+if (!cfg) document.body.classList.add('senzaprof');
+
+/* ============ CHIAVE ============ */
+const apiKey = localStorage.getItem('professoracci_apikey') || '';
+if (cfg && !apiKey) document.body.classList.add('senzachiave');
+
+/* ============ COSTRUZIONE AULA DAL CONFIG ============ */
+if (cfg) {
+  document.title = cfg.roomtitle + ' — ' + cfg.nome;
+  const root = document.documentElement.style;
+  root.setProperty('--wall', cfg.tema.wall);
+  root.setProperty('--accent', cfg.tema.c);
+  root.setProperty('--accent-d', cfg.tema.d);
+  root.setProperty('--accent-dd', cfg.tema.dd);
+  root.setProperty('--teach-dur', cfg.teach.dur);
+
+  const style = document.createElement('style');
+  style.textContent = (cfg.decorCss || '') + '\n@keyframes teach { ' + cfg.teach.kf + ' }';
+  document.head.appendChild(style);
+
+  $('roomtitle').textContent = cfg.roomtitle;
+  $('boardtitle').textContent = cfg.boardtitle;
+  $('chalktext').textContent = cfg.benvenutoLavagna;
+  $('bubble').textContent = cfg.benvenutoBolla;
+  $('nameplate').textContent = cfg.nome;
+  $('answer').placeholder = cfg.placeholder;
+  $('nokeymsg').textContent = cfg.nokey;
+  $('decor').innerHTML = cfg.decorHtml || '';
+  $('profsvg').innerHTML = cfg.svgProf;
+  if (cfg.boardExtraHtml) $('board').insertAdjacentHTML('beforeend', cfg.boardExtraHtml);
+  if (cfg.profExtraHtml) $('profcol').insertAdjacentHTML('afterbegin', cfg.profExtraHtml);
+  if (cfg.trayExtraHtml) $('tray').insertAdjacentHTML('afterbegin', cfg.trayExtraHtml);
+}
+
+/* ============ MODALITÀ TRANQUILLA ============ */
+P.applicaCalma();
+function refreshCalm() { $('calmbtn').classList.toggle('on', P.isCalma()); }
+$('calmbtn').addEventListener('click', () => { P.setCalma(!P.isCalma()); refreshCalm(); });
+refreshCalm();
+
+/* ============ STATO DI GIOCO ============ */
+const MODEL = 'gemini-2.5-flash-lite';
+const RECENTI_KEY = 'recenti_' + profId;
+let livello = 'facile';
+let lezione = null;          // { spiegazione, errore, correzione, indizio }
+let punti = +(localStorage.getItem('professoracci_punti') || 0);
+let erroriRecenti = JSON.parse(sessionStorage.getItem(RECENTI_KEY) || '[]');
+let occupato = false;
+$('pts').textContent = punti;
+
+/* ============ MATERIALE DELLA LEZIONE ============ */
+function materiale() { return cfg ? P.getMateriale(cfg.id) : null; }
+
+function refreshMateriale() {
+  const m = materiale();
+  const stato = $('matstato'), badge = $('matbadge');
+  if (m) {
+    const parole = m.testo.split(/\s+/).filter(Boolean).length;
+    stato.textContent = '📎 ' + m.titolo + ' (' + parole + ' parole)';
+    stato.classList.add('attivo');
+    badge.textContent = '📎 ' + m.titolo;
+    badge.classList.add('on');
+    $('mattitolo').value = m.titolo;
+    $('mattesto').value = m.testo;
+  } else {
+    stato.textContent = 'nessun materiale: il professore inventa gli argomenti';
+    stato.classList.remove('attivo');
+    badge.classList.remove('on');
+  }
+}
+
+function setMatMsg(t, err) {
+  const el = $('matmsg');
+  el.textContent = t;
+  el.classList.toggle('err', !!err);
+}
+
+$('matsalva').addEventListener('click', () => {
+  const testo = $('mattesto').value.trim();
+  if (!testo) { setMatMsg('Il testo è vuoto: incolla la lezione o carica un file.', true); return; }
+  const titolo = $('mattitolo').value.trim() || testo.split('\n')[0].slice(0, 60) || 'Materiale della lezione';
+  const ok = P.setMateriale(cfg.id, { titolo, testo, fonte: 'testo' });
+  if (ok) {
+    erroriRecenti = []; sessionStorage.setItem(RECENTI_KEY, '[]');
+    setMatMsg('✓ Materiale salvato: le prossime spiegazioni seguiranno la lezione.');
+    refreshMateriale();
+  } else {
+    setMatMsg('Spazio pieno su questo computer: prova con un testo più corto.', true);
+  }
+});
+
+$('matrimuovi').addEventListener('click', () => {
+  P.clearMateriale(cfg.id);
+  $('mattitolo').value = ''; $('mattesto').value = ''; $('matfile').value = '';
+  setMatMsg('Materiale rimosso: il professore torna a inventare gli argomenti.');
+  refreshMateriale();
+});
+
+/* --- caricamento file: .txt/.md subito, .pdf via pdf.js (CDN, solo se serve) --- */
+let pdfjsPromise = null;
+function caricaPdfJs() {
+  if (!pdfjsPromise) {
+    pdfjsPromise = new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+      s.onload = () => {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        res(window.pdfjsLib);
+      };
+      s.onerror = () => rej(new Error('pdf.js non raggiungibile'));
+      document.head.appendChild(s);
+    });
+  }
+  return pdfjsPromise;
+}
+
+async function estraiTestoPdf(file) {
+  const pdfjs = await caricaPdfJs();
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjs.getDocument({ data: buf }).promise;
+  let testo = '';
+  for (let i = 1; i <= pdf.numPages && testo.length < 20000; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    testo += content.items.map(it => it.str).join(' ') + '\n\n';
+  }
+  return testo.replace(/[ \t]+/g, ' ').trim();
+}
+
+$('matfile').addEventListener('change', async e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  setMatMsg('Sto leggendo «' + file.name + '»...');
+  try {
+    let testo;
+    if (/\.pdf$/i.test(file.name)) {
+      testo = await estraiTestoPdf(file);
+      if (!testo) throw new Error('Questo PDF non contiene testo selezionabile (forse è una scansione).');
+    } else {
+      testo = await file.text();
+    }
+    $('mattesto').value = testo;
+    if (!$('mattitolo').value.trim()) $('mattitolo').value = file.name.replace(/\.(pdf|md|markdown|txt)$/i, '');
+    setMatMsg('✓ File letto! Controlla il testo e premi «USA QUESTO MATERIALE».');
+  } catch (err) {
+    console.error(err);
+    setMatMsg('Non riesco a leggere il file: ' + err.message, true);
+  }
+});
+
+if (cfg) refreshMateriale();
+
+/* ============ SCRIPT PRONTO: solo ora si abilitano i pulsanti ============
+   Prima di questo punto lo script sta ancora caricando (import del modulo
+   Gemini da CDN incluso): un clic su "NUOVA SPIEGAZIONE" o "HO TROVATO
+   L'ERRORE" nel frattempo non farebbe nulla perché i listener non sono
+   ancora agganciati. Tenendo i pulsanti disabilitati finché non arriviamo
+   qui evitiamo il "primo clic a vuoto". */
+if (cfg && apiKey) { $('nuova').disabled = false; $('verifica').disabled = false; }
+
+/* ============ GEMINI ============ */
+async function chiamaGemini(prompt, temperature) {
+  const ai = new GoogleGenAI({ apiKey });
+  const res = await ai.models.generateContent({
+    model: MODEL,
+    contents: prompt,
+    config: { temperature, maxOutputTokens: 800 }
+  });
+  const testo = res.text ?? res.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+  const m = testo.match(/\{[\s\S]*\}/);
+  if (!m) throw new Error('Risposta senza JSON: ' + testo.slice(0, 120));
+  return JSON.parse(m[0]);
+}
+
+function promptGenerazione() {
+  const m = materiale();
+  const base = cfg.persona + '\n\n';
+  const antiripeti = 'NON usare questi errori già fatti di recente: ' +
+    (erroriRecenti.length ? erroriRecenti.join('; ') : 'nessuno') + '.';
+  const jsonRichiesto = '\n\nRispondi SOLO con questo JSON:\n' +
+    '{"spiegazione":"il testo che scrivi alla lavagna, errore incluso","errore":"la parte sbagliata, citata esatta","correzione":"la forma corretta","indizio":"un piccolo aiuto senza svelare la soluzione"}';
+
+  if (m) {
+    return base +
+`MATERIALE DELLA LEZIONE (fornito dall'insegnante):
+<<<
+${m.testo}
+>>>
+
+COMPITO: scrivi una breve spiegazione (2-4 frasi, massimo 60 parole) rivolta a ${cfg.livelli[livello]}.
+La spiegazione deve essere basata ESCLUSIVAMENTE sul materiale della lezione qui sopra: usa solo argomenti, fatti, nomi e numeri presenti nel materiale, senza aggiungere contenuti esterni.
+La spiegazione deve contenere ESATTAMENTE UN ${cfg.tipoErrore} deliberato e riconoscibile rispetto a ciò che dice il materiale, ${cfg.stileCompito}
+${antiripeti}` + jsonRichiesto;
+  }
+  return base +
+`COMPITO: scrivi una breve spiegazione di ${cfg.argomento} (2-4 frasi, massimo 60 parole) rivolta a ${cfg.livelli[livello]}.
+La spiegazione deve contenere ESATTAMENTE UN ${cfg.tipoErrore} deliberato e riconoscibile, ${cfg.stileCompito}
+${antiripeti}` + jsonRichiesto;
+}
+
+async function nuovaSpiegazione() {
+  if (occupato) return;
+  occupato = true;
+  speechSynthesis.cancel();
+  setProf('');
+  bolla(cfg.msg.preparo);
+  $('board').classList.add('loading');
+  $('chalktext').innerHTML = '';
+  $('answer').value = '';
+  $('nuova').disabled = true; $('verifica').disabled = true;
+
+  try {
+    lezione = await chiamaGemini(promptGenerazione(), 1.0);
+    erroriRecenti = [...erroriRecenti.slice(-7), lezione.errore];
+    sessionStorage.setItem(RECENTI_KEY, JSON.stringify(erroriRecenti));
+    bolla(cfg.msg.pronto);
+    typewrite(lezione.spiegazione, () => { parla(lezione.spiegazione); });
+  } catch (e) {
+    console.error(e);
+    const msg = /503|UNAVAILABLE/i.test(String(e)) ? cfg.msg.err503 :
+      /429/.test(String(e)) ? cfg.msg.err429 :
+      cfg.msg.errAltro + ' (' + String(e).slice(0, 90) + ')';
+    bolla(msg);
+    $('chalktext').textContent = cfg.msg.lavagnaVuota;
+  }
+  $('board').classList.remove('loading');
+  $('nuova').disabled = false; $('verifica').disabled = false;
+  occupato = false;
+}
+
+async function verifica() {
+  if (occupato) return;
+  if (!lezione) { bolla(cfg.msg.noLezione); return; }
+  const risposta = $('answer').value.trim();
+  if (!risposta) { bolla(cfg.msg.vuoto); return; }
+  occupato = true;
+  $('verifica').disabled = true; $('nuova').disabled = true;
+  bolla(cfg.msg.controllo);
+
+  const prompt = `${cfg.persona}
+
+Nella tua spiegazione c'era questo errore deliberato: "${lezione.errore}" (forma corretta: "${lezione.correzione}").
+Il bambino ha risposto: "${risposta}"
+
+Valuta la risposta:
+- "bravo" se ha individuato l'errore o scritto la correzione giusta (anche con parole sue o piccoli errori di battitura)
+- "quasi" se ha intuito la zona giusta ma la correzione è incompleta o imprecisa
+- "sbagliato" se non ha trovato l'errore
+
+Poi scrivi un commento nel tuo personaggio (2-3 frasi): se "bravo" ammetti l'errore a malincuore con ${cfg.scusaBravo} e fai i complimenti; se "quasi" incoraggia e dai questo indizio: "${lezione.indizio}"; se "sbagliato" ${cfg.gongola || 'gongola bonariamente'} e invita a riprovare con l'indizio.
+
+Rispondi SOLO con questo JSON:
+{"esito":"bravo|quasi|sbagliato","commento":"..."}`;
+
+  try {
+    const v = await chiamaGemini(prompt, 0.2);
+    if (v.esito === 'bravo') {
+      aggiornaPunti(10);
+      setProf('sconfitto');
+      stelle();
+      evidenziaErrore();
+      bolla('✅ ' + v.commento + ' (+10 punti!)');
+      lezione = null;
+    } else if (v.esito === 'quasi') {
+      aggiornaPunti(2);
+      setProf('');
+      bolla('🤏 ' + v.commento + ' (+2 punti, riprova!)');
+    } else {
+      setProf('felice');
+      bolla('❌ ' + v.commento);
+      setTimeout(() => setProf(''), 3500);
+    }
+    parla(v.commento);
+  } catch (e) {
+    console.error(e);
+    bolla(cfg.msg.registro);
+  }
+  $('verifica').disabled = false; $('nuova').disabled = false;
+  occupato = false;
+}
+
+/* ============ EFFETTI ============ */
+let twTimer = null;
+function typewrite(testo, fine) {
+  clearInterval(twTimer);
+  const el = $('chalktext');
+  let i = 0;
+  twTimer = setInterval(() => {
+    i++;
+    el.innerHTML = testo.slice(0, i) + '<span class="chalkcursor"></span>';
+    if (i >= testo.length) {
+      clearInterval(twTimer);
+      el.textContent = testo;
+      if (fine) fine();
+    }
+  }, 32);
+}
+function evidenziaErrore() {
+  if (!lezione) return;
+  const el = $('chalktext');
+  const t = el.textContent;
+  const idx = t.indexOf(lezione.errore);
+  if (idx < 0) return;
+  el.innerHTML = t.slice(0, idx) + '<span class="evid">' + lezione.errore + '</span>' + t.slice(idx + lezione.errore.length)
+    + '  <span class="evid" style="font-size:.85em;">→ ' + lezione.correzione + '</span>';
+}
+function bolla(t) {
+  const b = $('bubble');
+  b.textContent = t;
+  b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
+}
+function setProf(stato) {
+  const p = $('profcol');
+  p.classList.remove('felice', 'sconfitto');
+  if (stato) p.classList.add(stato);
+}
+function aggiornaPunti(n) {
+  punti += n;
+  localStorage.setItem('professoracci_punti', punti);
+  $('pts').textContent = punti;
+  const s = $('score');
+  s.classList.remove('pop'); void s.offsetWidth; s.classList.add('pop');
+}
+function stelle() {
+  const box = document.createElement('div');
+  box.className = 'starburst';
+  for (let i = 0; i < 8; i++) {
+    const s = document.createElement('span');
+    s.textContent = ['⭐', '✨', '🌟'][i % 3];
+    const a = (i / 8) * Math.PI * 2;
+    s.style.setProperty('--dx', Math.cos(a) * 110 + 'px');
+    s.style.setProperty('--dy', Math.sin(a) * 110 - 40 + 'px');
+    box.appendChild(s);
+  }
+  $('profcol').appendChild(box);
+  setTimeout(() => box.remove(), 1100);
+}
+
+/* ============ VOCE ============ */
+function parla(testo) {
+  if (!cfg) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(testo);
+  u.lang = 'it-IT'; u.pitch = cfg.voce.pitch; u.rate = cfg.voce.rate;
+  const voce = speechSynthesis.getVoices().find(v => v.lang.startsWith('it'));
+  if (voce) u.voice = voce;
+  speechSynthesis.speak(u);
+}
+speechSynthesis.getVoices(); // precarica
+
+/* ============ EVENTI ============ */
+document.querySelectorAll('.lvl').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.lvl').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  livello = b.dataset.lvl;
+}));
+$('nuova').addEventListener('click', nuovaSpiegazione);
+$('verifica').addEventListener('click', verifica);
+$('answer').addEventListener('keydown', e => { if (e.key === 'Enter') verifica(); });
+$('speak').addEventListener('click', () => {
+  const t = $('chalktext').textContent;
+  if (t) parla(t);
+});
+$('stopaudio').addEventListener('click', () => { speechSynthesis.cancel(); });
+
+/* ============ POLVERE ============ */
+for (let i = 0; i < 14; i++) {
+  const m = document.createElement('span');
+  m.className = 'mote';
+  const s = 1.5 + Math.random() * 3;
+  m.style.width = m.style.height = s + 'px';
+  m.style.left = Math.random() * 100 + 'vw';
+  m.style.top = 5 + Math.random() * 50 + 'vh';
+  m.style.animationDuration = 7 + Math.random() * 10 + 's';
+  m.style.animationDelay = -Math.random() * 12 + 's';
+  document.body.appendChild(m);
+}
+</script>
+</body>
+</html>

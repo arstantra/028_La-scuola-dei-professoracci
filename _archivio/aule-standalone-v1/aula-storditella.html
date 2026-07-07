@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aula di Arte — Prof.ssa Storditella</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;700;800;900&family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root { --wall:#f0dce9; --accent:#c75b9b; --accent-d:#a34579; --accent-dd:#7d355d; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:'Nunito',sans-serif; min-height:100vh;
+  background:linear-gradient(var(--wall) 0 55%, #8a5a33 55% 56.5%, #a9743f 56.5%);
+  overflow-x:hidden;
+}
+body::after {
+  content:""; position:fixed; left:0; right:0; bottom:0; height:44vh; z-index:-1;
+  background:
+    linear-gradient(rgba(0,0,0,.16), transparent 30%),
+    repeating-linear-gradient(90deg, #a9743f 0 110px, #9a652f 110px 116px);
+}
+.wrap { max-width:1100px; margin:0 auto; padding:16px 24px 60px; position:relative; }
+
+.topbar { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+.back {
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:15px; text-decoration:none;
+  color:#fff; background:#8a5a33; border:3px solid #6b4423; border-radius:99px;
+  padding:8px 18px; box-shadow:0 4px 0 #4a2d15; transition:transform .12s, box-shadow .12s;
+}
+.back:hover { transform:translateY(2px); box-shadow:0 2px 0 #4a2d15; }
+.roomtitle { font-family:'Fredoka',sans-serif; font-weight:700; font-size:clamp(20px,3vw,28px); color:var(--accent-d); margin-right:auto; }
+.score {
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:19px; color:#fff;
+  background:#3b6ea5; border-radius:99px; padding:9px 22px;
+  box-shadow:0 4px 0 #2c4f78; white-space:nowrap;
+}
+.score b { color:#ffe14d; }
+@keyframes scorepop { 0%{transform:scale(1);} 40%{transform:scale(1.22) rotate(-2deg);} 100%{transform:scale(1);} }
+.score.pop { animation:scorepop .5s ease; }
+
+.clock { position:absolute; top:70px; right:40px; z-index:1; }
+.clock .hand { transform-origin:30px 30px; animation:tick 12s linear infinite; }
+.clock .hand.slow { animation-duration:80s; }
+@keyframes tick { to { transform:rotate(360deg); } }
+/* quadretto appeso */
+.poster {
+  position:absolute; top:76px; left:34px; z-index:1; transform:rotate(-3deg);
+  background:#fdf6df; border:6px solid #b8923f; border-radius:4px;
+  padding:6px 12px; box-shadow:0 6px 14px rgba(0,0,0,.2);
+  font-family:'Caveat',cursive; font-weight:700; font-size:19px; color:var(--accent-d);
+  text-align:center;
+  animation:notewave 5s ease-in-out infinite;
+}
+.poster small { display:block; font-size:14px; color:#8a7658; line-height:1.1; }
+.poster svg { display:block; margin:2px auto 0; }
+@keyframes notewave { 0%,100%{transform:rotate(-3deg);} 50%{transform:rotate(-1.2deg);} }
+/* cavalletto */
+.easel { position:absolute; z-index:4; bottom:-8px; left:-26px; pointer-events:none; animation:easelwob 6s ease-in-out infinite; transform-origin:bottom center; }
+@keyframes easelwob { 0%,100%{transform:rotate(-1deg);} 50%{transform:rotate(1.2deg);} }
+/* gocce di colore che cadono ogni tanto */
+.drip { position:absolute; width:7px; height:10px; border-radius:50% 50% 60% 60%; opacity:0; animation:dripfall 4.5s ease-in infinite; pointer-events:none; }
+@keyframes dripfall {
+  0%,60% { transform:translateY(0); opacity:0; }
+  65% { opacity:.9; }
+  100% { transform:translateY(46px); opacity:0; }
+}
+.plant { position:fixed; bottom:12px; right:22px; z-index:2; animation:sway 5s ease-in-out infinite; transform-origin:bottom center; }
+@keyframes sway { 0%,100%{transform:rotate(-2deg);} 50%{transform:rotate(2.5deg);} }
+.mote { position:fixed; border-radius:50%; background:rgba(255,250,220,.7); pointer-events:none; animation:drift linear infinite; z-index:0; }
+@keyframes drift { 0%{transform:translateY(0);opacity:0;} 15%{opacity:.8;} 85%{opacity:.3;} 100%{transform:translateY(-110px) translateX(28px);opacity:0;} }
+
+.scene { position:relative; z-index:2; display:flex; align-items:flex-end; gap:26px; margin-top:70px; }
+@media (max-width:760px){ .scene{ flex-direction:column; align-items:center; } }
+.board {
+  flex:1; position:relative; border-radius:8px; width:100%;
+  border:14px solid transparent;
+  border-image:linear-gradient(150deg,#9a6b3d,#6b4423 50%,#84582e) 1;
+  background:
+    radial-gradient(ellipse 200px 60px at 75% 85%, rgba(255,255,255,.05), transparent 70%),
+    radial-gradient(ellipse 260px 70px at 20% 25%, rgba(255,255,255,.045), transparent 70%),
+    radial-gradient(ellipse at 40% 30%, #2f4a3b, #24382d 75%, #1d2e25);
+  box-shadow:inset 0 0 45px rgba(0,0,0,.5), 0 12px 30px rgba(0,0,0,.35);
+  padding:26px 32px 44px; min-height:320px;
+}
+.boardtitle { font-family:'Caveat',cursive; font-weight:700; font-size:34px; color:#f2d98c; text-shadow:0 0 3px rgba(242,217,140,.35); }
+.chalktext {
+  font-family:'Caveat',cursive; font-weight:600; font-size:clamp(24px,2.8vw,31px);
+  line-height:1.5; color:#f6f3e9; text-shadow:0 0 3px rgba(246,243,233,.3);
+  margin-top:14px; min-height:170px;
+}
+.chalktext .evid { color:#f2d98c; text-decoration:underline wavy rgba(242,217,140,.75) 2.5px; }
+.chalkcursor { display:inline-block; width:9px; height:22px; margin-left:3px; background:#f6f3e9; vertical-align:-3px; border-radius:2px; animation:blink 1s steps(1) infinite; }
+@keyframes blink { 50%{opacity:0;} }
+.tray {
+  position:absolute; left:6%; right:6%; bottom:-26px; height:26px;
+  background:linear-gradient(#7a4e2a,#5e3a1e); border-radius:0 0 6px 6px;
+  box-shadow:0 6px 12px rgba(0,0,0,.3);
+  display:flex; align-items:center; gap:12px; padding:0 24px;
+}
+.chalkpiece { width:44px; height:8px; border-radius:4px; background:#f2efe4; box-shadow:0 2px 3px rgba(0,0,0,.4); }
+.chalkpiece.p { background:#e8b3d1; width:36px; transform:rotate(-2deg); }
+.chalkpiece.y { background:#eeda9a; width:32px; transform:rotate(2deg); }
+.eraser { margin-left:auto; width:70px; height:18px; border-radius:4px; background:linear-gradient(#3b6ea5,#2c4f78); box-shadow:0 3px 5px rgba(0,0,0,.45); transform:rotate(-3deg); }
+.chalkspin { display:none; width:34px; height:34px; margin-top:20px; border:4px dashed rgba(246,243,233,.7); border-radius:50%; animation:spin 1.6s linear infinite; }
+.board.loading .chalkspin { display:block; }
+@keyframes spin { to{transform:rotate(360deg);} }
+
+.profcol { flex:0 0 230px; position:relative; text-align:center; }
+.prof { width:210px; animation:teach 5s ease-in-out infinite; transform-origin:bottom center; transition:filter .3s; }
+@keyframes teach { 0%,100%{transform:rotate(-1.4deg);} 40%{transform:rotate(1deg) translateY(-4px);} 60%{transform:rotate(.4deg) translateY(-1px);} }
+.profcol.felice .prof { animation:cheer .75s ease-in-out infinite; }
+@keyframes cheer { 0%,100%{transform:rotate(-3deg) translateY(0);} 50%{transform:rotate(3deg) translateY(-11px);} }
+.profcol.sconfitto .prof { animation:droop 3s ease-in-out infinite; filter:saturate(.75); }
+@keyframes droop { 0%,100%{transform:rotate(4deg) translateY(4px);} 50%{transform:rotate(5.5deg) translateY(6px);} }
+.bubble {
+  position:relative; margin-bottom:10px; z-index:5; text-align:left;
+  font-family:'Nunito',sans-serif; font-weight:800; font-size:15px; line-height:1.45; color:#333;
+  background:#fff; border-radius:16px; padding:12px 16px;
+  box-shadow:0 6px 16px rgba(0,0,0,.22); min-height:52px;
+}
+.bubble::after { content:""; position:absolute; bottom:-9px; left:50%; transform:translateX(-50%); border:10px solid transparent; border-top-color:#fff; border-bottom:0; }
+.bubble.pop { animation:bpop .4s cubic-bezier(.2,.8,.3,1.3); }
+@keyframes bpop { from{transform:scale(.6); opacity:0;} to{transform:scale(1); opacity:1;} }
+.nameplate {
+  display:inline-block; margin-top:6px;
+  font-family:'Caveat',cursive; font-weight:700; font-size:22px; color:#3a2c18;
+  background:#fdf6df; border:2px solid #b8923f; border-radius:6px; padding:0 16px;
+  box-shadow:0 3px 6px rgba(0,0,0,.25); transform:rotate(-1deg);
+}
+.starburst { position:absolute; top:30%; left:50%; pointer-events:none; z-index:8; }
+.starburst span { position:absolute; font-size:26px; animation:fly 1s ease-out forwards; }
+@keyframes fly { from { transform:translate(0,0) scale(.4) rotate(0); opacity:1; } to { transform:translate(var(--dx), var(--dy)) scale(1.25) rotate(60deg); opacity:0; } }
+
+.controls { position:relative; z-index:3; margin-top:44px; display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
+.levels { display:flex; gap:8px; align-items:center; }
+.levels .lab { font-family:'Caveat',cursive; font-weight:700; font-size:22px; color:#5d4426; }
+.lvl {
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:14px; cursor:pointer;
+  color:#5d4426; background:#fdf6df; border:3px solid #d9bd8a; border-radius:99px;
+  padding:8px 16px; transition:all .15s;
+}
+.lvl.on { background:var(--accent); border-color:var(--accent-d); color:#fff; box-shadow:0 3px 0 var(--accent-dd); }
+.btn { font-family:'Fredoka',sans-serif; font-weight:700; font-size:17px; cursor:pointer; border-radius:14px; padding:12px 24px; transition:transform .12s, box-shadow .12s; }
+.btn:disabled { opacity:.55; cursor:wait; }
+.btn.red { color:#fff; background:#e2574c; border:3px solid #b03a31; box-shadow:0 5px 0 #8f2d26; }
+.btn.red:hover:not(:disabled) { transform:translateY(3px); box-shadow:0 2px 0 #8f2d26; }
+.btn.blue { color:#fff; background:#3b6ea5; border:3px solid #2c4f78; box-shadow:0 5px 0 #223d5c; }
+.btn.blue:hover:not(:disabled) { transform:translateY(3px); box-shadow:0 2px 0 #223d5c; }
+.answerrow { position:relative; z-index:3; display:flex; gap:14px; margin-top:16px; flex-wrap:wrap; }
+.answer {
+  flex:1; min-width:260px;
+  font-family:'Nunito',sans-serif; font-weight:700; font-size:17px; color:#3a2c18;
+  background:#fdf6df; border:3px solid #8a5a33; border-radius:14px;
+  padding:13px 18px; box-shadow:0 5px 0 #6b4423;
+}
+.answer:focus { outline:none; border-color:var(--accent); }
+.answer::placeholder { color:#b3a27f; }
+
+.nokey {
+  display:none; position:relative; z-index:4; max-width:560px; margin:60px auto; text-align:center;
+  background:#fdf6df; border:3px solid #c94f44; border-radius:16px;
+  padding:26px 30px; box-shadow:0 8px 0 #a33d34, 0 16px 32px rgba(0,0,0,.25);
+}
+.nokey h2 { font-family:'Fredoka',sans-serif; color:#c94f44; font-size:22px; }
+.nokey p { font-size:15px; color:#8a7658; margin:10px 0 16px; }
+body.senzachiave .nokey { display:block; }
+body.senzachiave .scene, body.senzachiave .controls, body.senzachiave .answerrow { display:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a class="back" href="../index.html">← corridoio</a>
+    <div class="roomtitle">Aula di Arte</div>
+    <div class="score" id="score">★ <b id="pts">0</b> punti</div>
+  </div>
+
+  <svg class="clock" width="60" height="60" viewBox="0 0 60 60">
+    <circle cx="30" cy="30" r="26" fill="#fff" stroke="#6b4423" stroke-width="5"/>
+    <line class="hand slow" x1="30" y1="30" x2="30" y2="16" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+    <line class="hand" x1="30" y1="30" x2="42" y2="30" stroke="#e2574c" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="30" cy="30" r="2.5" fill="#333"/>
+  </svg>
+  <div class="poster">
+    <svg width="70" height="42" viewBox="0 0 70 42">
+      <rect width="70" height="42" rx="3" fill="#cde4f0"/>
+      <circle cx="52" cy="12" r="7" fill="#f2d98c"/>
+      <path d="M0 34 Q18 18 34 30 Q50 40 70 26 L70 42 L0 42 Z" fill="#7fb37f"/>
+    </svg>
+    <small>capolavoro... di chi?</small>
+  </div>
+
+  <div class="nokey">
+    <h2>Ops! Manca la chiave della scuola</h2>
+    <p>La Prof.ssa Storditella stava per aprirti... poi si è distratta. E comunque manca la tua chiave! Torna in corridoio e consegnala in segreteria.</p>
+    <a class="btn blue" style="text-decoration:none;" href="../index.html">VAI IN SEGRETERIA</a>
+  </div>
+
+  <div class="scene">
+    <div class="board" id="board">
+      <div class="boardtitle">Arte — trova l'errore!</div>
+      <div class="chalktext" id="chalktext">Premi «NUOVA SPIEGAZIONE», tesoro. Ti racconterò dell'arte, dei colori, dei grandi pittori... se non mi distraggo. Cosa stavo dicendo?</div>
+      <div class="chalkspin"></div>
+      <div class="tray">
+        <div class="chalkpiece"></div><div class="chalkpiece p"></div><div class="chalkpiece y"></div><div class="eraser"></div>
+      </div>
+      <div class="easel">
+        <svg width="100" height="130" viewBox="0 0 100 130">
+          <line x1="20" y1="126" x2="50" y2="16" stroke="#6b4423" stroke-width="6" stroke-linecap="round"/>
+          <line x1="80" y1="126" x2="50" y2="16" stroke="#6b4423" stroke-width="6" stroke-linecap="round"/>
+          <line x1="50" y1="70" x2="50" y2="126" stroke="#6b4423" stroke-width="5" stroke-linecap="round"/>
+          <rect x="22" y="26" width="56" height="44" rx="3" fill="#fdf6df" stroke="#b8923f" stroke-width="3"/>
+          <path d="M30 58 Q42 40 52 52 Q62 62 72 48" stroke="#c75b9b" stroke-width="4" fill="none" stroke-linecap="round"/>
+          <circle cx="38" cy="38" r="5" fill="#f2d98c"/>
+          <rect x="26" y="72" width="48" height="6" rx="3" fill="#8a5a33"/>
+        </svg>
+        <span class="drip" style="left:34px; top:64px; background:#c75b9b;"></span>
+        <span class="drip" style="left:56px; top:64px; background:#3b6ea5; animation-delay:-2.2s;"></span>
+      </div>
+    </div>
+
+    <div class="profcol" id="profcol">
+      <div class="bubble" id="bubble">Oh, ciao caro... io sono la Prof.ssa Storditella. Amo l'arte, i colori e... oh, guarda che bella nuvola!</div>
+      <svg class="prof" viewBox="0 0 190 260">
+        <ellipse cx="95" cy="250" rx="60" ry="9" fill="rgba(0,0,0,.25)"/>
+        <path d="M60 196 Q60 244 70 252 h14 Q80 224 84 200 Z" fill="#8a6a9e"/>
+        <path d="M130 196 Q130 244 120 252 h-14 Q110 224 106 200 Z" fill="#8a6a9e"/>
+        <ellipse cx="77" cy="252" rx="16" ry="7" fill="#c75b9b"/>
+        <ellipse cx="113" cy="252" rx="16" ry="7" fill="#c75b9b"/>
+        <path d="M50 204 Q48 122 95 118 Q142 122 140 204 Q118 214 95 214 Q72 214 50 204 Z" fill="#a486b8"/>
+        <path d="M62 148 h66 l-6 58 q-27 10 -54 0 Z" fill="#e8dcc0"/>
+        <circle cx="80" cy="168" r="5" fill="#c75b9b"/>
+        <circle cx="104" cy="186" r="7" fill="#3b6ea5" opacity=".8"/>
+        <circle cx="92" cy="176" r="4" fill="#e5b93c"/>
+        <path d="M38 192 Q28 150 56 132 L66 146 Q46 162 52 190 Z" fill="#a486b8"/>
+        <path d="M152 192 Q170 142 132 128 L126 146 Q150 156 140 188 Z" fill="#a486b8"/>
+        <circle cx="146" cy="198" r="9" fill="#ffd9b3"/>
+        <path d="M128 186 q-4 -18 12 -22 q18 -2 20 12 q2 12 -12 16 q-16 2 -20 -6 Z" fill="#c8a86a"/>
+        <circle cx="138" cy="176" r="3.5" fill="#c94f44"/>
+        <circle cx="148" cy="172" r="3.5" fill="#3b6ea5"/>
+        <circle cx="156" cy="178" r="3.5" fill="#e5b93c"/>
+        <circle cx="95" cy="74" r="40" fill="#ffd9b3"/>
+        <path d="M56 62 Q52 26 95 24 Q138 26 134 62 Q126 40 95 38 Q64 40 56 62 Z" fill="#7a4a2a"/>
+        <circle cx="95" cy="18" r="14" fill="#7a4a2a"/>
+        <rect x="102" y="0" width="6" height="26" rx="3" fill="#c75b9b" transform="rotate(28 105 13)"/>
+        <path d="M54 30 Q72 12 95 14 L95 26 Q72 24 58 40 Z" fill="#c75b9b"/>
+        <circle cx="58" cy="32" r="7" fill="#c75b9b"/>
+        <path d="M70 66 q6 -7 12 0 M108 66 q6 -7 12 0" stroke="#2e2645" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <path d="M74 60 q6 -4 10 -1 M116 59 q-6 -4 -10 -1" stroke="#7a4a2a" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M84 94 Q95 102 108 92" stroke="#2e2645" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <circle cx="70" cy="82" r="5" fill="rgba(199,91,155,.35)"/>
+        <circle cx="121" cy="82" r="5" fill="rgba(199,91,155,.35)"/>
+      </svg>
+      <div><span class="nameplate">Prof.ssa Storditella</span></div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="levels">
+      <span class="lab">Classe:</span>
+      <button class="lvl on" data-lvl="facile">1ª – 2ª</button>
+      <button class="lvl" data-lvl="media">3ª – 4ª</button>
+      <button class="lvl" data-lvl="difficile">5ª e oltre</button>
+    </div>
+    <button class="btn blue" id="speak">🔊 ASCOLTA</button>
+    <button class="btn red" id="nuova" style="margin-left:auto;">NUOVA SPIEGAZIONE</button>
+  </div>
+
+  <div class="answerrow">
+    <input class="answer" id="answer" placeholder="Cosa non torna nel quadro? Scrivi qui la tua correzione..." autocomplete="off">
+    <button class="btn red" id="verifica">HO TROVATO L'ERRORE!</button>
+  </div>
+
+  <svg class="plant" width="70" height="90" viewBox="0 0 70 90">
+    <path d="M22 60 h26 l-4 28 h-18 Z" fill="#c0603f"/>
+    <path d="M35 60 Q20 30 8 26 Q26 24 36 44 Q40 18 58 12 Q46 34 40 58 Z" fill="#4d8f4d"/>
+    <path d="M35 58 Q35 34 35 20 Q44 36 38 58 Z" fill="#63a863"/>
+  </svg>
+</div>
+
+<script type="module">
+import { GoogleGenAI } from 'https://esm.sh/@google/genai@0.14.1';
+
+const apiKey = localStorage.getItem('professoracci_apikey') || '';
+if (!apiKey) document.body.classList.add('senzachiave');
+
+const MODEL = 'gemini-2.5-flash-lite';
+const RECENTI_KEY = 'stor_recenti';
+const VOCE = { pitch:1.2, rate:0.95 };
+let livello = 'facile';
+let lezione = null;
+let punti = +(localStorage.getItem('professoracci_punti') || 0);
+let erroriRecenti = JSON.parse(sessionStorage.getItem(RECENTI_KEY) || '[]');
+let occupato = false;
+
+const $ = id => document.getElementById(id);
+$('pts').textContent = punti;
+
+const PERSONA = `Sei la Prof.ssa Storditella, insegnante di arte in una scuola immaginaria per bambini.
+CARATTERE: sognante, dolce e distrattissima. Ti incanti a metà frase, usi spesso i puntini di sospensione, ti perdi in dettagli poetici ("che meraviglia quel blu..."). Sei convinta di ricordare tutto perfettamente. NON ammetti mai spontaneamente di sbagliare. Quando un bambino ti corregge giustamente, ammetti l'errore a malincuore con scuse buffe ("ero distratta da quel tramonto...", "il pennello ha deciso da solo!", "i colori si sono confusi tra loro!").
+LINGUA: scrivi SOLO in italiano. Mai una parola in inglese.
+PUBBLICO: bambini della scuola primaria. Frasi brevi, lessico semplice, tono giocoso, mai spaventoso o umiliante.
+REGOLA D'ORO: rispondi SOLO con il JSON richiesto, senza testo prima o dopo.`;
+
+const LIVELLI = {
+  facile:    'bambini di 6-7 anni (classe 1ª-2ª): errori evidentissimi e buffi sui colori e sulle forme (es. mescolando blu e giallo viene il rosso, il sole si colora di verde, il cerchio ha gli angoli)',
+  media:     'bambini di 8-9 anni (classe 3ª-4ª): errori su colori primari e secondari, materiali e tecniche (es. l’arcobaleno ha due colori, si dipinge sulla tela con la scopa, la creta si scolpisce con la gomma)',
+  difficile: 'bambini di 10-12 anni (classe 5ª e prima media): errori più sottili su artisti, opere famose e tecniche (es. la Gioconda dipinta da Picasso, Van Gogh famoso per i cerchi neri, gli affreschi dipinti sui vetri)'
+};
+
+async function chiamaGemini(prompt, temperature) {
+  const ai = new GoogleGenAI({ apiKey });
+  const res = await ai.models.generateContent({
+    model: MODEL, contents: prompt,
+    config: { temperature, maxOutputTokens: 800 }
+  });
+  const testo = res.text ?? res.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+  const m = testo.match(/\{[\s\S]*\}/);
+  if (!m) throw new Error('Risposta senza JSON: ' + testo.slice(0, 120));
+  return JSON.parse(m[0]);
+}
+
+async function nuovaSpiegazione() {
+  if (occupato) return;
+  occupato = true;
+  speechSynthesis.cancel();
+  setProf('');
+  bolla('Un momento, caro... stavo pensando a... com’era? Ah sì, la lezione!');
+  $('board').classList.add('loading');
+  $('chalktext').innerHTML = '';
+  $('answer').value = '';
+  $('nuova').disabled = true; $('verifica').disabled = true;
+
+  const prompt = `${PERSONA}
+
+COMPITO: scrivi una breve spiegazione di arte (2-4 frasi, massimo 60 parole) rivolta a ${LIVELLI[livello]}.
+La spiegazione deve contenere ESATTAMENTE UN errore artistico deliberato e riconoscibile, raccontato con dolcezza sognante da professoressa convinta di ricordare benissimo. Tutto il resto deve essere corretto.
+NON usare questi errori già fatti di recente: ${erroriRecenti.length ? erroriRecenti.join('; ') : 'nessuno'}.
+
+Rispondi SOLO con questo JSON:
+{"spiegazione":"il testo che scrivi alla lavagna, errore incluso","errore":"la parte sbagliata, citata esatta","correzione":"la versione corretta","indizio":"un piccolo aiuto senza svelare la soluzione"}`;
+
+  try {
+    lezione = await chiamaGemini(prompt, 1.0);
+    erroriRecenti = [...erroriRecenti.slice(-7), lezione.errore];
+    sessionStorage.setItem(RECENTI_KEY, JSON.stringify(erroriRecenti));
+    bolla('Ecco, tesoro... una lezione dipinta con cura. È tutta giusta, me la ricordo... benissimo. Credo.');
+    typewrite(lezione.spiegazione, () => { parla(lezione.spiegazione); });
+  } catch (e) {
+    console.error(e);
+    const msg = /503|UNAVAILABLE/i.test(String(e)) ?
+      'Oh cielo, l’atelier è affollatissimo (server pieni)... riprova tra un momento, caro.' :
+      /429/.test(String(e)) ?
+      'Ho dipinto troppo! La mia tavolozza è stanca: aspetta un minutino e riprova.' :
+      'Il gesso si è... oh, dov’è finito? (' + String(e).slice(0, 90) + ')';
+    bolla(msg);
+    $('chalktext').textContent = 'Ops... la lavagna è rimasta un quadro bianco. Riprova!';
+  }
+  $('board').classList.remove('loading');
+  $('nuova').disabled = false; $('verifica').disabled = false;
+  occupato = false;
+}
+
+async function verifica() {
+  if (occupato) return;
+  if (!lezione) { bolla('Prima chiedimi una spiegazione, piccolo artista!'); return; }
+  const risposta = $('answer').value.trim();
+  if (!risposta) { bolla('La casella è bianca come una tela nuova! Scrivi la tua correzione, caro.'); return; }
+  occupato = true;
+  $('verifica').disabled = true; $('nuova').disabled = true;
+  bolla('Vediamo... dove ho messo gli occhiali? Ah, li ho in testa...');
+
+  const prompt = `${PERSONA}
+
+Nella tua spiegazione c'era questo errore deliberato: "${lezione.errore}" (versione corretta: "${lezione.correzione}").
+Il bambino ha risposto: "${risposta}"
+
+Valuta la risposta:
+- "bravo" se ha individuato l'errore o scritto la correzione giusta (anche con parole sue o piccoli errori di battitura)
+- "quasi" se ha intuito la zona giusta ma la correzione è incompleta o imprecisa
+- "sbagliato" se non ha trovato l'errore
+
+Poi scrivi un commento nel tuo personaggio (2-3 frasi): se "bravo" ammetti l'errore a malincuore con una scusa buffa da artista distratta e fai i complimenti; se "quasi" incoraggia e dai questo indizio: "${lezione.indizio}"; se "sbagliato" gongola con dolcezza e invita a riprovare con l'indizio.
+
+Rispondi SOLO con questo JSON:
+{"esito":"bravo|quasi|sbagliato","commento":"..."}`;
+
+  try {
+    const v = await chiamaGemini(prompt, 0.7);
+    if (v.esito === 'bravo') {
+      aggiornaPunti(10);
+      setProf('sconfitto');
+      stelle();
+      evidenziaErrore();
+      bolla('✅ ' + v.commento + ' (+10 punti!)');
+      lezione = null;
+    } else if (v.esito === 'quasi') {
+      aggiornaPunti(2);
+      setProf('');
+      bolla('🤏 ' + v.commento + ' (+2 punti, riprova!)');
+    } else {
+      setProf('felice');
+      bolla('❌ ' + v.commento);
+      setTimeout(() => setProf(''), 3500);
+    }
+    parla(v.commento);
+  } catch (e) {
+    console.error(e);
+    bolla('Il registro è finito sotto un barattolo di tempera! Riprova a consegnarmi la risposta.');
+  }
+  $('verifica').disabled = false; $('nuova').disabled = false;
+  occupato = false;
+}
+
+let twTimer = null;
+function typewrite(testo, fine) {
+  clearInterval(twTimer);
+  const el = $('chalktext');
+  let i = 0;
+  twTimer = setInterval(() => {
+    i++;
+    el.innerHTML = testo.slice(0, i) + '<span class="chalkcursor"></span>';
+    if (i >= testo.length) {
+      clearInterval(twTimer);
+      el.textContent = testo;
+      if (fine) fine();
+    }
+  }, 32);
+}
+function evidenziaErrore() {
+  if (!lezione) return;
+  const el = $('chalktext');
+  const t = el.textContent;
+  const idx = t.indexOf(lezione.errore);
+  if (idx < 0) return;
+  el.innerHTML = t.slice(0, idx) + '<span class="evid">' + lezione.errore + '</span>' + t.slice(idx + lezione.errore.length)
+    + '  <span class="evid" style="font-size:.85em;">→ ' + lezione.correzione + '</span>';
+}
+function bolla(t) {
+  const b = $('bubble');
+  b.textContent = t;
+  b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
+}
+function setProf(stato) {
+  const p = $('profcol');
+  p.classList.remove('felice', 'sconfitto');
+  if (stato) p.classList.add(stato);
+}
+function aggiornaPunti(n) {
+  punti += n;
+  localStorage.setItem('professoracci_punti', punti);
+  $('pts').textContent = punti;
+  const s = $('score');
+  s.classList.remove('pop'); void s.offsetWidth; s.classList.add('pop');
+}
+function stelle() {
+  const box = document.createElement('div');
+  box.className = 'starburst';
+  for (let i = 0; i < 8; i++) {
+    const s = document.createElement('span');
+    s.textContent = ['🎨', '✨', '🌟'][i % 3];
+    const a = (i / 8) * Math.PI * 2;
+    s.style.setProperty('--dx', Math.cos(a) * 110 + 'px');
+    s.style.setProperty('--dy', Math.sin(a) * 110 - 40 + 'px');
+    box.appendChild(s);
+  }
+  $('profcol').appendChild(box);
+  setTimeout(() => box.remove(), 1100);
+}
+
+function parla(testo) {
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(testo);
+  u.lang = 'it-IT'; u.pitch = VOCE.pitch; u.rate = VOCE.rate;
+  const voce = speechSynthesis.getVoices().find(v => v.lang.startsWith('it'));
+  if (voce) u.voice = voce;
+  speechSynthesis.speak(u);
+}
+speechSynthesis.getVoices();
+
+document.querySelectorAll('.lvl').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.lvl').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  livello = b.dataset.lvl;
+}));
+$('nuova').addEventListener('click', nuovaSpiegazione);
+$('verifica').addEventListener('click', verifica);
+$('answer').addEventListener('keydown', e => { if (e.key === 'Enter') verifica(); });
+$('speak').addEventListener('click', () => {
+  const t = $('chalktext').textContent;
+  if (t) parla(t);
+});
+
+for (let i = 0; i < 14; i++) {
+  const m = document.createElement('span');
+  m.className = 'mote';
+  const s = 1.5 + Math.random() * 3;
+  m.style.width = m.style.height = s + 'px';
+  m.style.left = Math.random() * 100 + 'vw';
+  m.style.top = 5 + Math.random() * 50 + 'vh';
+  m.style.animationDuration = 7 + Math.random() * 10 + 's';
+  m.style.animationDelay = -Math.random() * 12 + 's';
+  document.body.appendChild(m);
+}
+</script>
+</body>
+</html>

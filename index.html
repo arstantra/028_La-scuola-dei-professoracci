@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Scuola dei Professoracci</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;700;800;900&family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="assets/professoracci.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+/* ============ CORRIDOIO ============ */
+body {
+  font-family:'Nunito',sans-serif;
+  min-height:100vh;
+  background:
+    /* luce dalle finestre */
+    radial-gradient(ellipse 55% 40% at 15% 0%, rgba(255,236,180,.35), transparent 70%),
+    radial-gradient(ellipse 55% 40% at 85% 0%, rgba(255,236,180,.28), transparent 70%),
+    /* parete */
+    linear-gradient(#e9d5ac 0 58%, #d9bd8a 58% 60%, #cfa96f 60%);
+  overflow-x:hidden;
+}
+/* pavimento a doghe */
+body::after {
+  content:""; position:fixed; left:0; right:0; bottom:0; height:34vh; z-index:-1;
+  background:
+    linear-gradient(rgba(0,0,0,.18), transparent 30%),
+    repeating-linear-gradient(90deg, #a9743f 0 110px, #9a652f 110px 116px);
+}
+
+.wrap { max-width:1080px; margin:0 auto; padding:18px 24px 70px; position:relative; }
+
+/* ============ LAMPADE ============ */
+.lamps { display:flex; justify-content:space-around; height:110px; pointer-events:none; }
+.lamp { position:relative; animation:sway 5.5s ease-in-out infinite; transform-origin:top center; }
+.lamp:nth-child(2) { animation-delay:-1.8s; }
+.lamp:nth-child(3) { animation-delay:-3.4s; }
+@keyframes sway { 0%,100%{transform:rotate(-2.2deg);} 50%{transform:rotate(2.2deg);} }
+.lamp .cord { width:4px; height:52px; background:#4a3524; margin:0 auto; }
+.lamp .shade {
+  width:76px; height:34px; border-radius:0 0 40px 40px / 0 0 30px 30px;
+  background:linear-gradient(#2e5d47,#234736); position:relative;
+  box-shadow:inset 0 -5px 8px rgba(255,240,190,.4);
+}
+.lamp .glow {
+  position:absolute; top:30px; left:50%; transform:translateX(-50%);
+  width:150px; height:120px; pointer-events:none;
+  background:radial-gradient(ellipse at top, rgba(255,238,170,.4), transparent 70%);
+}
+
+/* ============ INSEGNA ============ */
+.sign { text-align:center; position:relative; margin:-18px 0 8px; }
+.sign .board {
+  display:inline-block; position:relative;
+  background:linear-gradient(160deg,#8a5a33,#6b4423);
+  border:5px solid #4a2d15; border-radius:14px;
+  padding:20px 46px 16px;
+  box-shadow:0 12px 30px rgba(0,0,0,.35), inset 0 0 26px rgba(0,0,0,.3);
+  animation:signswing 6s ease-in-out infinite; transform-origin:top center;
+}
+@keyframes signswing { 0%,100%{transform:rotate(-.7deg);} 50%{transform:rotate(.7deg);} }
+.sign h1 {
+  font-family:'Fredoka',sans-serif; font-weight:700; font-size:clamp(28px,4.6vw,46px);
+  color:#ffe9b3; text-shadow:0 3px 0 rgba(0,0,0,.35); letter-spacing:1px; line-height:1.05;
+}
+.sign .sub {
+  font-family:'Caveat',cursive; font-size:clamp(18px,2.4vw,26px); font-weight:600;
+  color:#f2d98c; margin-top:2px;
+}
+.sign .nail { position:absolute; top:-7px; width:10px; height:10px; border-radius:50%;
+  background:radial-gradient(circle at 35% 35%, #ddd, #666); box-shadow:0 2px 3px rgba(0,0,0,.4); }
+.sign .nail.l{left:24px;} .sign .nail.r{right:24px;}
+
+/* post-it in bacheca */
+.note {
+  position:absolute; z-index:3; padding:10px 14px 12px; max-width:150px;
+  font-family:'Caveat',cursive; font-size:19px; font-weight:600; line-height:1.15;
+  color:#4a3a10; background:#fff3a6; box-shadow:0 5px 12px rgba(0,0,0,.22);
+  animation:notewave 4s ease-in-out infinite;
+}
+@keyframes notewave { 0%,100%{transform:rotate(var(--r,-4deg));} 50%{transform:rotate(calc(var(--r,-4deg) + 2deg));} }
+.note.pink { background:#ffd1e0; }
+.note::before {
+  content:""; position:absolute; top:-8px; left:50%; transform:translateX(-50%) rotate(45deg);
+  width:14px; height:14px; background:rgba(200,60,60,.9); border-radius:50% 50% 50% 0;
+  box-shadow:0 2px 3px rgba(0,0,0,.3);
+}
+
+/* ============ SEGRETERIA ============ */
+.segreteria {
+  max-width:640px; margin:26px auto 40px; position:relative;
+  background:#fdf6df; border:3px solid #8a5a33; border-radius:16px;
+  box-shadow:0 8px 0 #6b4423, 0 16px 32px rgba(0,0,0,.25);
+  padding:18px 22px 20px;
+  overflow:hidden;
+}
+/* saracinesca dello sportello */
+.shutter {
+  position:absolute; inset:0; z-index:10;
+  background:repeating-linear-gradient(180deg,#c8a86a 0 14px,#b8965a 14px 16px,#d4b478 16px 18px);
+  box-shadow:inset 0 -6px 14px rgba(0,0,0,.25);
+  transform:translateY(-101%);
+  transition:transform .65s cubic-bezier(.6,0,.3,1);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+}
+.segreteria.closed .shutter { transform:translateY(0); }
+.shutter .handle {
+  position:absolute; bottom:8px; left:50%; transform:translateX(-50%);
+  width:70px; height:8px; border-radius:99px; background:#6b4423;
+  box-shadow:0 2px 3px rgba(0,0,0,.35);
+}
+.closedsign {
+  font-family:'Caveat',cursive; font-weight:700; font-size:24px; color:#3a2c18;
+  background:#fdf6df; border:2px solid #8a5a33; border-radius:8px;
+  padding:4px 20px; transform:rotate(-1.5deg);
+  box-shadow:0 4px 10px rgba(0,0,0,.25);
+  opacity:0; transition:opacity .3s .45s;
+}
+.segreteria.closed .closedsign { opacity:1; }
+.knock {
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:14px; letter-spacing:.5px;
+  color:#fdf6df; cursor:pointer;
+  background:#8a5a33; border:2px solid #6b4423; border-radius:99px;
+  padding:7px 20px; box-shadow:0 3px 0 #4a2d15;
+  transition:transform .12s, box-shadow .12s;
+  opacity:0; transition:opacity .3s .55s, transform .12s, box-shadow .12s;
+}
+.segreteria.closed .knock { opacity:1; }
+.knock:hover { transform:translateY(2px); box-shadow:0 1px 0 #4a2d15; }
+.segreteria.attract { animation:attract .5s ease 3; }
+@keyframes attract { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-7px);} 75%{transform:translateX(7px);} }
+.segreteria h2 {
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:19px; color:#5d4426;
+  display:flex; align-items:center; gap:10px;
+}
+.segreteria h2 .dot { width:12px; height:12px; border-radius:50%; background:#c94f44; box-shadow:0 0 0 3px rgba(201,79,68,.25); transition:all .3s; }
+.segreteria.ok h2 .dot { background:#4d8f4d; box-shadow:0 0 0 3px rgba(77,143,77,.3); }
+.segreteria p { font-size:14px; color:#8a7658; margin-top:3px; }
+.keyrow { display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
+.keyrow input {
+  flex:1; min-width:220px; font-family:'Nunito',sans-serif; font-weight:700; font-size:15px;
+  color:#3a2c18; background:#fff; border:3px solid #d9bd8a; border-radius:12px; padding:11px 15px;
+}
+.keyrow input:focus { outline:none; border-color:#8a5a33; }
+.keyrow button {
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:16px; color:#fff; cursor:pointer;
+  background:#3b6ea5; border:3px solid #2c4f78; border-radius:12px; padding:11px 22px;
+  box-shadow:0 4px 0 #223d5c; transition:transform .12s, box-shadow .12s;
+}
+.keyrow button:hover { transform:translateY(2px); box-shadow:0 2px 0 #223d5c; }
+.keymsg { font-family:'Caveat',cursive; font-size:20px; font-weight:600; color:#4d8f4d; margin-top:8px; min-height:24px; }
+.keymsg.err { color:#c94f44; }
+
+/* ============ PORTE ============ */
+.doors {
+  display:grid; grid-template-columns:repeat(3, 1fr); gap:34px 30px;
+  margin-top:10px;
+}
+@media (max-width:820px){ .doors{ grid-template-columns:repeat(2,1fr);} }
+@media (max-width:540px){ .doors{ grid-template-columns:1fr; max-width:300px; margin-inline:auto;} }
+
+.doorcard { text-decoration:none; display:block; text-align:center; position:relative; }
+.doorframe {
+  position:relative; margin:0 auto; width:100%; max-width:230px;
+  background:linear-gradient(160deg,#9a6b3d,#6b4423);
+  border-radius:16px 16px 4px 4px;
+  padding:12px 12px 0;
+  box-shadow:0 14px 28px rgba(0,0,0,.3);
+  perspective:700px;
+}
+/* targa materia sopra la porta */
+.subjectplate {
+  position:absolute; top:-15px; left:50%; transform:translateX(-50%) rotate(-1.5deg); z-index:6;
+  font-family:'Fredoka',sans-serif; font-weight:700; font-size:14px; letter-spacing:2px;
+  color:#fff; background:var(--c); border:2.5px solid rgba(0,0,0,.25);
+  border-radius:8px; padding:4px 16px; white-space:nowrap;
+  box-shadow:0 4px 8px rgba(0,0,0,.3);
+}
+.door {
+  position:relative; height:290px; border-radius:10px 10px 0 0;
+  background:linear-gradient(165deg, var(--c), color-mix(in srgb, var(--c) 68%, #000));
+  box-shadow:inset 0 0 0 4px rgba(0,0,0,.18), inset 0 0 26px rgba(0,0,0,.22);
+  transform-origin:left center;
+  transition:transform .45s cubic-bezier(.2,.8,.3,1.1);
+  overflow:visible;
+}
+.doorcard:hover .door, .doorcard:focus-visible .door { transform:rotateY(-16deg); }
+/* pannelli */
+.door .panel {
+  position:absolute; left:18%; right:18%; border-radius:6px;
+  box-shadow:inset 0 0 0 3px rgba(0,0,0,.2), inset 0 3px 6px rgba(255,255,255,.12);
+}
+.door .panel.top { top:52%; height:18%; }
+.door .panel.bot { top:74%; height:16%; }
+.door .knob {
+  position:absolute; right:12%; top:58%; width:15px; height:15px; border-radius:50%;
+  background:radial-gradient(circle at 35% 35%, #ffe9b3, #b8923f);
+  box-shadow:0 2px 4px rgba(0,0,0,.4);
+}
+/* oblò con professore */
+.porthole {
+  position:absolute; top:26px; left:50%; transform:translateX(-50%);
+  width:110px; height:110px; border-radius:50%;
+  background:radial-gradient(circle at 40% 30%, #34495c, #1d2b38 75%);
+  box-shadow:inset 0 0 16px rgba(0,0,0,.6), 0 0 0 7px color-mix(in srgb, var(--c) 55%, #000);
+  overflow:hidden;
+}
+.porthole svg {
+  position:absolute; left:50%; bottom:-12px; transform:translateX(-50%) translateY(16px);
+  width:96px; transition:transform .4s cubic-bezier(.2,.8,.3,1.2);
+  animation:peek 3.6s ease-in-out infinite;
+}
+@keyframes peek { 0%,100%{margin-bottom:0;} 50%{margin-bottom:6px;} }
+.doorcard:hover .porthole svg { transform:translateX(-50%) translateY(2px) rotate(-4deg) scale(1.06); }
+/* targhetta nome */
+.nameplate {
+  position:absolute; left:50%; transform:translateX(-50%) rotate(.8deg); top:155px; z-index:4;
+  font-family:'Caveat',cursive; font-weight:700; font-size:21px; color:#3a2c18;
+  background:#fdf6df; border:2px solid #b8923f; border-radius:6px;
+  padding:1px 14px; white-space:nowrap; box-shadow:0 3px 6px rgba(0,0,0,.3);
+}
+/* zerbino */
+.mat {
+  width:64%; height:14px; margin:0 auto; border-radius:3px;
+  background:repeating-linear-gradient(90deg,#b03a31 0 10px,#963028 10px 20px);
+  box-shadow:0 3px 6px rgba(0,0,0,.25);
+}
+.doorlabel {
+  margin-top:10px; font-family:'Fredoka',sans-serif; font-weight:600; font-size:15px;
+  color:#5d4426;
+}
+/* cartello in allestimento */
+.lock {
+  position:absolute; z-index:5; top:120px; left:50%; transform:translateX(-50%) rotate(-6deg);
+  font-family:'Fredoka',sans-serif; font-weight:700; font-size:12px; letter-spacing:1px;
+  color:#5d4426; background:#f2d98c; border:2px dashed #8a5a33; border-radius:6px;
+  padding:5px 10px; box-shadow:0 4px 8px rgba(0,0,0,.3); white-space:nowrap;
+}
+.doorcard.locked { filter:saturate(.55); }
+.doorcard.locked .door { cursor:not-allowed; }
+.doorcard.shake .doorframe { animation:attract .4s ease 2; }
+/* porta-cantiere: crea il tuo professoraccio */
+.doorcard.crea .door {
+  background:repeating-linear-gradient(45deg,#c8a86a 0 22px,#b8965a 22px 44px);
+  box-shadow:inset 0 0 0 4px rgba(0,0,0,.15), inset 0 0 26px rgba(0,0,0,.18);
+}
+.doorcard.crea .porthole { background:radial-gradient(circle at 40% 30%, #4a5c6b, #2b3b47 75%); }
+.doorcard.crea .porthole .plus {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-family:'Fredoka',sans-serif; font-weight:700; font-size:54px; color:#ffe9b3;
+  text-shadow:0 3px 0 rgba(0,0,0,.35);
+}
+/* targhetta "aula custom" */
+.custombadge {
+  position:absolute; z-index:5; top:196px; left:50%; transform:translateX(-50%) rotate(2deg);
+  font-family:'Fredoka',sans-serif; font-weight:700; font-size:11px; letter-spacing:1px;
+  color:#fff; background:#4d8f4d; border:2px solid #3a6f3a; border-radius:6px;
+  padding:3px 10px; box-shadow:0 3px 6px rgba(0,0,0,.3); white-space:nowrap;
+}
+
+/* polvere nella luce */
+.mote { position:absolute; border-radius:50%; background:rgba(255,244,200,.75); pointer-events:none; animation:drift linear infinite; }
+@keyframes drift { 0%{transform:translateY(0);opacity:0;} 15%{opacity:.8;} 85%{opacity:.35;} 100%{transform:translateY(-110px) translateX(30px);opacity:0;} }
+
+/* modalità tranquilla: meno stimoli visivi */
+body.calma .mote { display:none; }
+body.calma .lamp, body.calma .sign .board, body.calma .note,
+body.calma .porthole svg { animation:none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .mote { display:none; }
+  .lamp, .sign .board, .note, .porthole svg { animation:none !important; }
+}
+.calmbtn {
+  position:fixed; right:16px; bottom:14px; z-index:20;
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:13px; cursor:pointer;
+  color:#5d4426; background:#fdf6df; border:3px solid #d9bd8a; border-radius:99px;
+  padding:7px 14px; transition:all .15s; box-shadow:0 4px 10px rgba(0,0,0,.2);
+}
+.calmbtn.on { background:#4d8f4d; border-color:#3a6f3a; color:#fff; }
+
+footer {
+  text-align:center; margin-top:56px;
+  font-family:'Caveat',cursive; font-size:22px; font-weight:600; color:#7a6340;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="lamps">
+    <div class="lamp"><div class="cord"></div><div class="shade"></div><div class="glow"></div></div>
+    <div class="lamp"><div class="cord"></div><div class="shade"></div><div class="glow"></div></div>
+    <div class="lamp"><div class="cord"></div><div class="shade"></div><div class="glow"></div></div>
+  </div>
+
+  <div class="sign">
+    <div class="board">
+      <span class="nail l"></span><span class="nail r"></span>
+      <h1>LA SCUOLA DEI PROFESSORACCI</h1>
+      <div class="sub">dove i professori sbagliano... e tu li correggi!</div>
+    </div>
+    <div class="note" style="--r:-5deg; left:2%; top:8px;">Oggi: caccia grossa all'errore!</div>
+    <div class="note pink" style="--r:4deg; right:2%; top:14px;">Vietato fidarsi dei professori</div>
+  </div>
+
+  <div class="segreteria" id="segreteria">
+    <h2><span class="dot"></span> Segreteria — Chiave della scuola</h2>
+    <p>Incolla qui la tua chiave Google AI Studio: serve ai professori per inventare nuovi errori. Resta solo su questo computer.</p>
+    <div class="keyrow">
+      <input type="password" id="apikey" placeholder="AQ.............................." autocomplete="off">
+      <button id="savekey">CONSEGNA</button>
+    </div>
+    <div class="keymsg" id="keymsg"></div>
+    <div class="shutter">
+      <div class="closedsign">✓ Chiave consegnata — sportello chiuso</div>
+      <button class="knock" id="knock">TOC TOC — riapri lo sportello</button>
+      <div class="handle"></div>
+    </div>
+  </div>
+
+  <main class="doors" id="doors"></main>
+
+  <button class="calmbtn" id="calmbtn" title="Riduce le animazioni e gli stimoli visivi">🌿 modalità tranquilla</button>
+
+  <footer>— fine del corridoio · piano terra —</footer>
+</div>
+
+<script>
+/* ============ I PROFESSORACCI (config in assets/professoracci.js) ============ */
+const PX = window.Professoracci;
+const ORDINE = ['sgrammaticus', 'confusione', 'sbagliotti', 'terranova', 'bubbolo', 'storditella'];
+const PROFS = ORDINE.map(id => {
+  const c = PX.PROFS[id];
+  return { id: c.id, nome: c.nome, materia: c.materia, colore: c.tema.c,
+           href: 'aule/aula.html?prof=' + c.id, pronta: true, label: c.label, head: c.head };
+});
+/* professoracci custom creati dall'insegnante */
+PX.getCustomList().forEach(p => {
+  const c = PX.buildCustomConfig(p);
+  PROFS.push({ id: c.id, nome: c.nome, materia: c.materia, colore: c.tema.c,
+               href: 'aule/aula.html?prof=' + c.id, pronta: true, label: c.label,
+               head: c.head, custom: true });
+});
+
+/* ============ COSTRUZIONE PORTE ============ */
+const doorsEl = document.getElementById('doors');
+PROFS.forEach(p => {
+  const a = document.createElement('a');
+  a.className = 'doorcard' + (p.pronta ? '' : ' locked');
+  a.style.setProperty('--c', p.colore);
+  a.href = p.pronta ? p.href : '#';
+  a.dataset.id = p.id;
+  a.innerHTML = `
+    <div class="doorframe">
+      <span class="subjectplate" style="--c:${p.colore}">${p.materia}</span>
+      <div class="door" style="--c:${p.colore}">
+        <div class="porthole"><svg viewBox="0 0 96 96">${p.head}</svg></div>
+        <span class="nameplate">${p.nome}</span>
+        ${p.pronta ? '' : '<span class="lock">🔨 IN ALLESTIMENTO</span>'}
+        ${p.custom ? '<span class="custombadge">CREATA DA TE</span>' : ''}
+        <div class="panel top"></div>
+        <div class="panel bot"></div>
+        <div class="knob"></div>
+      </div>
+    </div>
+    <div class="mat"></div>
+    <div class="doorlabel">${p.label}</div>`;
+  a.addEventListener('click', e => {
+    if (!p.pronta) {
+      e.preventDefault();
+      a.classList.remove('shake'); void a.offsetWidth; a.classList.add('shake');
+      return;
+    }
+    if (!getKey()) {
+      e.preventDefault();
+      const s = document.getElementById('segreteria');
+      s.scrollIntoView({behavior:'smooth', block:'center'});
+      s.classList.remove('attract'); void s.offsetWidth; s.classList.add('attract');
+      setMsg('Prima consegna la chiave in segreteria!', true);
+    }
+  });
+  doorsEl.appendChild(a);
+});
+
+/* ============ PORTA-CANTIERE: CREA IL TUO PROFESSORACCIO ============ */
+{
+  const a = document.createElement('a');
+  a.className = 'doorcard crea';
+  a.style.setProperty('--c', '#8a5a33');
+  a.href = 'crea-professore.html';
+  a.innerHTML = `
+    <div class="doorframe">
+      <span class="subjectplate" style="--c:#8a5a33">LABORATORIO</span>
+      <div class="door" style="--c:#8a5a33">
+        <div class="porthole"><span class="plus">+</span></div>
+        <span class="nameplate">Prof. ???</span>
+        <span class="lock">🔨 COSTRUISCI QUI</span>
+        <div class="panel top"></div>
+        <div class="panel bot"></div>
+        <div class="knob"></div>
+      </div>
+    </div>
+    <div class="mat"></div>
+    <div class="doorlabel">Crea il tuo professoraccio</div>`;
+  doorsEl.appendChild(a);
+}
+
+/* ============ GESTIONE CHIAVE ============ */
+const KEY = 'professoracci_apikey';
+const getKey = () => localStorage.getItem(KEY) || '';
+const seg = document.getElementById('segreteria');
+const inp = document.getElementById('apikey');
+const msg = document.getElementById('keymsg');
+function setMsg(t, err) { msg.textContent = t; msg.classList.toggle('err', !!err); }
+function refresh() {
+  const k = getKey();
+  seg.classList.toggle('ok', !!k);
+  if (k) { inp.value = k; setMsg('Chiave consegnata: i professori ti aspettano.'); }
+}
+document.getElementById('savekey').addEventListener('click', () => {
+  const v = inp.value.trim();
+  if (v.length < 20) { setMsg('Questa chiave sembra troppo corta...', true); return; }
+  localStorage.setItem(KEY, v);
+  refresh();
+  setTimeout(() => seg.classList.add('closed'), 800);   // la saracinesca scende
+});
+document.getElementById('knock').addEventListener('click', () => {
+  seg.classList.remove('closed');                        // riapri in caso di necessità
+  setTimeout(() => inp.focus(), 650);
+});
+refresh();
+if (getKey()) seg.classList.add('closed');               // già consegnata: sportello chiuso
+
+/* ============ MODALITÀ TRANQUILLA ============ */
+PX.applicaCalma();
+const calmbtn = document.getElementById('calmbtn');
+function refreshCalm() { calmbtn.classList.toggle('on', PX.isCalma()); }
+calmbtn.addEventListener('click', () => { PX.setCalma(!PX.isCalma()); refreshCalm(); });
+refreshCalm();
+
+/* ============ POLVERE NELLA LUCE ============ */
+for (let i = 0; i < 18; i++) {
+  const m = document.createElement('span');
+  m.className = 'mote';
+  const s = 1.5 + Math.random() * 3;
+  m.style.width = m.style.height = s + 'px';
+  m.style.left = Math.random() * 100 + 'vw';
+  m.style.top = 5 + Math.random() * 40 + 'vh';
+  m.style.position = 'fixed';
+  m.style.animationDuration = 7 + Math.random() * 10 + 's';
+  m.style.animationDelay = -Math.random() * 12 + 's';
+  document.body.appendChild(m);
+}
+</script>
+</body>
+</html>

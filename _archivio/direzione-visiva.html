@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Scuola dei Professoracci — Direzione Visiva</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;700;800;900&family=Caveat:wght@400;600;700&family=Gochi+Hand&display=swap" rel="stylesheet">
+<style>
+/* ============ BASE ============ */
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background:#101216;
+  color:#eee;
+  font-family:'Nunito',sans-serif;
+  min-height:100vh;
+}
+
+/* ============ SWITCHER ============ */
+.switcher {
+  position:sticky; top:0; z-index:50;
+  display:flex; align-items:center; gap:14px;
+  padding:14px 22px;
+  background:rgba(16,18,22,.92);
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid rgba(255,255,255,.08);
+  flex-wrap:wrap;
+}
+.switcher .logo {
+  font-family:'Fredoka',sans-serif; font-weight:700; font-size:17px;
+  color:#ffe14d; letter-spacing:.5px; margin-right:auto;
+}
+.switcher button {
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:15px;
+  padding:9px 20px; border-radius:99px; cursor:pointer;
+  border:2px solid rgba(255,255,255,.18);
+  background:transparent; color:#bbb;
+  transition:all .2s;
+}
+.switcher button:hover { color:#fff; border-color:rgba(255,255,255,.45); }
+.switcher button.on { background:#ffe14d; border-color:#ffe14d; color:#1a1a1a; }
+
+.variant { display:none; animation:fadeIn .4s ease; }
+.variant.active { display:block; }
+@keyframes fadeIn { from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:none;} }
+
+.caption {
+  max-width:980px; margin:26px auto 60px; padding:0 24px;
+  color:#9aa0aa; font-size:15px; line-height:1.65;
+}
+.caption b { color:#e8e8e8; }
+.caption .tag {
+  display:inline-block; font-family:'Fredoka',sans-serif; font-weight:600;
+  font-size:13px; letter-spacing:1.5px; padding:4px 12px; border-radius:6px;
+  margin-bottom:10px;
+}
+
+/* dust particles (shared) */
+.dustbox { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+.mote {
+  position:absolute; border-radius:50%;
+  background:rgba(255,255,255,.55);
+  animation:drift linear infinite;
+}
+@keyframes drift {
+  0%   { transform:translateY(0) translateX(0); opacity:0; }
+  15%  { opacity:.7; }
+  85%  { opacity:.4; }
+  100% { transform:translateY(-90px) translateX(24px); opacity:0; }
+}
+
+/* typewriter cursor */
+.chalkcursor {
+  display:inline-block; width:10px; height:22px; margin-left:3px;
+  background:currentColor; vertical-align:-3px; border-radius:2px;
+  animation:blink 1s steps(1) infinite;
+}
+@keyframes blink { 50%{opacity:0;} }
+
+.replay {
+  position:absolute; top:14px; right:16px; z-index:5;
+  font-family:'Caveat',cursive; font-size:19px; font-weight:700;
+  background:none; border:1.5px dashed rgba(255,255,255,.4);
+  color:rgba(255,255,255,.75); border-radius:10px;
+  padding:2px 14px; cursor:pointer; transition:all .2s;
+}
+.replay:hover { color:#fff; border-color:#fff; transform:rotate(-2deg) scale(1.05); }
+
+/* ============ VARIANTE A — GESSO CINEMA ============ */
+.stage-a {
+  max-width:980px; margin:34px auto 0; padding:0 24px;
+}
+.board-a {
+  position:relative;
+  border-radius:10px;
+  border:16px solid transparent;
+  border-image:linear-gradient(160deg,#8a5a33,#5e3a1e 40%,#7a4e2a 70%,#4a2d15) 1;
+  background:
+    radial-gradient(ellipse 90% 70% at 28% 18%, rgba(255,255,255,.055), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 75% 80%, rgba(255,255,255,.04), transparent 55%),
+    radial-gradient(ellipse at 50% 50%, #33503f, #263c30 70%, #1e2f26);
+  background-color:#2a4234;
+  box-shadow:
+    inset 0 0 60px rgba(0,0,0,.55),
+    inset 0 0 6px rgba(0,0,0,.8),
+    0 18px 50px rgba(0,0,0,.55);
+  padding:44px 48px 120px;
+  overflow:hidden;
+}
+/* aloni di gesso cancellato */
+.board-a::before {
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background:
+    radial-gradient(ellipse 220px 60px at 20% 78%, rgba(255,255,255,.06), transparent 70%),
+    radial-gradient(ellipse 300px 80px at 70% 30%, rgba(255,255,255,.045), transparent 70%),
+    radial-gradient(ellipse 180px 50px at 85% 88%, rgba(255,255,255,.05), transparent 70%);
+}
+.board-a .head { display:flex; align-items:flex-end; gap:26px; }
+.avatar-a { flex:0 0 150px; animation:bob-a 4s ease-in-out infinite; }
+@keyframes bob-a { 0%,100%{transform:rotate(-1.2deg);} 50%{transform:rotate(1.4deg) translateY(-4px);} }
+.title-a {
+  font-family:'Caveat',cursive; font-weight:700; font-size:52px;
+  color:#f6f3e9; text-shadow:0 0 4px rgba(246,243,233,.35);
+  line-height:1;
+}
+.sub-a {
+  font-family:'Caveat',cursive; font-size:26px;
+  color:#f2d98c; text-shadow:0 0 4px rgba(242,217,140,.3);
+  margin-top:6px;
+}
+.rule-a {
+  border:none; border-top:2.5px solid rgba(246,243,233,.5);
+  border-radius:99px; margin:26px 0 22px;
+  transform:rotate(-.35deg);
+  filter:drop-shadow(0 0 2px rgba(246,243,233,.3));
+}
+.text-a {
+  font-family:'Caveat',cursive; font-weight:600; font-size:33px;
+  line-height:1.5; color:#f6f3e9;
+  text-shadow:0 0 3px rgba(246,243,233,.3);
+  min-height:150px;
+}
+.text-a .err { color:#f2d98c; text-decoration:underline wavy rgba(242,217,140,.7) 2px; }
+/* portagessi */
+.tray-a {
+  position:absolute; left:0; right:0; bottom:0; height:34px;
+  background:linear-gradient(#7a4e2a,#5e3a1e);
+  box-shadow:0 -3px 8px rgba(0,0,0,.35);
+  display:flex; align-items:center; gap:14px; padding:0 40px;
+}
+.chalkpiece { width:52px; height:9px; border-radius:4px; background:#f2efe4; box-shadow:0 2px 3px rgba(0,0,0,.4); }
+.chalkpiece.y { background:#eeda9a; width:38px; transform:rotate(2deg); }
+.eraser-a {
+  margin-left:auto; width:86px; height:22px; border-radius:4px;
+  background:linear-gradient(#3b6ea5,#2c4f78);
+  box-shadow:0 3px 5px rgba(0,0,0,.45);
+  position:relative; top:-4px; transform:rotate(-3deg);
+}
+.ui-a {
+  display:flex; gap:14px; align-items:center;
+  margin-top:22px; flex-wrap:wrap;
+}
+.input-a {
+  flex:1; min-width:260px;
+  font-family:'Caveat',cursive; font-size:24px; color:#2a2a26;
+  background:#f6f3e9; border:none; border-radius:6px;
+  padding:12px 18px;
+  box-shadow:0 4px 0 #cfc9b4, 0 8px 18px rgba(0,0,0,.35);
+  transform:rotate(-.4deg);
+}
+.input-a::placeholder { color:#a9a390; }
+.btn-a {
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:19px;
+  letter-spacing:.5px; color:#2a2a26; cursor:pointer;
+  background:#f2d98c; border:none; border-radius:8px;
+  padding:13px 30px;
+  box-shadow:0 5px 0 #b89f55, 0 10px 20px rgba(0,0,0,.35);
+  transition:transform .12s, box-shadow .12s;
+  transform:rotate(.5deg);
+}
+.btn-a:hover { transform:rotate(.5deg) translateY(2px); box-shadow:0 3px 0 #b89f55, 0 6px 14px rgba(0,0,0,.35); }
+.score-a {
+  font-family:'Caveat',cursive; font-size:27px; font-weight:700; color:#f6f3e9;
+  text-shadow:0 0 3px rgba(246,243,233,.3); white-space:nowrap;
+}
+
+/* ============ VARIANTE B — NEON POP ============ */
+.stage-b { max-width:980px; margin:34px auto 0; padding:0 24px; }
+.board-b {
+  position:relative; border-radius:26px;
+  background:
+    radial-gradient(ellipse 80% 60% at 25% 15%, rgba(56,225,255,.06), transparent 60%),
+    radial-gradient(ellipse 70% 60% at 80% 85%, rgba(255,93,162,.07), transparent 60%),
+    linear-gradient(160deg,#1c2236,#161b2c 60%,#12172a);
+  border:5px solid #ffe14d;
+  box-shadow:
+    0 0 0 5px #12172a, 0 0 0 8px #ff5da2,
+    inset 0 0 50px rgba(0,0,0,.5),
+    0 20px 55px rgba(0,0,0,.6);
+  padding:40px 46px 46px; overflow:hidden;
+}
+/* scarabocchi neon animati */
+.doodle { position:absolute; pointer-events:none; opacity:.85; }
+.doodle.spin { animation:doodlespin 7s linear infinite; }
+.doodle.pulse { animation:doodlepulse 2.2s ease-in-out infinite; }
+@keyframes doodlespin { to { transform:rotate(360deg); } }
+@keyframes doodlepulse { 0%,100%{transform:scale(1); opacity:.7;} 50%{transform:scale(1.25); opacity:1;} }
+.head-b { display:flex; align-items:center; gap:24px; position:relative; z-index:2; }
+.avatar-b { flex:0 0 130px; animation:bounce-b 2.6s ease-in-out infinite; }
+@keyframes bounce-b { 0%,100%{transform:translateY(0) rotate(-2deg);} 50%{transform:translateY(-9px) rotate(2deg);} }
+.title-b {
+  font-family:'Fredoka',sans-serif; font-weight:700; font-size:44px; line-height:1;
+  color:#38e1ff; text-shadow:0 0 14px rgba(56,225,255,.55), 0 0 2px #38e1ff;
+}
+.sub-b {
+  font-family:'Gochi Hand',cursive; font-size:24px; margin-top:8px;
+  color:#ff5da2; text-shadow:0 0 10px rgba(255,93,162,.5);
+}
+.bubble-b {
+  position:relative; z-index:2; margin-top:26px;
+  font-family:'Gochi Hand',cursive; font-size:29px; line-height:1.55;
+  color:#f4f8ff; text-shadow:0 0 6px rgba(160,200,255,.35);
+  background:rgba(255,255,255,.045);
+  border:2.5px dashed rgba(56,225,255,.5); border-radius:20px;
+  padding:24px 28px; min-height:140px;
+}
+.ui-b { display:flex; gap:14px; align-items:center; margin-top:22px; flex-wrap:wrap; }
+.input-b {
+  flex:1; min-width:260px;
+  font-family:'Nunito',sans-serif; font-weight:700; font-size:17px; color:#12172a;
+  background:#fff; border:4px solid #12172a; border-radius:16px;
+  padding:14px 18px; box-shadow:6px 6px 0 #38e1ff;
+}
+.input-b::placeholder { color:#9aa; }
+.btn-b {
+  font-family:'Fredoka',sans-serif; font-weight:700; font-size:20px; letter-spacing:.5px;
+  color:#12172a; cursor:pointer;
+  background:#ffe14d; border:4px solid #12172a; border-radius:16px;
+  padding:13px 28px; box-shadow:6px 6px 0 #ff5da2;
+  transition:transform .12s, box-shadow .12s;
+}
+.btn-b:hover { transform:translate(3px,3px); box-shadow:3px 3px 0 #ff5da2; }
+.score-b {
+  font-family:'Fredoka',sans-serif; font-weight:700; font-size:22px;
+  color:#7cff6b; text-shadow:0 0 10px rgba(124,255,107,.5); white-space:nowrap;
+}
+
+/* ============ VARIANTE C — AULA VIVA ============ */
+.stage-c { max-width:1060px; margin:34px auto 0; padding:0 24px; }
+.room-c {
+  position:relative; border-radius:18px; overflow:hidden;
+  background:linear-gradient(#bcd9e8 0 62%, #8a5a33 62% 64%, #a9743f 64%);
+  box-shadow:0 20px 55px rgba(0,0,0,.6);
+  padding:46px 40px 40px;
+}
+/* pavimento in doghe */
+.room-c::after {
+  content:""; position:absolute; left:0; right:0; bottom:0; height:36%;
+  background:repeating-linear-gradient(90deg,#a9743f 0 90px, #96622f 90px 94px);
+  box-shadow:inset 0 14px 22px rgba(0,0,0,.22);
+}
+.clock-c { position:absolute; top:26px; right:52px; z-index:3; }
+.clock-c .hand { transform-origin:30px 30px; animation:tick 12s linear infinite; }
+.clock-c .hand.slow { animation-duration:80s; }
+@keyframes tick { to { transform:rotate(360deg); } }
+.plant-c { position:absolute; bottom:22px; right:34px; z-index:4; animation:sway 5s ease-in-out infinite; transform-origin:bottom center; }
+@keyframes sway { 0%,100%{transform:rotate(-2deg);} 50%{transform:rotate(2.5deg);} }
+.scene-c { position:relative; z-index:2; display:flex; align-items:flex-end; gap:28px; }
+.board-c {
+  flex:1; position:relative; border-radius:8px;
+  border:14px solid transparent;
+  border-image:linear-gradient(150deg,#9a6b3d,#6b4423 50%,#84582e) 1;
+  background:radial-gradient(ellipse at 40% 30%, #2f4a3b, #24382d 75%, #1d2e25);
+  box-shadow:inset 0 0 45px rgba(0,0,0,.5), 0 12px 30px rgba(0,0,0,.35);
+  padding:30px 34px 38px; min-height:300px; overflow:hidden;
+}
+.title-c {
+  font-family:'Caveat',cursive; font-weight:700; font-size:40px;
+  color:#f6f3e9; text-shadow:0 0 3px rgba(246,243,233,.3);
+}
+.text-c {
+  font-family:'Caveat',cursive; font-weight:600; font-size:29px; line-height:1.5;
+  color:#f6f3e9; text-shadow:0 0 3px rgba(246,243,233,.3);
+  margin-top:16px; min-height:130px;
+}
+.prof-c { flex:0 0 190px; animation:teach 3.4s ease-in-out infinite; transform-origin:bottom center; }
+@keyframes teach { 0%,100%{transform:rotate(-1deg);} 50%{transform:rotate(2deg) translateY(-3px);} }
+.bubble-c {
+  position:absolute; top:20px; right:190px; z-index:5;
+  font-family:'Nunito',sans-serif; font-weight:800; font-size:15px; color:#333;
+  background:#fff; border-radius:16px; padding:10px 16px;
+  box-shadow:0 6px 16px rgba(0,0,0,.25);
+  animation:pop-c .5s ease 1.2s backwards;
+}
+.bubble-c::after {
+  content:""; position:absolute; right:-9px; top:22px;
+  border:10px solid transparent; border-left-color:#fff; border-right:0;
+}
+@keyframes pop-c { from{transform:scale(0); opacity:0;} to{transform:scale(1); opacity:1;} }
+.ui-c { position:relative; z-index:4; display:flex; gap:14px; align-items:center; margin-top:24px; flex-wrap:wrap; }
+.input-c {
+  flex:1; min-width:260px;
+  font-family:'Nunito',sans-serif; font-weight:700; font-size:17px; color:#3a2c18;
+  background:#fdf6df; border:3px solid #8a5a33; border-radius:14px;
+  padding:13px 18px; box-shadow:0 5px 0 #6b4423;
+}
+.input-c::placeholder { color:#b3a27f; }
+.btn-c {
+  font-family:'Fredoka',sans-serif; font-weight:700; font-size:19px;
+  color:#fff; cursor:pointer;
+  background:#e2574c; border:3px solid #b03a31; border-radius:14px;
+  padding:13px 28px; box-shadow:0 5px 0 #8f2d26;
+  transition:transform .12s, box-shadow .12s;
+}
+.btn-c:hover { transform:translateY(3px); box-shadow:0 2px 0 #8f2d26; }
+.score-c {
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:20px;
+  color:#fff; background:#3b6ea5; border-radius:99px; padding:8px 20px;
+  box-shadow:0 4px 0 #2c4f78; white-space:nowrap;
+}
+</style>
+</head>
+<body>
+
+<header class="switcher">
+  <span class="logo">LA SCUOLA DEI PROFESSORACCI · direzione visiva</span>
+  <button class="on" data-v="vA">A · Gesso Cinema</button>
+  <button data-v="vB">B · Neon Pop</button>
+  <button data-v="vC">C · Aula Viva</button>
+</header>
+
+<!-- ============ A ============ -->
+<section id="vA" class="variant active">
+  <div class="stage-a">
+    <div class="board-a">
+      <button class="replay" onclick="restart('vA')">↻ riscrivi</button>
+      <div class="dustbox" data-dust="14"></div>
+      <div class="head">
+        <svg class="avatar-a" viewBox="0 0 150 160" fill="none" stroke="#f6f3e9" stroke-width="3" stroke-linecap="round">
+          <!-- Sgrammaticus disegnato in gesso -->
+          <circle cx="75" cy="62" r="34"/>
+          <path d="M52 40 Q75 18 98 40"/>                      <!-- capelli -->
+          <circle cx="63" cy="58" r="8"/><circle cx="87" cy="58" r="8"/>
+          <path d="M71 58 h8"/>                                 <!-- ponte occhiali -->
+          <path d="M55 78 Q65 70 75 78 Q85 70 95 78 Q85 88 75 80 Q65 88 55 78 Z"/> <!-- baffoni -->
+          <path d="M75 96 v14"/>
+          <path d="M45 155 Q45 112 75 110 Q105 112 105 155"/>   <!-- spalle -->
+          <path d="M62 118 l13 12 13-12"/>                      <!-- colletto -->
+          <path d="M75 130 l-5 14 5 10 5-10 z" stroke-width="2.5"/> <!-- cravatta -->
+          <path d="M40 30 L75 14 L110 30 L75 44 Z"/>            <!-- tocco -->
+          <path d="M110 30 v16" stroke-width="2"/><circle cx="110" cy="49" r="3"/>
+        </svg>
+        <div>
+          <h1 class="title-a">Prof. Sgrammaticus</h1>
+          <div class="sub-a">Lezione di Grammatica &nbsp;·&nbsp; trova l'errore n. 7</div>
+        </div>
+      </div>
+      <hr class="rule-a">
+      <div class="text-a" data-tw="Ragazzi, ascoltate bene: «Ieri io HO ANDATO al cinema con i miei amici.» Una frase impeccabile, degna di un accademico! Nessuno osi contraddirmi..."></div>
+      <div class="tray-a">
+        <div class="chalkpiece"></div><div class="chalkpiece y"></div>
+        <div class="eraser-a"></div>
+      </div>
+    </div>
+    <div class="ui-a">
+      <input class="input-a" placeholder="Dov'è l'errore, professore? Scrivilo qui...">
+      <button class="btn-a">CORREGGILO!</button>
+      <span class="score-a">★ 340 punti</span>
+    </div>
+  </div>
+  <footer class="caption">
+    <span class="tag" style="background:#2a4234;color:#f2d98c;">A · GESSO CINEMA</span><br>
+    <b>Tutto è disegnato col gesso, anche il professore.</b> Ardesia verde profonda, cornice in legno,
+    aloni di cancellature, polvere che fluttua nella luce. Monocromo caldo con un solo accento giallo gesso.
+    È la direzione più <b>elegante e materica</b>: sembra un corto animato.
+    L'errore viene sottolineato in giallo con tratto ondulato quando il bambino risponde.
+  </footer>
+</section>
+
+<!-- ============ B ============ -->
+<section id="vB" class="variant">
+  <div class="stage-b">
+    <div class="board-b">
+      <button class="replay" onclick="restart('vB')">↻ riscrivi</button>
+      <div class="dustbox" data-dust="8"></div>
+      <!-- scarabocchi neon -->
+      <svg class="doodle spin" style="top:26px; right:70px;" width="46" height="46" viewBox="0 0 46 46" fill="none" stroke="#ffe14d" stroke-width="3" stroke-linecap="round">
+        <path d="M23 4 L28 17 L42 18 L31 27 L35 41 L23 33 L11 41 L15 27 L4 18 L18 17 Z"/>
+      </svg>
+      <svg class="doodle pulse" style="bottom:120px; left:24px;" width="40" height="30" viewBox="0 0 40 30" fill="none" stroke="#ff5da2" stroke-width="3" stroke-linecap="round">
+        <path d="M3 22 Q10 4 20 15 Q30 26 37 8"/>
+      </svg>
+      <svg class="doodle pulse" style="top:110px; right:30px; animation-delay:.7s;" width="34" height="34" viewBox="0 0 34 34" fill="none" stroke="#7cff6b" stroke-width="3" stroke-linecap="round">
+        <circle cx="17" cy="17" r="6"/><circle cx="17" cy="17" r="13" stroke-dasharray="5 7"/>
+      </svg>
+      <div class="head-b">
+        <svg class="avatar-b" viewBox="0 0 130 140">
+          <!-- Sgrammaticus flat cartoon -->
+          <ellipse cx="65" cy="128" rx="42" ry="10" fill="rgba(0,0,0,.35)"/>
+          <path d="M32 128 Q32 92 65 90 Q98 92 98 128 Z" fill="#5a4fcf"/>
+          <path d="M53 96 l12 12 12-12 -4 22 h-16 Z" fill="#fff"/>
+          <path d="M65 100 l-5 12 5 9 5-9 z" fill="#ff5da2"/>
+          <circle cx="65" cy="56" r="32" fill="#ffd9b3"/>
+          <path d="M36 42 Q65 18 94 42 L94 34 Q65 8 36 34 Z" fill="#8c8c9e"/>
+          <circle cx="53" cy="52" r="9" fill="#fff" stroke="#12172a" stroke-width="3"/>
+          <circle cx="77" cy="52" r="9" fill="#fff" stroke="#12172a" stroke-width="3"/>
+          <line x1="62" y1="52" x2="68" y2="52" stroke="#12172a" stroke-width="3"/>
+          <circle cx="53" cy="53" r="3" fill="#12172a"/><circle cx="77" cy="53" r="3" fill="#12172a"/>
+          <path d="M45 72 Q55 62 65 72 Q75 62 85 72 Q75 84 65 74 Q55 84 45 72 Z" fill="#8c8c9e"/>
+          <path d="M30 30 L65 14 L100 30 L65 46 Z" fill="#12172a" stroke="#38e1ff" stroke-width="2.5"/>
+          <line x1="100" y1="30" x2="100" y2="46" stroke="#ffe14d" stroke-width="3"/>
+          <circle cx="100" cy="50" r="4" fill="#ffe14d"/>
+        </svg>
+        <div>
+          <h1 class="title-b">PROF. SGRAMMATICUS</h1>
+          <div class="sub-b">grammatica · missione: becca l'errore!</div>
+        </div>
+      </div>
+      <div class="bubble-b" data-tw="Ascoltate bene, piccoli allievi: «Ieri io HO ANDATO al cinema con i miei amici.» PER-FET-TA! Sono un genio della grammatica... o no?!"></div>
+      <div class="ui-b">
+        <input class="input-b" placeholder="Scrivi qui la frase giusta...">
+        <button class="btn-b">BECCATO! ⚡</button>
+        <span class="score-b">▲ 340 PT</span>
+      </div>
+    </div>
+  </div>
+  <footer class="caption">
+    <span class="tag" style="background:#12172a;color:#38e1ff;border:1px solid #38e1ff;">B · NEON POP</span><br>
+    <b>Lavagna notturna + gessetti fluo, energia da serie animata.</b> Palette satura (ciano, rosa, giallo, verde),
+    bottoni caramella con ombre dure, scarabocchi che pulsano e ruotano, avatar flat coloratissimo.
+    È la direzione più <b>giocosa e "videogame"</b>: massimo appeal sui bambini, personalità fortissima.
+    Ogni professore avrebbe il suo colore neon dominante.
+  </footer>
+</section>
+
+<!-- ============ C ============ -->
+<section id="vC" class="variant">
+  <div class="stage-c">
+    <div class="room-c">
+      <svg class="clock-c" width="60" height="60" viewBox="0 0 60 60">
+        <circle cx="30" cy="30" r="26" fill="#fff" stroke="#6b4423" stroke-width="5"/>
+        <line class="hand slow" x1="30" y1="30" x2="30" y2="16" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+        <line class="hand" x1="30" y1="30" x2="42" y2="30" stroke="#e2574c" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="30" cy="30" r="2.5" fill="#333"/>
+      </svg>
+      <div class="scene-c">
+        <div class="board-c">
+          <button class="replay" onclick="restart('vC')">↻ riscrivi</button>
+          <div class="dustbox" data-dust="10"></div>
+          <h2 class="title-c">Grammatica — trova l'errore n. 7</h2>
+          <div class="text-c" data-tw="«Ieri io HO ANDATO al cinema con i miei amici.» Scrivetela sul quaderno: è una frase da manuale! Il mio manuale, ovviamente."></div>
+        </div>
+        <div class="bubble-c">Sono sicurissimo... quasi!</div>
+        <svg class="prof-c" viewBox="0 0 190 260">
+          <!-- Sgrammaticus figura intera -->
+          <ellipse cx="95" cy="250" rx="60" ry="9" fill="rgba(0,0,0,.25)"/>
+          <rect x="70" y="196" width="18" height="48" rx="8" fill="#4a3b8f"/>
+          <rect x="102" y="196" width="18" height="48" rx="8" fill="#4a3b8f"/>
+          <rect x="64" y="240" width="30" height="12" rx="6" fill="#2e2645"/>
+          <rect x="96" y="240" width="30" height="12" rx="6" fill="#2e2645"/>
+          <path d="M52 200 Q50 120 95 116 Q140 120 138 200 Z" fill="#5a4fcf"/>
+          <path d="M78 122 l17 16 17-16 -6 34 h-22 Z" fill="#fff"/>
+          <path d="M95 130 l-6 16 6 12 6-12 z" fill="#e2574c"/>
+          <path d="M40 190 Q30 150 56 132 L66 146 Q48 162 54 188 Z" fill="#5a4fcf"/>
+          <path d="M150 190 Q168 140 134 128 L128 144 Q148 156 138 186 Z" fill="#5a4fcf"/>
+          <circle cx="148" cy="196" r="9" fill="#ffd9b3"/>
+          <rect x="140" y="150" width="7" height="44" rx="3.5" fill="#f2efe4" transform="rotate(14 143 172)"/>
+          <circle cx="95" cy="74" r="40" fill="#ffd9b3"/>
+          <path d="M58 56 Q95 26 132 56 L132 46 Q95 16 58 46 Z" fill="#8c8c9e"/>
+          <circle cx="80" cy="70" r="10" fill="#fff" stroke="#2e2645" stroke-width="3.5"/>
+          <circle cx="110" cy="70" r="10" fill="#fff" stroke="#2e2645" stroke-width="3.5"/>
+          <line x1="90" y1="70" x2="100" y2="70" stroke="#2e2645" stroke-width="3.5"/>
+          <circle cx="80" cy="71" r="3.5" fill="#2e2645"/><circle cx="110" cy="71" r="3.5" fill="#2e2645"/>
+          <path d="M70 92 Q82 80 95 92 Q108 80 120 92 Q108 106 95 94 Q82 106 70 92 Z" fill="#8c8c9e"/>
+          <path d="M52 42 L95 24 L138 42 L95 60 Z" fill="#2e2645"/>
+          <line x1="138" y1="42" x2="138" y2="60" stroke="#ffe14d" stroke-width="3"/>
+          <circle cx="138" cy="64" r="4.5" fill="#ffe14d"/>
+        </svg>
+      </div>
+      <div class="ui-c">
+        <input class="input-c" placeholder="Correggi il professore...">
+        <button class="btn-c">HO TROVATO L'ERRORE!</button>
+        <span class="score-c">★ 340 punti</span>
+      </div>
+      <svg class="plant-c" width="70" height="90" viewBox="0 0 70 90">
+        <path d="M22 60 h26 l-4 28 h-18 Z" fill="#c0603f"/>
+        <path d="M35 60 Q20 30 8 26 Q26 24 36 44 Q40 18 58 12 Q46 34 40 58 Z" fill="#4d8f4d"/>
+        <path d="M35 58 Q35 34 35 20 Q44 36 38 58 Z" fill="#63a863"/>
+      </svg>
+    </div>
+  </div>
+  <footer class="caption">
+    <span class="tag" style="background:#bcd9e8;color:#3a5a6b;">C · AULA VIVA</span><br>
+    <b>Non solo la lavagna: tutta l'aula è il palcoscenico.</b> Il professore è un personaggio intero
+    che gesticola accanto alla lavagna, con orologio che ticchetta, pianta che ondeggia, fumetti di pensiero.
+    È la direzione più <b>narrativa e scenografica</b>: ogni professore avrebbe la SUA aula
+    (quella di Storia piena di pergamene, quella di Scienze con alambicchi...). Più lavoro, più mondo.
+  </footer>
+</section>
+
+<script>
+/* ---- switcher ---- */
+const tabs = document.querySelectorAll('.switcher button');
+tabs.forEach(b => b.addEventListener('click', () => {
+  tabs.forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  document.querySelectorAll('.variant').forEach(v => v.classList.remove('active'));
+  const sec = document.getElementById(b.dataset.v);
+  sec.classList.add('active');
+  restart(b.dataset.v);
+}));
+
+/* ---- typewriter gesso ---- */
+const timers = {};
+function typewrite(el, key) {
+  const text = el.dataset.tw;
+  clearInterval(timers[key]);
+  el.innerHTML = '<span class="chalkcursor"></span>';
+  let i = 0;
+  timers[key] = setInterval(() => {
+    i++;
+    el.innerHTML = text.slice(0, i) + '<span class="chalkcursor"></span>';
+    if (i >= text.length) {
+      clearInterval(timers[key]);
+      setTimeout(() => { el.innerHTML = text; }, 1800);
+    }
+  }, 34);
+}
+function restart(id) {
+  const el = document.querySelector('#' + id + ' [data-tw]');
+  if (el) typewrite(el, id);
+}
+
+/* ---- polvere di gesso ---- */
+document.querySelectorAll('[data-dust]').forEach(box => {
+  const n = +box.dataset.dust;
+  for (let i = 0; i < n; i++) {
+    const m = document.createElement('span');
+    m.className = 'mote';
+    const s = 1.5 + Math.random() * 3;
+    m.style.width = m.style.height = s + 'px';
+    m.style.left = Math.random() * 100 + '%';
+    m.style.top = 30 + Math.random() * 65 + '%';
+    m.style.animationDuration = 6 + Math.random() * 9 + 's';
+    m.style.animationDelay = -Math.random() * 10 + 's';
+    box.appendChild(m);
+  }
+});
+
+restart('vA');
+</script>
+</body>
+</html>

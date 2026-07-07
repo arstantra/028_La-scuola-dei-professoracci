@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crea il tuo Professoraccio — La Scuola dei Professoracci</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;700;800;900&family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="assets/professoracci.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:'Nunito',sans-serif; min-height:100vh;
+  background:
+    radial-gradient(ellipse 55% 40% at 15% 0%, rgba(255,236,180,.35), transparent 70%),
+    radial-gradient(ellipse 55% 40% at 85% 0%, rgba(255,236,180,.28), transparent 70%),
+    linear-gradient(#e9d5ac 0 58%, #d9bd8a 58% 60%, #cfa96f 60%);
+  overflow-x:hidden;
+}
+body::after {
+  content:""; position:fixed; left:0; right:0; bottom:0; height:34vh; z-index:-1;
+  background:
+    linear-gradient(rgba(0,0,0,.18), transparent 30%),
+    repeating-linear-gradient(90deg, #a9743f 0 110px, #9a652f 110px 116px);
+}
+.wrap { max-width:1080px; margin:0 auto; padding:18px 24px 70px; position:relative; }
+
+.topbar { display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:14px; }
+.back {
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:15px; text-decoration:none;
+  color:#fff; background:#8a5a33; border:3px solid #6b4423; border-radius:99px;
+  padding:8px 18px; box-shadow:0 4px 0 #4a2d15; transition:transform .12s, box-shadow .12s;
+}
+.back:hover { transform:translateY(2px); box-shadow:0 2px 0 #4a2d15; }
+
+.sign { text-align:center; margin:0 0 22px; }
+.sign .board {
+  display:inline-block; background:linear-gradient(160deg,#8a5a33,#6b4423);
+  border:5px solid #4a2d15; border-radius:14px; padding:14px 38px 12px;
+  box-shadow:0 12px 30px rgba(0,0,0,.35), inset 0 0 26px rgba(0,0,0,.3);
+}
+.sign h1 {
+  font-family:'Fredoka',sans-serif; font-weight:700; font-size:clamp(22px,3.6vw,34px);
+  color:#ffe9b3; text-shadow:0 3px 0 rgba(0,0,0,.35); letter-spacing:1px;
+}
+.sign .sub { font-family:'Caveat',cursive; font-size:clamp(16px,2vw,22px); font-weight:600; color:#f2d98c; }
+
+.grid { display:grid; grid-template-columns:1fr 340px; gap:26px; align-items:start; }
+@media (max-width:860px){ .grid{ grid-template-columns:1fr; } .preview{ position:static !important; } }
+
+.card {
+  background:#fdf6df; border:3px solid #8a5a33; border-radius:16px;
+  box-shadow:0 8px 0 #6b4423, 0 16px 32px rgba(0,0,0,.2);
+  padding:18px 22px 20px; margin-bottom:22px;
+}
+.card h2 {
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:18px; color:#5d4426;
+  margin-bottom:10px; display:flex; align-items:center; gap:8px;
+}
+.card p.hint { font-size:13.5px; color:#8a7658; margin-bottom:10px; line-height:1.5; }
+label.fld { display:block; font-family:'Fredoka',sans-serif; font-weight:600; font-size:14px; color:#5d4426; margin:10px 0 5px; }
+input[type=text], textarea {
+  width:100%; font-family:'Nunito',sans-serif; font-weight:700; font-size:15px;
+  color:#3a2c18; background:#fff; border:3px solid #d9bd8a; border-radius:12px; padding:10px 14px;
+}
+textarea { min-height:84px; resize:vertical; font-weight:600; }
+input[type=text]:focus, textarea:focus { outline:none; border-color:#8a5a33; }
+
+.chips { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+.chip {
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:13px; cursor:pointer;
+  color:#5d4426; background:#fff; border:2.5px solid #d9bd8a; border-radius:99px;
+  padding:6px 14px; transition:all .15s;
+}
+.chip:hover { border-color:#8a5a33; }
+.chip.on { background:#5a4fcf; border-color:#463db3; color:#fff; }
+
+.swatches { display:flex; gap:9px; flex-wrap:wrap; margin-top:8px; }
+.sw {
+  width:34px; height:34px; border-radius:50%; cursor:pointer; border:3px solid rgba(0,0,0,.18);
+  box-shadow:0 3px 6px rgba(0,0,0,.2); transition:transform .12s;
+}
+.sw:hover { transform:scale(1.12); }
+.sw.on { border-color:#3a2c18; box-shadow:0 0 0 3px #ffe14d, 0 3px 6px rgba(0,0,0,.25); }
+
+.vocerow { display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-top:8px; }
+.vocerow label { font-family:'Fredoka',sans-serif; font-size:13px; color:#5d4426; }
+input[type=range] { accent-color:#5a4fcf; width:130px; }
+
+.btn {
+  font-family:'Fredoka',sans-serif; font-weight:700; font-size:16px; cursor:pointer;
+  border-radius:14px; padding:11px 22px; transition:transform .12s, box-shadow .12s;
+}
+.btn.blue { color:#fff; background:#3b6ea5; border:3px solid #2c4f78; box-shadow:0 5px 0 #223d5c; }
+.btn.blue:hover { transform:translateY(3px); box-shadow:0 2px 0 #223d5c; }
+.btn.red { color:#fff; background:#e2574c; border:3px solid #b03a31; box-shadow:0 5px 0 #8f2d26; font-size:18px; padding:14px 30px; }
+.btn.red:hover { transform:translateY(3px); box-shadow:0 2px 0 #8f2d26; }
+.btn.wood { color:#fff; background:#8a5a33; border:3px solid #6b4423; box-shadow:0 4px 0 #4a2d15; font-size:14px; padding:8px 16px; }
+.btn.wood:hover { transform:translateY(2px); box-shadow:0 2px 0 #4a2d15; }
+
+.preview { position:sticky; top:18px; text-align:center; }
+.preview .stage {
+  background:#fdf6df; border:3px solid #8a5a33; border-radius:16px;
+  box-shadow:0 8px 0 #6b4423, 0 16px 32px rgba(0,0,0,.2);
+  padding:18px 16px 20px;
+}
+.preview .aula {
+  border-radius:12px; padding:16px 8px 4px; transition:background .3s;
+  background:linear-gradient(var(--pv-wall,#bcd9e8) 0 78%, #a9743f 78%);
+}
+.preview svg.full { width:180px; animation:teach 3.4s ease-in-out infinite; transform-origin:bottom center; }
+@keyframes teach { 0%,100%{transform:rotate(-1deg);} 50%{transform:rotate(2deg) translateY(-3px);} }
+.preview .nameplate {
+  display:inline-block; margin-top:8px;
+  font-family:'Caveat',cursive; font-weight:700; font-size:22px; color:#3a2c18;
+  background:#fff; border:2px solid #b8923f; border-radius:6px; padding:0 16px;
+  box-shadow:0 3px 6px rgba(0,0,0,.2); transform:rotate(-1deg);
+}
+.preview .oblo {
+  width:84px; height:84px; border-radius:50%; margin:14px auto 0; overflow:hidden;
+  background:radial-gradient(circle at 40% 30%, #34495c, #1d2b38 75%);
+  box-shadow:inset 0 0 14px rgba(0,0,0,.6), 0 0 0 6px var(--pv-c,#5a4fcf);
+  position:relative;
+}
+.preview .oblo svg { position:absolute; left:50%; bottom:-8px; transform:translateX(-50%); width:74px; }
+.preview .obloLbl { font-family:'Caveat',cursive; font-weight:600; font-size:16px; color:#8a7658; margin-top:4px; }
+.savemsg { font-family:'Caveat',cursive; font-size:21px; font-weight:600; color:#4d8f4d; min-height:28px; margin-top:10px; }
+.savemsg a { color:#3b6ea5; }
+.savemsg.err { color:#c94f44; }
+
+.miei { margin-top:4px; }
+.miei .riga {
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  background:#fff; border:2.5px solid #d9bd8a; border-radius:12px;
+  padding:9px 14px; margin-top:9px;
+}
+.miei .riga .oblomini {
+  width:44px; height:44px; border-radius:50%; overflow:hidden; flex:0 0 44px;
+  background:radial-gradient(circle at 40% 30%, #34495c, #1d2b38 75%); position:relative;
+}
+.miei .riga .oblomini svg { position:absolute; left:50%; bottom:-4px; transform:translateX(-50%); width:38px; }
+.miei .riga b { font-family:'Fredoka',sans-serif; font-weight:600; color:#3a2c18; }
+.miei .riga small { color:#8a7658; }
+.miei .riga .spazio { margin-left:auto; display:flex; gap:8px; }
+.miei .vuoto { font-family:'Caveat',cursive; font-size:20px; color:#8a7658; margin-top:8px; }
+footer {
+  text-align:center; margin-top:40px;
+  font-family:'Caveat',cursive; font-size:22px; font-weight:600; color:#7a6340;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a class="back" href="index.html">← corridoio</a>
+  </div>
+
+  <div class="sign">
+    <div class="board">
+      <h1>🔨 CREA IL TUO PROFESSORACCIO</h1>
+      <div class="sub">inventa un professore su misura: nome, carattere, voce e aspetto</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div><!-- colonna form -->
+
+      <div class="card">
+        <h2>1 · Chi è?</h2>
+        <label class="fld" for="nome">Nome del professore</label>
+        <input type="text" id="nome" placeholder="es. Prof. Notabolla, Prof.ssa Ricordina..." maxlength="40">
+        <label class="fld" for="materia">Materia (qualsiasi!)</label>
+        <input type="text" id="materia" placeholder="es. musica, inglese, educazione civica, dinosauri..." maxlength="40">
+      </div>
+
+      <div class="card">
+        <h2>2 · Che carattere ha?</h2>
+        <p class="hint">Descrivi come parla e come si comporta: il professore reciterà questo carattere in ogni lezione. Puoi partire da un suggerimento e modificarlo.</p>
+        <div class="chips" id="caratteri"></div>
+        <label class="fld" for="carattere">Descrizione del carattere</label>
+        <textarea id="carattere" placeholder="es. timido e gentilissimo, parla sottovoce, si scusa in continuazione, ama i gatti e li nomina in ogni lezione..."></textarea>
+      </div>
+
+      <div class="card">
+        <h2>3 · Che voce ha?</h2>
+        <div class="chips" id="vocepresets"></div>
+        <div class="vocerow">
+          <label>Tono <input type="range" id="pitch" min="0.4" max="1.8" step="0.05" value="1"></label>
+          <label>Velocità <input type="range" id="rate" min="0.6" max="1.5" step="0.05" value="1"></label>
+          <button class="btn blue" id="provavoce" type="button">🔊 PROVA LA VOCE</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>4 · La sua aula</h2>
+        <div class="swatches" id="coloriaula"></div>
+      </div>
+
+      <div class="card">
+        <h2>5 · Che aspetto ha?</h2>
+        <label class="fld">Pelle</label><div class="swatches" id="pelle"></div>
+        <label class="fld">Vestito</label><div class="swatches" id="vestito"></div>
+        <label class="fld">Capelli</label><div class="chips" id="capelli"></div>
+        <label class="fld">Colore capelli</label><div class="swatches" id="colcap"></div>
+        <label class="fld">Occhiali</label><div class="chips" id="occhiali"></div>
+        <label class="fld">Cappello</label><div class="chips" id="cappello"></div>
+        <label class="fld">Baffi e barba</label><div class="chips" id="baffi"></div>
+        <label class="fld">Oggetto in mano</label><div class="chips" id="oggetto"></div>
+      </div>
+
+      <div style="text-align:center; margin:6px 0 26px;">
+        <button class="btn red" id="salva">✔ ISCRIVI IL PROFESSORE ALLA SCUOLA</button>
+        <div class="savemsg" id="savemsg"></div>
+      </div>
+
+      <div class="card miei">
+        <h2>I tuoi professoracci</h2>
+        <div id="elenco"></div>
+      </div>
+
+    </div>
+
+    <div class="preview"><!-- colonna anteprima -->
+      <div class="stage">
+        <div class="aula" id="pvaula">
+          <svg class="full" id="pvfull" viewBox="0 0 190 260"></svg>
+        </div>
+        <div><span class="nameplate" id="pvnome">Prof. ???</span></div>
+        <div class="oblo" id="pvoblo"><svg id="pvhead" viewBox="0 0 96 96"></svg></div>
+        <div class="obloLbl">così apparirà sulla porta</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>— laboratorio di fabbricazione professori · piano terra —</footer>
+</div>
+
+<script>
+(function () {
+'use strict';
+var P = window.Professoracci;
+var $ = function (id) { return document.getElementById(id); };
+
+/* ---------- stato del form ---------- */
+var stato = {
+  id: null,                       // valorizzato quando si modifica un prof esistente
+  colore: P.PALETTE[0].id,
+  avatar: Object.assign({}, P.AVATAR_DEFAULT)
+};
+
+/* ---------- preset carattere ---------- */
+var CARATTERI = [
+  ['pomposo',       'pomposo e vanitoso, si vanta di non sbagliare MAI e parla di sé in continuazione'],
+  ['pasticcione',   'simpatico e pasticcione, inciampa nelle parole, fa cadere le cose e dà la colpa agli oggetti'],
+  ['timido',        'timido e gentilissimo, parla sottovoce, si scusa spesso e incoraggia sempre con dolcezza'],
+  ['rockstar',      'una rockstar della cattedra: esclamazioni musicali, aria da concerto, chiama gli alunni "fan"'],
+  ['pirata',        'un vecchio pirata in pensione: dice "arrr!", parla di tesori e chiama la classe "ciurma"'],
+  ['robot',         'un robot un po\' arrugginito: parla in modo meccanico, dice "BIP" e calcola tutto... male'],
+  ['nonna dolce',   'dolcissimo come una nonna: offre biscotti immaginari, racconta aneddoti e coccola la classe'],
+  ['smemorato',     'un mago smemorato: dimentica le parole a metà frase e dà la colpa agli incantesimi']
+];
+
+/* ---------- preset voce ---------- */
+var VOCI = [
+  ['normale', 1.0, 1.0], ['profonda e lenta', 0.7, 0.8], ['frenetica', 1.0, 1.3],
+  ['nasale', 1.3, 0.9], ['solenne', 0.6, 0.8], ['entusiasta', 1.5, 1.1], ['sognante', 1.2, 0.95]
+];
+
+/* ---------- costruttori UI ---------- */
+function chips(elId, valori, get, set) {
+  var box = $(elId);
+  box.innerHTML = '';
+  valori.forEach(function (v) {
+    var val = Array.isArray(v) ? v[0] : v;
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip'; b.textContent = val;
+    b.addEventListener('click', function () { set(v); sync(); });
+    b.dataset.val = val;
+    box.appendChild(b);
+  });
+  box._get = get;
+}
+function swatches(elId, colori, get, set) {
+  var box = $(elId);
+  box.innerHTML = '';
+  colori.forEach(function (c) {
+    var col = typeof c === 'string' ? c : c.c;
+    var val = typeof c === 'string' ? c : c.id;
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'sw'; b.style.background = col;
+    b.title = val; b.dataset.val = val;
+    b.addEventListener('click', function () { set(val); sync(); });
+    box.appendChild(b);
+  });
+  box._get = get;
+}
+function evidenzia(elId) {
+  var box = $(elId);
+  var cur = box._get();
+  Array.prototype.forEach.call(box.children, function (b) {
+    b.classList.toggle('on', b.dataset.val === cur);
+  });
+}
+
+chips('caratteri', CARATTERI,
+  function () { return null; },
+  function (v) { $('carattere').value = v[1]; });
+chips('vocepresets', VOCI,
+  function () { return null; },
+  function (v) { $('pitch').value = v[1]; $('rate').value = v[2]; });
+swatches('coloriaula', P.PALETTE,
+  function () { return stato.colore; },
+  function (v) { stato.colore = v; });
+swatches('pelle', P.AVATAR_OPZIONI.pelle,
+  function () { return stato.avatar.pelle; },
+  function (v) { stato.avatar.pelle = v; });
+swatches('vestito', P.AVATAR_OPZIONI.vestito,
+  function () { return stato.avatar.vestito; },
+  function (v) { stato.avatar.vestito = v; });
+swatches('colcap', P.AVATAR_OPZIONI.colcap,
+  function () { return stato.avatar.colcap; },
+  function (v) { stato.avatar.colcap = v; });
+chips('capelli', P.AVATAR_OPZIONI.capelli,
+  function () { return stato.avatar.capelli; },
+  function (v) { stato.avatar.capelli = v; });
+chips('occhiali', P.AVATAR_OPZIONI.occhiali,
+  function () { return stato.avatar.occhiali; },
+  function (v) { stato.avatar.occhiali = v; });
+chips('cappello', P.AVATAR_OPZIONI.cappello,
+  function () { return stato.avatar.cappello; },
+  function (v) { stato.avatar.cappello = v; });
+chips('baffi', P.AVATAR_OPZIONI.baffi,
+  function () { return stato.avatar.baffi; },
+  function (v) { stato.avatar.baffi = v; });
+chips('oggetto', P.AVATAR_OPZIONI.oggetto,
+  function () { return stato.avatar.oggetto; },
+  function (v) { stato.avatar.oggetto = v; });
+
+/* ---------- anteprima ---------- */
+function sync() {
+  ['coloriaula','pelle','vestito','colcap','capelli','occhiali','cappello','baffi','oggetto']
+    .forEach(evidenzia);
+  var pal = P.PALETTE.find(function (x) { return x.id === stato.colore; }) || P.PALETTE[0];
+  var pv = document.querySelector('.preview');
+  pv.style.setProperty('--pv-wall', pal.wall);
+  pv.style.setProperty('--pv-c', pal.c);
+  $('pvfull').innerHTML = P.buildProfSvg(stato.avatar);
+  $('pvhead').innerHTML = P.buildHeadSvg(stato.avatar);
+  $('pvnome').textContent = $('nome').value.trim() || 'Prof. ???';
+}
+$('nome').addEventListener('input', sync);
+
+/* ---------- prova voce ---------- */
+$('provavoce').addEventListener('click', function () {
+  speechSynthesis.cancel();
+  var nome = $('nome').value.trim() || 'il vostro nuovo professore';
+  var u = new SpeechSynthesisUtterance('Salve! Io sono ' + nome + ', e non sbaglio mai. Quasi mai. Ogni tanto.');
+  u.lang = 'it-IT';
+  u.pitch = +$('pitch').value;
+  u.rate = +$('rate').value;
+  var voce = speechSynthesis.getVoices().find(function (v) { return v.lang.indexOf('it') === 0; });
+  if (voce) u.voice = voce;
+  speechSynthesis.speak(u);
+});
+speechSynthesis.getVoices();
+
+/* ---------- salvataggio ---------- */
+function setMsg(t, err, html) {
+  var el = $('savemsg');
+  if (html) el.innerHTML = t; else el.textContent = t;
+  el.classList.toggle('err', !!err);
+}
+$('salva').addEventListener('click', function () {
+  var nome = $('nome').value.trim();
+  var materia = $('materia').value.trim();
+  if (!nome) { setMsg('Serve un nome! Come lo chiamiamo?', true); $('nome').focus(); return; }
+  if (!materia) { setMsg('Serve una materia! Cosa insegna?', true); $('materia').focus(); return; }
+  var p = {
+    id: stato.id || ('c_' + Date.now()),
+    nome: nome,
+    materia: materia,
+    carattere: $('carattere').value.trim() || 'simpatico e un po\' pasticcione',
+    voce: { pitch: +$('pitch').value, rate: +$('rate').value },
+    colore: stato.colore,
+    avatar: Object.assign({}, stato.avatar)
+  };
+  P.saveCustomProf(p);
+  stato.id = p.id;
+  setMsg('✓ ' + P.escapeHtml(nome) + ' è iscritto alla scuola! ' +
+    '<a href="aule/aula.html?prof=' + p.id + '">Entra nella sua aula →</a>', false, true);
+  elenco();
+});
+
+/* ---------- elenco professori custom ---------- */
+function elenco() {
+  var box = $('elenco');
+  var list = P.getCustomList();
+  if (!list.length) {
+    box.innerHTML = '<div class="vuoto">Ancora nessuno: il tuo primo professoraccio ti aspetta qui sopra!</div>';
+    return;
+  }
+  box.innerHTML = '';
+  list.forEach(function (p) {
+    var r = document.createElement('div');
+    r.className = 'riga';
+    r.innerHTML =
+      '<div class="oblomini"><svg viewBox="0 0 96 96">' + P.buildHeadSvg(p.avatar) + '</svg></div>' +
+      '<div><b>' + P.escapeHtml(p.nome) + '</b><br><small>' + P.escapeHtml(p.materia) + '</small></div>' +
+      '<div class="spazio">' +
+        '<a class="btn blue" style="text-decoration:none; font-size:14px; padding:8px 16px;" href="aule/aula.html?prof=' + p.id + '">ENTRA</a>' +
+        '<button class="btn wood" data-az="mod">MODIFICA</button>' +
+        '<button class="btn wood" data-az="del">ELIMINA</button>' +
+      '</div>';
+    r.querySelector('[data-az=mod]').addEventListener('click', function () { carica(p); });
+    r.querySelector('[data-az=del]').addEventListener('click', function () {
+      if (confirm('Eliminare ' + p.nome + '? Sparirà anche la sua porta dal corridoio.')) {
+        P.deleteCustomProf(p.id);
+        if (stato.id === p.id) stato.id = null;
+        elenco();
+      }
+    });
+    box.appendChild(r);
+  });
+}
+
+/* ---------- modifica di un prof esistente ---------- */
+function carica(p) {
+  stato.id = p.id;
+  stato.colore = p.colore || P.PALETTE[0].id;
+  stato.avatar = Object.assign({}, P.AVATAR_DEFAULT, p.avatar);
+  $('nome').value = p.nome;
+  $('materia').value = p.materia;
+  $('carattere').value = p.carattere || '';
+  $('pitch').value = p.voce && p.voce.pitch != null ? p.voce.pitch : 1;
+  $('rate').value = p.voce && p.voce.rate != null ? p.voce.rate : 1;
+  setMsg('Stai modificando ' + p.nome + ': premi «ISCRIVI» per salvare le modifiche.');
+  sync();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+sync();
+elenco();
+})();
+</script>
+</body>
+</html>
