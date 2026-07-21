@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Aula di Arte — prototipo animazioni</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pink:#f4dbe9;
+    --wood-1:#8a5636;
+    --wood-2:#6e4128;
+    --wood-3:#5b331f;
+    --board:#2b4a3c;
+    --board-dark:#1f362b;
+    --chalk-yellow:#f2cf6e;
+    --chalk-white:#f3efe3;
+    --magenta:#c23a78;
+    --coral:#e8574e;
+    --blue:#3c6ea8;
+    --cream:#fdf3d9;
+    --purple:#b7a1db;
+    --skin:#f4c79c;
+    --ink:#4a2e1c;
+    --amp:1;
+    --ease: cubic-bezier(.34,1.56,.64,1);
+  }
+  [data-variant="minimale"]{
+    --amp:0.4;
+    --ease: cubic-bezier(.4,0,.2,1);
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    font-family:'Baloo 2', system-ui, sans-serif;
+    background:#ece3ea;
+    color:var(--ink);
+    padding:20px;
+    min-height:100vh;
+  }
+
+  /* ---------- demo meta bar (not part of the real product UI) ---------- */
+  .demo-bar{
+    max-width:1180px;
+    margin:0 auto 16px;
+    background:#fff;
+    border:1px solid #e2ddd6;
+    border-radius:14px;
+    padding:12px 18px;
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:14px;
+    font-size:14px;
+    box-shadow:0 1px 3px rgba(0,0,0,.05);
+  }
+  .seg{ display:inline-flex; background:#f1efe9; border-radius:999px; padding:3px; gap:2px; }
+  .seg button{
+    border:none; background:transparent; padding:7px 14px; border-radius:999px;
+    font-family:inherit; font-weight:600; font-size:13px; cursor:pointer; color:#6b6259;
+    transition:background .2s, color .2s;
+  }
+  .seg button.active{ background:var(--ink); color:#fff; }
+  .quiet-demo-toggle{ margin-left:auto; display:flex; align-items:center; gap:8px; font-size:13px; color:#6b6259; }
+  .demo-note{ flex-basis:100%; font-size:12.5px; color:#93897d; }
+
+  /* ---------- stage ---------- */
+  .stage-wrap{ max-width:1180px; margin:0 auto; border-radius:22px; overflow:hidden; box-shadow:0 10px 40px rgba(0,0,0,.18); }
+  .stage{
+    position:relative;
+    background:linear-gradient(var(--pink), var(--pink) 34%, var(--wood-2) 34%, var(--wood-1) 100%);
+    padding:22px 26px 26px;
+    display:grid;
+    grid-template-columns:1fr 300px;
+    grid-template-areas:
+      "topbar topbar"
+      "board  professor"
+      "controls controls"
+      "answer answer"
+      "cattedra cattedra";
+    gap:16px 22px;
+  }
+  .stage::before{
+    content:"";
+    position:absolute; inset:34% 0 0 0;
+    background-image:repeating-linear-gradient(90deg, rgba(0,0,0,.08) 0 2px, transparent 2px 64px);
+    pointer-events:none;
+  }
+
+  .topbar{ grid-area:topbar; display:flex; align-items:center; gap:16px; flex-wrap:wrap; position:relative; z-index:2; }
+  .btn-corridoio{
+    background:var(--wood-3); color:#fdf3e3; border:none; padding:11px 20px; border-radius:999px;
+    font-family:inherit; font-weight:700; font-size:14px; cursor:pointer;
+    display:inline-flex; align-items:center; gap:8px; transition:transform .15s var(--ease);
+  }
+  .btn-corridoio:hover{ transform:translateX(-3px); }
+  .room-title{ font-family:'Kalam', cursive; color:var(--magenta); font-size:clamp(24px,2.6vw,32px); margin:0; font-weight:700; }
+  .topbar-right{ margin-left:auto; display:flex; align-items:center; gap:12px; }
+  .quiet-toggle{
+    background:var(--cream); border:1px solid #e8d9a8; color:var(--wood-3); padding:9px 16px; border-radius:999px;
+    font-family:inherit; font-weight:600; font-size:13px; cursor:pointer;
+    display:inline-flex; align-items:center; gap:6px; transition:background .2s;
+  }
+  .quiet-toggle[data-on="true"]{ background:#e8d9a8; }
+  .points{ background:var(--blue); color:#fff; padding:9px 18px; border-radius:999px; font-weight:700; font-size:14px; display:inline-flex; align-items:center; gap:6px; }
+  .points-value{ display:inline-block; min-width:1.4em; transform-origin:center; }
+  .points-value.bump{ animation:count-bounce .5s var(--ease); }
+
+  .board-area{ grid-area:board; display:flex; flex-direction:column; gap:14px; position:relative; z-index:2; }
+  .painting-thumb{ width:120px; background:#fff; border:6px solid #c9a24a; border-radius:6px; padding:4px; align-self:flex-start; }
+  .painting-thumb .art{ height:64px; border-radius:2px; background:linear-gradient(#bfe1ee 0 60%, #8fbf7a 60% 100%); position:relative; overflow:hidden; }
+  .painting-thumb .sun{ position:absolute; top:8px; right:10px; width:16px; height:16px; background:var(--chalk-yellow); border-radius:50%; }
+  .painting-thumb .caption{ font-family:'Kalam', cursive; font-size:11px; text-align:center; color:#8a7a5a; margin-top:4px; font-style:italic; }
+
+  .blackboard-frame{ background:var(--wood-2); border-radius:14px; padding:14px; display:flex; flex-direction:column; gap:10px; box-shadow:inset 0 0 0 3px rgba(0,0,0,.08); }
+  .blackboard{
+    height:330px;
+    background:radial-gradient(ellipse at 30% 20%, var(--board) 0%, var(--board-dark) 100%);
+    border-radius:8px; padding:30px 40px 40px;
+    display:flex; flex-direction:column; gap:14px;
+    position:relative; overflow:hidden;
+  }
+  .board-title{ font-family:'Kalam', cursive; color:var(--chalk-yellow); font-size:clamp(22px,2.2vw,28px); margin:0; flex-shrink:0; }
+  .board-text{ font-family:'Baloo 2', sans-serif; color:var(--chalk-white); font-weight:500; font-size:clamp(15px,1.5vw,20px); line-height:1.55; margin:0; flex:1; min-height:0; }
+  .board-text .line{ display:block; opacity:0; }
+  [data-writing="true"] .board-text .line{ animation:chalk-reveal .5s var(--ease) forwards; animation-delay:calc(var(--i) * 0.28s / var(--amp,1)); }
+  [data-quiet="on"] .board-text .line{ animation-duration:.15s !important; animation-delay:0s !important; }
+
+  .cloud{ position:absolute; top:14px; left:-40px; font-size:22px; opacity:0; }
+  [data-variant="giocosa"] .cloud.drift{ animation:cloud-drift 3.2s ease-in-out; }
+  [data-variant="minimale"] .cloud, [data-quiet="on"] .cloud{ display:none; }
+
+  .chalk-tray{ display:flex; align-items:center; gap:10px; padding:2px 6px; }
+  .chalk-dot{ width:16px; height:10px; border-radius:4px; }
+  .chalk-dot.c-pink{ background:#f2b8d4; }
+  .chalk-dot.c-white{ background:var(--chalk-white); }
+  .chalk-dot.c-yellow{ background:var(--chalk-yellow); }
+  .eraser{ width:34px; height:14px; background:var(--blue); border-radius:4px; margin-left:auto; }
+
+  .professor-area{ grid-area:professor; display:flex; flex-direction:column; align-items:center; gap:10px; position:relative; z-index:2; padding-top:6px; }
+  .mini-btn{ position:absolute; top:-4px; right:6px; width:38px; height:38px; border-radius:50%; border:2px solid var(--wood-3); background:transparent; color:var(--wood-3); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:16px; }
+  .speech-bubble{ background:var(--cream); border-radius:16px; padding:14px 18px; font-size:13.5px; line-height:1.45; max-width:230px; position:relative; box-shadow:0 2px 6px rgba(0,0,0,.08); }
+  .speech-bubble::after{ content:""; position:absolute; bottom:-10px; left:36px; border:10px solid transparent; border-top-color:var(--cream); border-bottom:0; }
+
+  .professor{ width:150px; height:190px; position:relative; }
+  .professor .idle{ width:100%; height:100%; position:relative; animation:idle-bob 3.6s ease-in-out infinite; }
+  [data-quiet="on"] .professor .idle{ animation:none; }
+  .p-body{ position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:110px; height:110px; background:var(--purple); border-radius:40px 40px 20px 20px; }
+  .p-head{ position:absolute; top:0; left:50%; transform:translateX(-50%); width:96px; height:96px; background:var(--skin); border-radius:50%; }
+  .p-hair{ position:absolute; top:-14px; left:50%; transform:translateX(-50%); width:80px; height:56px; background:#5a3a26; border-radius:50% 50% 40% 40%; }
+  .p-beret{ position:absolute; top:-24px; left:58%; width:34px; height:20px; background:var(--magenta); border-radius:50% 50% 20% 20%; transform:rotate(-12deg); }
+  .p-eyes{ position:absolute; top:40px; left:50%; transform:translateX(-50%); display:flex; gap:20px; }
+  .p-eye{ width:8px; height:8px; background:var(--ink); border-radius:50%; animation:blink 4.5s ease-in-out infinite; }
+  [data-quiet="on"] .p-eye{ animation:none; }
+  .professor.distracted .p-eye{ animation:gaze-shift 1.4s var(--ease); }
+  .p-smile{ position:absolute; top:56px; left:50%; transform:translateX(-50%); width:26px; height:13px; border-bottom:3px solid var(--ink); border-radius:0 0 20px 20px; }
+  .p-palette{ position:absolute; bottom:20px; right:-6px; width:34px; height:24px; background:#e9d9b8; border-radius:50% 50% 50% 10%; }
+  .p-dot{ position:absolute; width:6px; height:6px; border-radius:50%; }
+  .professor-label{ background:var(--cream); border-radius:999px; padding:6px 16px; font-family:'Kalam', cursive; font-size:13px; font-weight:700; color:var(--wood-3); }
+
+  .controls-row{ grid-area:controls; display:flex; flex-wrap:wrap; align-items:center; gap:12px; position:relative; z-index:2; }
+  .class-select{ display:inline-flex; gap:8px; }
+  .pill{ border:1.5px solid var(--cream); background:transparent; color:var(--cream); padding:9px 16px; border-radius:999px; font-family:inherit; font-weight:600; font-size:13px; cursor:pointer; }
+  .pill.active{ background:var(--magenta); border-color:var(--magenta); color:#fff; }
+  .btn{ border:none; padding:12px 20px; border-radius:12px; font-family:inherit; font-weight:700; font-size:13.5px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; transition:transform .12s var(--ease), filter .15s; }
+  .btn:hover{ filter:brightness(1.06); }
+  .btn:active{ transform:scale(calc(1 - 0.06*var(--amp,1))); }
+  .btn.pressed{ animation:btn-press .4s var(--ease); }
+  .btn-blue{ background:var(--blue); color:#fff; }
+  .btn-outline{ background:var(--cream); color:var(--wood-3); }
+  .btn-coral{ background:var(--coral); color:#fff; }
+  .btn-coral.big{ padding:14px 26px; font-size:14.5px; }
+
+  .answer-row{ grid-area:answer; display:flex; gap:12px; flex-wrap:wrap; position:relative; z-index:2; }
+  .answer-input{ flex:1; min-width:220px; background:var(--cream); border:none; border-radius:12px; padding:14px 18px; font-family:'Kalam', cursive; font-size:14px; color:var(--wood-3); }
+  .answer-input::placeholder{ color:#a6926a; }
+
+  .cattedra-bar{ grid-area:cattedra; background:var(--wood-3); color:#e9d9c0; border-radius:12px; padding:14px 20px; display:flex; align-items:center; gap:10px; font-size:13px; position:relative; z-index:2; }
+  .cattedra-bar .sub{ font-style:italic; color:#c7b393; font-size:12px; }
+  .cattedra-bar .chev{ margin-left:auto; }
+
+  .celebrate-layer{ position:fixed; inset:0; pointer-events:none; z-index:50; }
+  .sparkle{ position:absolute; font-size:20px; animation:sparkle-pop .9s ease-out forwards; }
+  .check-pop{ position:fixed; top:50%; left:50%; background:#fff; border-radius:50%; width:70px; height:70px; display:flex; align-items:center; justify-content:center; font-size:32px; color:#3f9a5a; box-shadow:0 6px 20px rgba(0,0,0,.2); z-index:60; animation:check-pop-anim .8s var(--ease) forwards; }
+
+  button:focus-visible, input:focus-visible{ outline:3px solid var(--blue); outline-offset:2px; }
+
+  @keyframes idle-bob{ 0%,100%{ transform:translateY(0) rotate(0deg); } 50%{ transform:translateY(calc(-5px * var(--amp,1))) rotate(calc(-1.5deg * var(--amp,1))); } }
+  @keyframes blink{ 0%,90%,100%{ transform:scaleY(1); } 95%{ transform:scaleY(0.15); } }
+  @keyframes gaze-shift{ 0%,100%{ transform:translateX(0); } 40%,60%{ transform:translateX(calc(3px * var(--amp,1))); } }
+  @keyframes cloud-drift{ 0%{ transform:translateX(0); opacity:0; } 15%{ opacity:.9; } 85%{ opacity:.9; } 100%{ transform:translateX(320px); opacity:0; } }
+  @keyframes chalk-reveal{ from{ opacity:0; transform:translateY(calc(6px * var(--amp,1))); filter:blur(calc(2px * var(--amp,1))); } to{ opacity:1; transform:translateY(0); filter:blur(0); } }
+  @keyframes btn-press{ 0%{ transform:scale(1); } 40%{ transform:scale(calc(1 - 0.1*var(--amp,1))); } 100%{ transform:scale(1); } }
+  @keyframes count-bounce{ 0%{ transform:scale(1); } 50%{ transform:scale(calc(1 + 0.35*var(--amp,1))); } 100%{ transform:scale(1); } }
+  @keyframes sparkle-pop{ 0%{ transform:translate(0,0) scale(0) rotate(0deg); opacity:1; } 60%{ opacity:1; } 100%{ transform:translate(var(--dx),var(--dy)) scale(1) rotate(200deg); opacity:0; } }
+  @keyframes check-pop-anim{ 0%{ transform:translate(-50%,-50%) scale(0); opacity:0; } 60%{ transform:translate(-50%,-50%) scale(1.15); opacity:1; } 100%{ transform:translate(-50%,-50%) scale(1); opacity:0; } }
+
+  @media (prefers-reduced-motion: reduce){
+    .professor .idle, .p-eye, [data-writing="true"] .board-text .line{ animation:none !important; }
+  }
+  @media (max-width:760px){
+    .stage{ grid-template-columns:1fr; grid-template-areas:"topbar" "professor" "board" "controls" "answer" "cattedra"; }
+  }
+</style>
+</head>
+<body data-variant="giocosa" data-quiet="off">
+
+  <div class="demo-bar">
+    <strong>Confronto stile animazioni</strong>
+    <div class="seg" id="variantSeg">
+      <button data-v="minimale">1a · Minimale</button>
+      <button data-v="giocosa" class="active">1b · Giocosa</button>
+    </div>
+    <div class="quiet-demo-toggle">
+      <label style="display:inline-flex;align-items:center;gap:4px;cursor:pointer;">
+        <input type="checkbox" id="quietCheck" /> testa anche con modalità tranquilla attiva
+      </label>
+    </div>
+    <div class="demo-note">«NUOVA SPIEGAZIONE» cicla tra 4 testi di lunghezza diversa, incluso uno volutamente lungo per testare il bordo della lavagna. «HO TROVATO L'ERRORE!» mostra il festeggiamento.</div>
+  </div>
+
+  <div class="stage-wrap">
+    <div class="stage" id="stage">
+      <div class="topbar">
+        <button class="btn-corridoio">← corridoio</button>
+        <h1 class="room-title">Aula di Arte</h1>
+        <div class="topbar-right">
+          <button class="quiet-toggle" id="quietToggle" data-on="false">🌿 modalità tranquilla</button>
+          <div class="points">★ <span class="points-value" id="pointsValue">30</span> punti</div>
+        </div>
+      </div>
+
+      <div class="board-area">
+        <div class="painting-thumb">
+          <div class="art"><div class="sun"></div></div>
+          <div class="caption">capolavoro… di chi?</div>
+        </div>
+        <div class="blackboard-frame">
+          <div class="blackboard" id="blackboard">
+            <div class="cloud" id="cloud">☁️</div>
+            <h2 class="board-title">Arte — trova l'errore!</h2>
+            <p class="board-text" id="boardText"></p>
+          </div>
+          <div class="chalk-tray">
+            <span class="chalk-dot c-pink"></span>
+            <span class="chalk-dot c-white"></span>
+            <span class="chalk-dot c-yellow"></span>
+            <span class="eraser"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="professor-area">
+        <button class="mini-btn" aria-label="avanti">›</button>
+        <div class="speech-bubble">Oh, ciao caro… io sono la Prof.ssa Storditella. Amo l'arte, i colori e… oh, guarda che bella nuvola!</div>
+        <div class="professor" id="professor">
+          <div class="idle">
+            <div class="p-body"></div>
+            <div class="p-palette">
+              <div class="p-dot" style="background:#e85d5d; top:4px; left:6px;"></div>
+              <div class="p-dot" style="background:#3c6ea8; top:12px; left:16px;"></div>
+              <div class="p-dot" style="background:#f2cf6e; top:4px; left:22px;"></div>
+            </div>
+            <div class="p-hair"></div>
+            <div class="p-beret"></div>
+            <div class="p-head">
+              <div class="p-eyes"><div class="p-eye"></div><div class="p-eye"></div></div>
+              <div class="p-smile"></div>
+            </div>
+          </div>
+        </div>
+        <div class="professor-label">Prof.ssa Storditella</div>
+      </div>
+
+      <div class="controls-row">
+        <div class="class-select">
+          <button class="pill active">1ª – 2ª</button>
+          <button class="pill">3ª – 4ª</button>
+          <button class="pill">5ª e medie</button>
+        </div>
+        <button class="btn btn-blue">🔊 ASCOLTA</button>
+        <button class="btn btn-outline">🔇 STOP AUDIO</button>
+        <button class="btn btn-coral" id="newExplanationBtn" style="margin-left:auto;">NUOVA SPIEGAZIONE</button>
+      </div>
+
+      <div class="answer-row">
+        <input class="answer-input" placeholder="Cosa non torna nel quadro? Scrivi qui la tua correzione…" />
+        <button class="btn btn-coral big" id="foundBtn">HO TROVATO L'ERRORE!</button>
+      </div>
+
+      <div class="cattedra-bar">
+        🍎 <strong>Cattedra — materiale dell'insegnante</strong>
+        <span class="sub">nessun materiale: il professore inventa gli argomenti</span>
+        <span class="chev">⌄</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="celebrate-layer" id="celebrateLayer"></div>
+
+<script>
+(function(){
+  const body = document.body;
+  const boardText = document.getElementById('boardText');
+  const blackboard = document.getElementById('blackboard');
+  const cloud = document.getElementById('cloud');
+  const professor = document.getElementById('professor');
+  const pointsValue = document.getElementById('pointsValue');
+  const celebrateLayer = document.getElementById('celebrateLayer');
+
+  const texts = [
+    "Premi «Nuova spiegazione», tesoro. Ti racconterò dell'arte, dei colori, dei grandi pittori… se non mi distraggo. Cosa stavo dicendo?",
+    "Allora... i colori primari sono rosso, giallo e blu! Mescolandoli si ottengono tutti gli altri colori. Aspetta, dove ho messo il pennello?",
+    "Vediamo... un capolavoro è un'opera che l'artista considera la sua migliore, quella riuscita meglio di tutte le altre, dopo magari tanti tentativi e bozzetti buttati via. Leonardo da Vinci, per esempio, ha impiegato quattro anni interi per dipingere la Gioconda, ritoccandola quasi fino alla fine della sua vita! Immaginate quanta pazienza e quanta calma ci vuole per un lavoro così lungo… oh, guardate che bella nuvola fuori dalla finestra, sembra proprio un coniglietto!",
+    "L'arte serve a raccontare storie senza parole. Un quadro può farti sentire felice, triste o... aspetta, dov'ero rimasta?"
+  ];
+  let textIndex = 0;
+  let writeTimer = null;
+
+  function renderText(str){
+    boardText.innerHTML = '';
+    const parts = str.split(/(?<=[.!?…])\s+/).filter(Boolean);
+    parts.forEach((part, i) => {
+      const span = document.createElement('span');
+      span.className = 'line';
+      span.style.setProperty('--i', i);
+      span.textContent = part + ' ';
+      boardText.appendChild(span);
+    });
+  }
+
+  function fitBoardText(){
+    boardText.style.fontSize = '';
+    let size = parseFloat(getComputedStyle(boardText).fontSize);
+    const minSize = size * 0.6;
+    let guard = 0;
+    while (blackboard.scrollHeight > blackboard.clientHeight && size > minSize && guard < 40){
+      size -= 1;
+      boardText.style.fontSize = size + 'px';
+      guard++;
+    }
+  }
+
+  function distract(){
+    if (body.getAttribute('data-quiet') === 'on') return;
+    professor.classList.remove('distracted');
+    void professor.offsetWidth;
+    professor.classList.add('distracted');
+    if (body.getAttribute('data-variant') === 'giocosa'){
+      cloud.classList.remove('drift');
+      void cloud.offsetWidth;
+      cloud.classList.add('drift');
+    }
+    setTimeout(() => professor.classList.remove('distracted'), 1600);
+  }
+
+  function playWrite(){
+    fitBoardText();
+    body.removeAttribute('data-writing');
+    void boardText.offsetWidth;
+    body.setAttribute('data-writing', 'true');
+
+    const isQuiet = body.getAttribute('data-quiet') === 'on';
+    const amp = body.getAttribute('data-variant') === 'giocosa' ? 1 : 0.4;
+    const lines = boardText.querySelectorAll('.line').length;
+    const lastDelay = isQuiet ? 0 : (Math.max(0, lines - 1) * 280 / amp);
+    const totalDelay = lastDelay + 900;
+
+    clearTimeout(writeTimer);
+    writeTimer = setTimeout(distract, totalDelay);
+  }
+
+  function nextExplanation(){
+    textIndex = (textIndex + 1) % texts.length;
+    renderText(texts[textIndex]);
+    requestAnimationFrame(playWrite);
+  }
+
+  function bounceBtn(btn){
+    btn.classList.remove('pressed');
+    void btn.offsetWidth;
+    btn.classList.add('pressed');
+  }
+
+  function spawnSparkles(anchor){
+    const rect = anchor.getBoundingClientRect();
+    const cx = rect.left + rect.width/2;
+    const cy = rect.top;
+    const glyphs = ['✨','⭐','🌟','✦'];
+    const count = body.getAttribute('data-variant') === 'giocosa' ? 14 : 6;
+    for (let i=0;i<count;i++){
+      const s = document.createElement('div');
+      s.className = 'sparkle';
+      s.textContent = glyphs[i % glyphs.length];
+      const angle = (Math.PI*2*i/count) + Math.random()*0.4;
+      const dist = 60 + Math.random()*70;
+      s.style.setProperty('--dx', Math.cos(angle)*dist + 'px');
+      s.style.setProperty('--dy', (Math.sin(angle)*dist - 30) + 'px');
+      s.style.left = cx + 'px';
+      s.style.top = cy + 'px';
+      celebrateLayer.appendChild(s);
+      s.addEventListener('animationend', () => s.remove());
+    }
+  }
+
+  function spawnCheck(){
+    const c = document.createElement('div');
+    c.className = 'check-pop';
+    c.textContent = '✓';
+    celebrateLayer.appendChild(c);
+    c.addEventListener('animationend', () => c.remove());
+  }
+
+  function celebrate(anchor){
+    const isQuiet = body.getAttribute('data-quiet') === 'on';
+    if (isQuiet) spawnCheck(); else spawnSparkles(anchor);
+
+    const from = parseInt(pointsValue.textContent, 10);
+    const to = from + 10;
+    const dur = isQuiet ? 200 : 650;
+    const start = performance.now();
+    function tick(now){
+      const p = Math.min(1, (now - start) / dur);
+      pointsValue.textContent = Math.round(from + (to - from) * p);
+      if (p < 1) requestAnimationFrame(tick);
+      else {
+        pointsValue.textContent = to;
+        if (!isQuiet){
+          pointsValue.classList.remove('bump');
+          void pointsValue.offsetWidth;
+          pointsValue.classList.add('bump');
+        }
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+
+  document.getElementById('variantSeg').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-v]');
+    if (!btn) return;
+    document.querySelectorAll('#variantSeg button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    body.setAttribute('data-variant', btn.dataset.v);
+    fitBoardText();
+  });
+
+  const quietToggle = document.getElementById('quietToggle');
+  const quietCheck = document.getElementById('quietCheck');
+  function setQuiet(on){
+    body.setAttribute('data-quiet', on ? 'on' : 'off');
+    quietToggle.dataset.on = on ? 'true' : 'false';
+    quietCheck.checked = on;
+  }
+  quietToggle.addEventListener('click', () => setQuiet(body.getAttribute('data-quiet') !== 'on'));
+  quietCheck.addEventListener('change', (e) => setQuiet(e.target.checked));
+
+  document.getElementById('newExplanationBtn').addEventListener('click', (e) => {
+    bounceBtn(e.currentTarget);
+    nextExplanation();
+  });
+  document.getElementById('foundBtn').addEventListener('click', (e) => {
+    bounceBtn(e.currentTarget);
+    celebrate(e.currentTarget);
+  });
+
+  window.addEventListener('resize', fitBoardText);
+
+  renderText(texts[0]);
+  requestAnimationFrame(() => requestAnimationFrame(playWrite));
+  if (document.fonts && document.fonts.ready){
+    document.fonts.ready.then(fitBoardText);
+  }
+})();
+</script>
+</body>
+</html>
