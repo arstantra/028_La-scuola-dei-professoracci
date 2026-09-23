@@ -100,6 +100,7 @@ body.standalone-fs .fsbtn { background:#3a2c18; color:#fff; }
   font-family:'Caveat',cursive; font-weight:600; font-size:33px;
   line-height:1.42; color:#f6f3e9; text-shadow:0 0 3px rgba(246,243,233,.3);
   margin-top:8px; min-height:170px;
+  max-width:100%; overflow-wrap:anywhere; word-break:normal;
 }
 /* con una classe in gioco le parole della lavagna si toccano */
 body.conclasse .chalktext .w { cursor:pointer; border-radius:6px; transition:background .12s; }
@@ -107,7 +108,7 @@ body.conclasse .chalktext .w:hover { background:rgba(246,243,233,.12); }
 .chalktext .w.no { color:#ffb3a7; animation:noparola .5s ease; }
 @keyframes noparola { 0%,100%{} 20%{ background:rgba(226,87,76,.35);} 25%,75%{ display:inline-block; transform:translateX(-4px);} 50%{ transform:translateX(4px);} }
 .chalktext .evid { color:#f2d98c; text-decoration:underline wavy rgba(242,217,140,.75) 2.5px; }
-.chalktext .corr { color:#a9d8f2; font-size:.8em; text-shadow:0 0 3px rgba(169,216,242,.35); white-space:nowrap; }
+.chalktext .corr { color:#a9d8f2; font-size:.8em; text-shadow:0 0 3px rgba(169,216,242,.35); white-space:normal; overflow-wrap:anywhere; }
 /* contatore errori sulla lavagna */
 .errcount {
   position:absolute; top:-10px; left:18px; z-index:3; transform:rotate(-2deg);

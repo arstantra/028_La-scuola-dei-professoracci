@@ -3,7 +3,7 @@
    Strategia "prima la rete": si vede sempre l'ultima versione pubblicata;
    la copia in cache serve solo se la rete manca.
    Le chiamate a Gemini (POST verso Google) non passano di qui. */
-const CACHE = 'professoracci-v7';
+const CACHE = 'professoracci-v8';
 const BASE = [
   './', './index.html', './registro.html', './crea-professore.html', './aule/aula.html',
   './assets/aula.css', './assets/professoracci.js', './assets/classi.js',
