@@ -337,3 +337,9 @@ body.calma .profcol.sconfitto .prof { animation:none !important; }
   .globe, .easel, .drip, .bubbleup, .poster .orbit,
   .phonebox, .letterfloat, .steam, .sq.vince, .sq.gnee, .sqgrid.chiedi .sq { animation:none !important; }
 }
+
+/* regolatore velocità voce + scrittura */
+.speedctl { display:flex; align-items:center; gap:6px; font-size:18px; color:#5d4426; }
+.speedctl .lab { font-family:'Caveat',cursive; font-weight:700; font-size:22px; color:#5d4426; }
+.speedctl input[type=range] { width:110px; accent-color:var(--accent,#5a4fcf); cursor:pointer; }
+.speedctl #velval { font-family:'Fredoka',sans-serif; font-weight:600; font-size:14px; min-width:34px; }

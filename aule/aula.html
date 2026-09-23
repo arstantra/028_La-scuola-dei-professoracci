@@ -69,6 +69,11 @@
     </div>
     <button class="btn blue" id="speak">🔊 ASCOLTA</button>
     <button class="btn wood" id="stopaudio">🔇 STOP AUDIO</button>
+    <label class="speedctl" title="Velocità di voce e scrittura">
+      <span class="lab">Velocità</span> 🐢
+      <input type="range" id="velocita" min="0.5" max="2" step="0.1" value="1">
+      🐇 <span id="velval">1×</span>
+    </label>
     <button class="btn red" id="nuova" style="margin-left:auto;" disabled>NUOVA SPIEGAZIONE</button>
   </div>
 
@@ -504,6 +509,7 @@ ${antiripeti}` + jsonRichiesto;
 async function nuovaSpiegazione() {
   if (occupato) return;
   occupato = true;
+  clearInterval(twTimer);
   speechSynthesis.cancel();
   setProf('');
   bolla(cfg.msg.preparo);
@@ -519,7 +525,7 @@ async function nuovaSpiegazione() {
     erroriRecenti = [...erroriRecenti.slice(-7), lezione.errore];
     sessionStorage.setItem(RECENTI_KEY, JSON.stringify(erroriRecenti));
     bolla(cfg.msg.pronto);
-    typewrite(lezione.spiegazione, () => { parla(lezione.spiegazione); });
+    scriviEParla(lezione.spiegazione);
   } catch (e) {
     console.error(e);
     const msg = /503|UNAVAILABLE/i.test(String(e)) ? cfg.msg.err503 :
@@ -541,6 +547,7 @@ async function verifica() {
   const risposta = $('answer').value.trim();
   if (!risposta) { bolla(cfg.msg.vuoto); return; }
   occupato = true;
+  if (twTimer) { clearInterval(twTimer); twTimer = null; $('chalktext').textContent = lezione.spiegazione; }
   $('verifica').disabled = true; $('nuova').disabled = true;
   bolla(cfg.msg.controllo);
 
@@ -610,19 +617,57 @@ Rispondi SOLO con questo JSON:
 
 /* ============ EFFETTI ============ */
 let twTimer = null;
-function typewrite(testo, fine) {
+/* Il prof scrive alla lavagna MENTRE parla.
+   - Se il browser segnala le parole pronunciate (evento "boundary"), la scrittura segue la voce.
+   - Altrimenti (o se l'audio è fermato) scrive a un ritmo stimato sulla velocità della voce. */
+function scriviEParla(testo, fine) {
   clearInterval(twTimer);
   const el = $('chalktext');
-  let i = 0;
+  const rate = rateVoce();
+  const cps = 14 * rate;                 // caratteri al secondo stimati
+  const passoMax = Math.max(1, Math.round(cps * 0.03 * 3)); // quanto può "rincorrere" per tick
+  let pos = 0, target = 0, boundary = false, finita = false, parlaOk = true;
+  let tInizio = null, tUltimo = 0;
+  const t0 = performance.now();
+
+  const disegna = () => {
+    el.textContent = testo.slice(0, pos);
+    const c = document.createElement('span'); c.className = 'chalkcursor'; el.appendChild(c);
+  };
+  disegna();
+
+  const u = creaUtterance(testo);
+  if (u) {
+    u.onstart = () => { if (tInizio === null) tInizio = performance.now(); };
+    u.onboundary = e => {
+      if (e.name && e.name !== 'word') return;
+      let k = e.charIndex + (e.charLength || 0);
+      if (!e.charLength) { const m = testo.slice(e.charIndex).search(/\s/); k = m < 0 ? testo.length : e.charIndex + m; }
+      target = Math.max(target, k); boundary = true; tUltimo = performance.now();
+      if (tInizio === null) tInizio = tUltimo;
+    };
+    u.onend = () => { finita = true; };
+    u.onerror = () => { parlaOk = false; };   // audio fermato: si continua a scrivere a tempo
+    speechSynthesis.speak(u);
+  } else parlaOk = false;
+
   twTimer = setInterval(() => {
-    i++;
-    el.innerHTML = testo.slice(0, i) + '<span class="chalkcursor"></span>';
-    if (i >= testo.length) {
-      clearInterval(twTimer);
+    const ora = performance.now();
+    if (tInizio === null && (!parlaOk || ora - t0 > 900)) tInizio = ora; // la voce non parte: vai a tempo
+    let goal = 0;
+    if (tInizio !== null) {
+      const stima = (ora - tInizio) / 1000 * cps;
+      if (finita) goal = testo.length;
+      else if (boundary && parlaOk && ora - tUltimo < 2000) goal = target;
+      else goal = Math.max(target, stima);
+    }
+    if (pos < goal) { pos = Math.min(Math.ceil(goal), pos + passoMax, testo.length); disegna(); }
+    if (pos >= testo.length) {
+      clearInterval(twTimer); twTimer = null;
       el.textContent = testo;
       if (fine) fine();
     }
-  }, 32);
+  }, 30);
 }
 function evidenziaErrore() {
   if (!lezione) return;
@@ -664,18 +709,27 @@ function stelle() {
 }
 
 /* ============ VOCE ============ */
-function parla(testo) {
-  if (!cfg) return;
+let velocita = +(localStorage.getItem('professoracci_velocita') || 1);
+function rateVoce() {
+  const base = cfg && cfg.voce ? cfg.voce.rate : 1;
+  return Math.min(3, Math.max(0.3, base * velocita));
+}
+function creaUtterance(testo) {
+  if (!cfg || !('speechSynthesis' in window)) return null;
   speechSynthesis.cancel();
   const lang = cfg.lang || 'it-IT';
   const u = new SpeechSynthesisUtterance(testo);
-  u.lang = lang; u.pitch = cfg.voce.pitch; u.rate = cfg.voce.rate;
+  u.lang = lang; u.pitch = cfg.voce.pitch; u.rate = rateVoce();
   const voci = speechSynthesis.getVoices();
   const norm = s => s.replace('_', '-').toLowerCase();
   const voce = voci.find(v => norm(v.lang) === lang.toLowerCase()) ||
                voci.find(v => norm(v.lang).startsWith(lang.slice(0, 2)));
   if (voce) u.voice = voce;
-  speechSynthesis.speak(u);
+  return u;
+}
+function parla(testo) {
+  const u = creaUtterance(testo);
+  if (u) speechSynthesis.speak(u);
 }
 speechSynthesis.getVoices(); // precarica
 
@@ -693,6 +747,15 @@ $('speak').addEventListener('click', () => {
   if (t) parla(t);
 });
 $('stopaudio').addEventListener('click', () => { speechSynthesis.cancel(); });
+(() => {
+  const r = $('velocita'), lab = $('velval');
+  const mostra = () => { lab.textContent = velocita.toLocaleString('it-IT', { maximumFractionDigits: 1 }) + '×'; };
+  r.value = velocita; mostra();
+  r.addEventListener('input', () => {
+    velocita = +r.value; mostra();
+    try { localStorage.setItem('professoracci_velocita', velocita); } catch (e) {}
+  });
+})();
 
 /* ============ POLVERE ============ */
 for (let i = 0; i < 14; i++) {
