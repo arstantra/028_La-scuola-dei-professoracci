@@ -7,9 +7,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;700;800;900&family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/aula.css?v=3">
+<link rel="stylesheet" href="../assets/aula.css?v=4">
 <link rel="modulepreload" href="https://esm.sh/@google/genai@0.14.1">
-<script src="../assets/professoracci.js?v=3"></script>
+<script src="../assets/professoracci.js?v=4"></script>
+<script src="../assets/classi.js?v=4"></script>
 </head>
 <body>
 <div class="wrap">
@@ -24,7 +25,7 @@
       <circle cx="30" cy="30" r="2.5" fill="#333"/>
     </svg>
     <button class="calmbtn" id="calmbtn" title="Riduce le animazioni e gli stimoli visivi">🌿 modalità tranquilla</button>
-    <div class="score" id="score">★ <b id="pts">0</b> punti</div>
+    <div class="score" id="score" title="Punti totali"><span class="scorecls" id="scorecls"></span>★ <b id="pts">0</b> punti</div>
   </div>
 
   <div id="decor"></div>
@@ -76,6 +77,27 @@
     <button class="btn red" id="verifica" disabled>HO TROVATO L'ERRORE!</button>
   </div>
 
+  <!-- ============ SQUADRE IN GARA (classe attiva) ============ -->
+  <section class="squadre" id="squadre">
+    <div class="sqhead">
+      <span class="sqtitle">🏆 Squadre in gara</span>
+      <label class="sqcls">Classe
+        <select id="selclasse"></select>
+      </label>
+      <div class="sqgruppi" id="sqgruppi" title="Ogni clic rimescola i gruppi a caso (solo tra i presenti)">
+        <span class="lab">🎲 Gruppi:</span>
+        <button class="gbtn" data-dim="1">singoli</button>
+        <button class="gbtn" data-dim="2">da 2</button>
+        <button class="gbtn" data-dim="3">da 3</button>
+        <button class="gbtn" data-dim="4">da 4</button>
+        <button class="gbtn" data-dim="5">da 5</button>
+      </div>
+      <a class="sqlink" href="../registro.html">📒 registro di classe</a>
+    </div>
+    <p class="sqhint" id="sqhint"></p>
+    <div class="sqgrid" id="sqgrid"></div>
+  </section>
+
   <!-- ============ CATTEDRA: materiale dell'insegnante ============ -->
   <details class="cattedra" id="cattedra">
     <summary>
@@ -112,7 +134,9 @@
 import { GoogleGenAI } from 'https://esm.sh/@google/genai@0.14.1';
 
 const P = window.Professoracci;
+const C = window.Classi;
 const $ = id => document.getElementById(id);
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
 
 /* ============ QUALE PROFESSORE? ============ */
 const profId = new URLSearchParams(location.search).get('prof') || '';
@@ -149,7 +173,30 @@ if (cfg) {
   if (cfg.boardExtraHtml) $('board').insertAdjacentHTML('beforeend', cfg.boardExtraHtml);
   if (cfg.profExtraHtml) $('profcol').insertAdjacentHTML('afterbegin', cfg.profExtraHtml);
   if (cfg.trayExtraHtml) $('tray').insertAdjacentHTML('afterbegin', cfg.trayExtraHtml);
+  if (cfg.ui) {
+    if (cfg.ui.nuova) $('nuova').textContent = cfg.ui.nuova;
+    if (cfg.ui.verifica) $('verifica').textContent = cfg.ui.verifica;
+    if (cfg.ui.ascolta) $('speak').textContent = cfg.ui.ascolta;
+    if (cfg.ui.stop) $('stopaudio').textContent = cfg.ui.stop;
+  }
+  if (cfg.lang) document.documentElement.lang = cfg.lang.slice(0, 2);
 }
+
+/* frasi di squadra (i prof possono avere le loro in cfg.msg.gnee / bravi / chi) */
+const GNEE_IT = [
+  'Gneee! Sbagliato! Lo sapevo che la mia lezione era perfetta!',
+  'Gneee! Niente da fare, il professore resiste! Chi ci prova adesso?',
+  'Ah-ha! Acqua, acqua! Tocca a qualcun altro!',
+  'Gneee! Neanche vicino! Avanti il prossimo!'
+];
+const BRAVI_IT = [
+  'Ahi ahi... avete ragione voi. Ma solo per questa volta!',
+  'Nooo! Mi avete scoperto! Dieci punti, uffa.',
+  'Va bene, va bene... era un errore. Piccolissimo. Dieci punti!'
+];
+const CHI_IT = 'Mmm... chi ha risposto? Insegnante, premi ✅ sulla sua squadra!';
+const frasiGnee = () => (cfg && cfg.msg.gnee) || GNEE_IT;
+const frasiBravi = () => (cfg && cfg.msg.bravi) || BRAVI_IT;
 
 /* ============ MODALITÀ TRANQUILLA ============ */
 P.applicaCalma();
@@ -162,10 +209,146 @@ const MODEL = 'gemini-2.5-flash-lite';
 const RECENTI_KEY = 'recenti_' + profId;
 let livello = 'facile';
 let lezione = null;          // { spiegazione, errore, correzione, indizio }
-let punti = +(localStorage.getItem('professoracci_punti') || 0);
+let punti = +(localStorage.getItem('professoracci_punti') || 0);   // gioco libero (senza classe)
 let erroriRecenti = JSON.parse(sessionStorage.getItem(RECENTI_KEY) || '[]');
 let occupato = false;
-$('pts').textContent = punti;
+let risolta = false;    // l'AI ha già riconosciuto la risposta giusta (casella)
+let premiata = false;   // i punti di questa spiegazione sono già stati assegnati
+
+/* ============ CLASSE ATTIVA E SQUADRE ============ */
+function classe() { return C.getAttiva(); }
+
+function aggiornaScore(pop) {
+  const c = classe();
+  $('scorecls').textContent = c ? '🏫 ' + c.nome + ' · ' : '';
+  $('pts').textContent = c ? c.punti : punti;
+  $('score').title = c ? 'Punti totali della classe ' + c.nome + ' (tutte le materie)' : 'Punti del gioco libero';
+  if (pop) { const s = $('score'); s.classList.remove('pop'); void s.offsetWidth; s.classList.add('pop'); }
+}
+
+function renderSelClasse() {
+  const sel = $('selclasse'), c = classe();
+  sel.innerHTML = '';
+  const o0 = document.createElement('option');
+  o0.value = ''; o0.textContent = '— gioco libero —';
+  sel.appendChild(o0);
+  C.elenco().forEach(k => {
+    const o = document.createElement('option');
+    o.value = k.id; o.textContent = k.nome;
+    sel.appendChild(o);
+  });
+  sel.value = c ? c.id : '';
+}
+
+const COLORI_SQ = ['#e2574c','#3b6ea5','#4d8f4d','#e5b93c','#8a6a9e','#2aa198','#c75b9b','#b3622e'];
+
+function renderSquadre() {
+  const c = classe(), grid = $('sqgrid'), hint = $('sqhint');
+  document.body.classList.toggle('conclasse', !!c);
+  grid.innerHTML = '';
+  if (!c) {
+    hint.innerHTML = 'Nessuna classe scelta: si gioca <b>in modalità libera</b> (punti unici per questo computer). ' +
+      'Scegli una classe dal menu qui sopra oppure creala nel <a href="../registro.html">📒 registro di classe</a>.';
+    return;
+  }
+  const sq = C.squadre(c);
+  if (!sq.length) {
+    hint.innerHTML = 'La classe <b>' + P.escapeHtml(c.nome) + '</b> non ha ancora alunni presenti: aggiungili nel <a href="../registro.html">📒 registro di classe</a>.';
+    return;
+  }
+  hint.textContent = (lezione && !premiata)
+    ? 'Chi alza la mano risponde a voce: premi ✅ se ha trovato l\'errore (+' + C.PUNTI_GIUSTO + ' punti alla squadra), ❌ se ha sbagliato e il gioco continua.'
+    : 'Premi «' + $('nuova').textContent + '» per iniziare: poi ✅ o ❌ sulla squadra che risponde.';
+  sq.forEach((s, i) => {
+    const d = document.createElement('div');
+    d.className = 'sq' + (s.solo ? ' solo' : '');
+    d.dataset.id = s.id;
+    d.style.setProperty('--sq', COLORI_SQ[i % COLORI_SQ.length]);
+    const nome = document.createElement('div');
+    nome.className = 'sqname';
+    nome.textContent = (s.emoji ? s.emoji + ' ' : '') + s.nome;
+    d.appendChild(nome);
+    if (!s.solo) {
+      const m = document.createElement('div');
+      m.className = 'sqmembers';
+      m.textContent = s.membri.map(a => a.nome).join(' · ');
+      d.appendChild(m);
+    }
+    const pt = document.createElement('div');
+    pt.className = 'sqpts';
+    pt.innerHTML = '<b>' + s.punti + '</b> pt';
+    d.appendChild(pt);
+    const bt = document.createElement('div');
+    bt.className = 'sqbtns';
+    const ok = document.createElement('button');
+    ok.className = 'sqok'; ok.textContent = '✅'; ok.title = 'Giusto! +' + C.PUNTI_GIUSTO + ' punti';
+    ok.addEventListener('click', () => premiaSquadra(s.id));
+    const ko = document.createElement('button');
+    ko.className = 'sqko'; ko.textContent = '❌'; ko.title = 'Sbagliato: gneee e si continua';
+    ko.addEventListener('click', () => sbagliaSquadra(s.id));
+    bt.append(ok, ko);
+    d.appendChild(bt);
+    grid.appendChild(d);
+  });
+  grid.classList.toggle('attesa', !lezione || premiata);
+}
+
+function renderClasse() { renderSelClasse(); renderSquadre(); aggiornaScore(); }
+
+function cardSquadra(id) { return $('sqgrid').querySelector('.sq[data-id="' + id + '"]'); }
+function nomeSquadra(id) {
+  const s = C.squadre(classe()).find(x => x.id === id);
+  return s ? (s.emoji ? s.emoji + ' ' : '') + s.nome : '';
+}
+
+function premiaSquadra(id) {
+  if (occupato) return;
+  if (!lezione) { bolla(cfg.msg.noLezione); return; }
+  if (premiata) return;
+  const c = classe(); if (!c) return;
+  const nome = nomeSquadra(id);
+  const sq = C.assegna(c.id, id, cfg.id, C.PUNTI_GIUSTO);
+  if (!sq) return;
+  premiata = true;
+  C.suoni.evviva();
+  setProf('sconfitto');
+  stelle();
+  if (!risolta) evidenziaErrore();
+  lezione = null;
+  const frase = pick(frasiBravi());
+  bolla('✅ ' + nome + ' — ' + frase + ' (+' + C.PUNTI_GIUSTO + ')');
+  parla(frase);
+  renderSquadre();
+  aggiornaScore(true);
+  const card = cardSquadra(id);
+  if (card) card.classList.add('vince');
+}
+
+function sbagliaSquadra(id) {
+  if (occupato) return;
+  if (!lezione) { bolla(cfg.msg.noLezione); return; }
+  if (premiata) return;
+  const nome = nomeSquadra(id);
+  C.suoni.gneee();
+  setProf('felice');
+  const frase = pick(frasiGnee());
+  bolla('❌ ' + nome + ' — ' + frase);
+  setTimeout(() => parla(frase), 900);
+  setTimeout(() => setProf(''), 3500);
+  const card = cardSquadra(id);
+  if (card) { card.classList.remove('gnee'); void card.offsetWidth; card.classList.add('gnee'); }
+}
+
+$('selclasse').addEventListener('change', e => { C.setAttiva(e.target.value || null); renderClasse(); });
+document.querySelectorAll('.gbtn').forEach(b => b.addEventListener('click', () => {
+  const c = classe(); if (!c) return;
+  C.gruppiCasuali(c.id, +b.dataset.dim);
+  renderSquadre();
+}));
+/* se il registro è stato modificato in un'altra scheda, riallinea */
+window.addEventListener('focus', renderClasse);
+window.addEventListener('storage', e => { if (e.key === 'professoracci_classi') renderClasse(); });
+renderClasse();
 
 /* ============ MATERIALE DELLA LEZIONE ============ */
 function materiale() { return cfg ? P.getMateriale(cfg.id) : null; }
@@ -297,7 +480,7 @@ function promptGenerazione() {
   const base = cfg.persona + '\n\n';
   const antiripeti = 'NON usare questi errori già fatti di recente: ' +
     (erroriRecenti.length ? erroriRecenti.join('; ') : 'nessuno') + '.';
-  const jsonRichiesto = '\n\nRispondi SOLO con questo JSON:\n' +
+  const jsonRichiesto = (cfg.notaLingua ? '\n' + cfg.notaLingua : '') + '\n\nRispondi SOLO con questo JSON:\n' +
     '{"spiegazione":"il testo che scrivi alla lavagna, errore incluso","errore":"la parte sbagliata, citata esatta","correzione":"la forma corretta","indizio":"un piccolo aiuto senza svelare la soluzione"}';
 
   if (m) {
@@ -328,6 +511,8 @@ async function nuovaSpiegazione() {
   $('chalktext').innerHTML = '';
   $('answer').value = '';
   $('nuova').disabled = true; $('verifica').disabled = true;
+  lezione = null; risolta = false; premiata = false;
+  $('sqgrid').querySelectorAll('.vince').forEach(x => x.classList.remove('vince'));
 
   try {
     lezione = await chiamaGemini(promptGenerazione(), 1.0);
@@ -346,11 +531,13 @@ async function nuovaSpiegazione() {
   $('board').classList.remove('loading');
   $('nuova').disabled = false; $('verifica').disabled = false;
   occupato = false;
+  renderSquadre();
 }
 
 async function verifica() {
   if (occupato) return;
   if (!lezione) { bolla(cfg.msg.noLezione); return; }
+  if (risolta) { bolla(cfg.msg.chi || CHI_IT); return; }
   const risposta = $('answer').value.trim();
   if (!risposta) { bolla(cfg.msg.vuoto); return; }
   occupato = true;
@@ -369,12 +556,33 @@ Valuta la risposta:
 
 Poi scrivi un commento nel tuo personaggio (2-3 frasi): se "bravo" ammetti l'errore a malincuore con ${cfg.scusaBravo} e fai i complimenti; se "quasi" incoraggia e dai questo indizio: "${lezione.indizio}"; se "sbagliato" ${cfg.gongola || 'gongola bonariamente'} e invita a riprovare con l'indizio.
 
+${cfg.notaLingua || ''}
+
 Rispondi SOLO con questo JSON:
 {"esito":"bravo|quasi|sbagliato","commento":"..."}`;
 
   try {
     const v = await chiamaGemini(prompt, 0.2);
-    if (v.esito === 'bravo') {
+    if (classe()) {
+      /* ---- modalità classe: i punti li assegna l'insegnante con ✅ ---- */
+      if (v.esito === 'bravo') {
+        risolta = true;
+        C.suoni.evviva();
+        setProf('sconfitto');
+        stelle();
+        evidenziaErrore();
+        bolla('✅ ' + v.commento + ' ' + (cfg.msg.chi || CHI_IT));
+        const g = $('sqgrid'); g.classList.remove('chiedi'); void g.offsetWidth; g.classList.add('chiedi');
+      } else if (v.esito === 'quasi') {
+        setProf('');
+        bolla('🤏 ' + v.commento);
+      } else {
+        C.suoni.gneee();
+        setProf('felice');
+        bolla('❌ ' + v.commento);
+        setTimeout(() => setProf(''), 3500);
+      }
+    } else if (v.esito === 'bravo') {
       aggiornaPunti(10);
       setProf('sconfitto');
       stelle();
@@ -386,11 +594,12 @@ Rispondi SOLO con questo JSON:
       setProf('');
       bolla('🤏 ' + v.commento + ' (+2 punti, riprova!)');
     } else {
+      C.suoni.gneee();
       setProf('felice');
       bolla('❌ ' + v.commento);
       setTimeout(() => setProf(''), 3500);
     }
-    parla(v.commento);
+    if (v.esito === 'sbagliato') setTimeout(() => parla(v.commento), 900); else parla(v.commento);
   } catch (e) {
     console.error(e);
     bolla(cfg.msg.registro);
@@ -434,12 +643,10 @@ function setProf(stato) {
   p.classList.remove('felice', 'sconfitto');
   if (stato) p.classList.add(stato);
 }
-function aggiornaPunti(n) {
+function aggiornaPunti(n) {   // solo gioco libero
   punti += n;
   localStorage.setItem('professoracci_punti', punti);
-  $('pts').textContent = punti;
-  const s = $('score');
-  s.classList.remove('pop'); void s.offsetWidth; s.classList.add('pop');
+  aggiornaScore(true);
 }
 function stelle() {
   const box = document.createElement('div');
@@ -460,9 +667,13 @@ function stelle() {
 function parla(testo) {
   if (!cfg) return;
   speechSynthesis.cancel();
+  const lang = cfg.lang || 'it-IT';
   const u = new SpeechSynthesisUtterance(testo);
-  u.lang = 'it-IT'; u.pitch = cfg.voce.pitch; u.rate = cfg.voce.rate;
-  const voce = speechSynthesis.getVoices().find(v => v.lang.startsWith('it'));
+  u.lang = lang; u.pitch = cfg.voce.pitch; u.rate = cfg.voce.rate;
+  const voci = speechSynthesis.getVoices();
+  const norm = s => s.replace('_', '-').toLowerCase();
+  const voce = voci.find(v => norm(v.lang) === lang.toLowerCase()) ||
+               voci.find(v => norm(v.lang).startsWith(lang.slice(0, 2)));
   if (voce) u.voice = voce;
   speechSynthesis.speak(u);
 }

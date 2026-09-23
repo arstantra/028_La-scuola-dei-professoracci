@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro di classe — La Scuola dei Professoracci</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;700;800;900&family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="assets/professoracci.js?v=4"></script>
+<script src="assets/classi.js?v=4"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html { background:#cfa96f; }
+body {
+  font-family:'Nunito',sans-serif; min-height:100vh; color:#3a2c18;
+  background:
+    radial-gradient(ellipse 55% 40% at 15% 0%, rgba(255,236,180,.35), transparent 70%),
+    linear-gradient(#e9d5ac 0 70%, #d9bd8a 70% 71%, #cfa96f 71%);
+  background-attachment:fixed;
+}
+.wrap { max-width:1080px; margin:0 auto; padding:16px 24px 60px; }
+
+/* barra */
+.topbar { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+.back {
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:15px; text-decoration:none;
+  color:#fff; background:#8a5a33; border:3px solid #6b4423; border-radius:99px;
+  padding:8px 18px; box-shadow:0 4px 0 #4a2d15; transition:transform .12s, box-shadow .12s;
+}
+.back:hover { transform:translateY(2px); box-shadow:0 2px 0 #4a2d15; }
+h1 { font-family:'Fredoka',sans-serif; font-weight:700; font-size:clamp(24px,3.4vw,34px); color:#5d4426; }
+.privacy {
+  margin:14px 0 18px; font-size:14px; line-height:1.5; color:#5d4426;
+  background:#fff3a6; border-radius:4px; padding:10px 16px; box-shadow:0 4px 10px rgba(0,0,0,.15);
+  transform:rotate(-.3deg);
+}
+
+/* layout */
+.layout { display:grid; grid-template-columns:240px 1fr; gap:22px; align-items:start; }
+@media (max-width:780px){ .layout{ grid-template-columns:1fr; } }
+
+.card {
+  background:#fdf6df; border:3px solid #8a5a33; border-radius:16px;
+  box-shadow:0 7px 0 #6b4423, 0 14px 28px rgba(0,0,0,.2); padding:16px 18px 18px;
+}
+.card h2 { font-family:'Fredoka',sans-serif; font-weight:600; font-size:18px; color:#5d4426; margin-bottom:10px; }
+.card h3 { font-family:'Fredoka',sans-serif; font-weight:600; font-size:16px; color:#5d4426; margin:18px 0 8px; }
+.muted { font-size:13.5px; color:#8a7658; line-height:1.45; }
+
+/* elenco classi */
+.clslist { display:flex; flex-direction:column; gap:7px; margin-bottom:12px; }
+.clsbtn {
+  display:flex; justify-content:space-between; align-items:center; gap:8px; cursor:pointer; text-align:left;
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:17px; color:#5d4426;
+  background:#fff; border:3px solid #d9bd8a; border-radius:12px; padding:7px 12px; transition:all .12s;
+}
+.clsbtn small { font-family:'Nunito',sans-serif; font-weight:800; font-size:12px; color:#8a7658; }
+.clsbtn:hover { border-color:#8a5a33; }
+.clsbtn.on { background:#3b6ea5; border-color:#2c4f78; color:#fff; box-shadow:0 3px 0 #223d5c; }
+.clsbtn.on small { color:#dce8f5; }
+
+input[type=text], textarea, select {
+  font-family:'Nunito',sans-serif; font-weight:700; font-size:15px; color:#3a2c18;
+  background:#fff; border:3px solid #d9bd8a; border-radius:10px; padding:8px 11px;
+}
+input[type=text]:focus, textarea:focus, select:focus { outline:none; border-color:#8a5a33; }
+textarea { width:100%; min-height:110px; resize:vertical; }
+.row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.row input[type=text] { flex:1; min-width:90px; }
+
+.btn {
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:15px; cursor:pointer; white-space:nowrap;
+  color:#fff; border-radius:11px; padding:8px 16px; transition:transform .12s, box-shadow .12s;
+}
+.btn.blue { background:#3b6ea5; border:3px solid #2c4f78; box-shadow:0 4px 0 #223d5c; }
+.btn.green { background:#4d8f4d; border:3px solid #3a6f3a; box-shadow:0 4px 0 #2c552c; }
+.btn.wood { background:#8a5a33; border:3px solid #6b4423; box-shadow:0 4px 0 #4a2d15; }
+.btn.red { background:#e2574c; border:3px solid #b03a31; box-shadow:0 4px 0 #8f2d26; }
+.btn.light { color:#5d4426; background:#fff; border:3px solid #d9bd8a; box-shadow:0 4px 0 #c8a86a; }
+.btn:hover { transform:translateY(2px); }
+.btn.sure { background:#8f2d26; border-color:#5e1622; animation:pulse .5s ease infinite alternate; }
+@keyframes pulse { to { transform:scale(1.05); } }
+
+.io { margin-top:18px; padding-top:14px; border-top:2px dashed #d9bd8a; display:flex; flex-direction:column; gap:8px; }
+.io .btn { width:100%; }
+#fileimport { display:none; }
+.msg { font-family:'Caveat',cursive; font-size:20px; font-weight:600; color:#4d8f4d; min-height:24px; margin-top:6px; }
+.msg.err { color:#c94f44; }
+
+/* testata classe */
+.clshead { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:6px; }
+.clshead input { font-family:'Fredoka',sans-serif; font-size:24px; font-weight:700; color:#5d4426; width:130px; flex:0 1 auto; }
+.badge {
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:13px; color:#fff;
+  background:#4d8f4d; border-radius:99px; padding:4px 12px;
+}
+.clshead .spacer { flex:1; }
+
+/* schede */
+.tabs { display:flex; gap:6px; margin:14px 0 4px; border-bottom:3px solid #d9bd8a; }
+.tab {
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:15px; cursor:pointer; color:#8a7658;
+  background:transparent; border:3px solid transparent; border-bottom:0; border-radius:10px 10px 0 0;
+  padding:7px 16px; margin-bottom:-3px;
+}
+.tab.on { color:#5d4426; background:#fdf6df; border-color:#d9bd8a; }
+.pane { display:none; padding-top:10px; }
+.pane.on { display:block; }
+
+/* alunni */
+.alunni { display:flex; flex-direction:column; gap:6px; margin-top:8px; }
+.al {
+  display:grid; grid-template-columns:1fr auto auto auto; gap:8px; align-items:center;
+  background:#fff; border:2.5px solid #eadcb9; border-radius:11px; padding:5px 8px;
+}
+.al.assente { opacity:.55; background:#f4efe2; }
+.al input[type=text] { border-color:transparent; background:transparent; padding:5px 6px; min-width:0; }
+.al input[type=text]:hover { border-color:#eadcb9; }
+.al input[type=text]:focus { border-color:#8a5a33; background:#fff; }
+.al select { font-size:13.5px; padding:5px 6px; max-width:150px; }
+.pres {
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:12.5px; cursor:pointer; white-space:nowrap;
+  border-radius:99px; padding:4px 10px; border:2.5px solid #4d8f4d; background:#e3f1de; color:#2c552c;
+}
+.al.assente .pres { border-color:#b8a88a; background:#eee6d4; color:#7a6a4a; }
+.del { font-size:15px; cursor:pointer; background:none; border:none; padding:4px 6px; border-radius:8px; }
+.del:hover { background:#f7d6d2; }
+.del.sure { background:#e2574c; color:#fff; font-family:'Fredoka',sans-serif; font-size:12px; font-weight:600; }
+@media (max-width:520px){ .al{ grid-template-columns:1fr auto auto; } .al select{ grid-column:1 / -1; max-width:none; } }
+
+.grpbar { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+.grpbar .lab { font-family:'Caveat',cursive; font-weight:700; font-size:21px; color:#5d4426; margin-right:4px; }
+.gruppi { display:grid; grid-template-columns:repeat(auto-fill, minmax(170px,1fr)); gap:10px; margin-top:12px; }
+.gr { background:#fff; border:3px solid var(--g,#d9bd8a); border-radius:12px; padding:8px 12px; }
+.gr b { font-family:'Fredoka',sans-serif; font-size:16px; }
+.gr .pt { float:right; font-family:'Fredoka',sans-serif; font-weight:600; color:#8a7658; font-size:13px; }
+.gr ul { list-style:none; margin-top:4px; font-size:14px; font-weight:700; color:#5d4426; }
+.gr.solo { border-style:dashed; }
+
+/* punteggi */
+.tot { display:flex; gap:10px; flex-wrap:wrap; margin:4px 0 14px; }
+.chip {
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:14px; color:#fff;
+  background:var(--c,#8a5a33); border-radius:99px; padding:5px 14px; box-shadow:0 3px 0 rgba(0,0,0,.2);
+}
+.chip.big { font-size:17px; padding:7px 18px; background:#3b6ea5; }
+.chip b { color:#ffe14d; }
+.tablewrap { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; background:#fff; border-radius:10px; overflow:hidden; font-size:14.5px; }
+th, td { padding:7px 10px; text-align:center; border-bottom:1.5px solid #f0e6cc; white-space:nowrap; }
+th { font-family:'Fredoka',sans-serif; font-weight:600; font-size:13px; color:#fff; background:#8a5a33; }
+th:first-child, td:first-child { text-align:left; }
+td.totcol { font-family:'Fredoka',sans-serif; font-weight:700; color:#3b6ea5; font-size:16px; }
+td.zero { color:#cbbd9c; }
+tr.assente td:first-child { color:#a3957a; font-style:italic; }
+.sortrow { display:flex; gap:6px; align-items:center; margin-bottom:8px; flex-wrap:wrap; }
+.sortrow .btn { font-size:13px; padding:5px 12px; }
+.sortrow .btn.light.on { background:#5d4426; color:#fff; border-color:#3a2c18; }
+
+.vuoto { text-align:center; padding:30px 10px; }
+.vuoto p { font-family:'Caveat',cursive; font-size:24px; font-weight:700; color:#8a7658; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="back" href="index.html">← corridoio</a>
+    <h1>📒 Registro di classe</h1>
+  </div>
+
+  <div class="privacy">
+    🔒 <b>Usa pseudonimi</b> (soprannomi, nomi di fantasia, iniziali): gli alunni sono minori.
+    I nomi restano <b>solo su questo computer</b> e non vengono mai inviati all'intelligenza artificiale:
+    servono solo a contare i punti. Per portarli su un altro computer usa <b>Esporta / Importa</b>.
+  </div>
+
+  <div class="layout">
+    <!-- ============ CLASSI ============ -->
+    <aside class="card">
+      <h2>🏫 Le mie classi</h2>
+      <div class="clslist" id="clslist"></div>
+      <div class="row">
+        <input type="text" id="nuovaclasse" placeholder="es. 1D" maxlength="30">
+        <button class="btn green" id="creaclasse">+ CREA</button>
+      </div>
+      <div class="io">
+        <button class="btn wood" id="esporta">⬇ ESPORTA CLASSI</button>
+        <label class="btn light" for="fileimport" style="text-align:center;">⬆ IMPORTA DA FILE</label>
+        <input type="file" id="fileimport" accept=".json,application/json">
+        <div class="msg" id="iomsg"></div>
+      </div>
+    </aside>
+
+    <!-- ============ CLASSE SELEZIONATA ============ -->
+    <main class="card" id="main"></main>
+  </div>
+</div>
+
+<script>
+const C = window.Classi, P = window.Professoracci;
+const $ = id => document.getElementById(id);
+const esc = s => P.escapeHtml(s);
+let scheda = 'alunni';
+let ordine = 'alfa';
+
+function nomeMateria(profId) {
+  const p = P.getProf(profId);
+  return p ? p.materia : profId;
+}
+function coloreMateria(profId) {
+  const p = P.getProf(profId);
+  return p ? p.tema.c : '#8a5a33';
+}
+
+/* conferma con doppio clic: il primo clic arma il pulsante per 3 secondi */
+function conferma(btn, testo, azione) {
+  if (btn.classList.contains('sure')) { azione(); return; }
+  const orig = btn.textContent;
+  btn.classList.add('sure'); btn.textContent = testo;
+  setTimeout(() => { btn.classList.remove('sure'); btn.textContent = orig; }, 3000);
+}
+
+/* ============ ELENCO CLASSI ============ */
+function renderElenco() {
+  const box = $('clslist'), att = C.getAttiva();
+  box.innerHTML = '';
+  const el = C.elenco();
+  if (!el.length) {
+    box.innerHTML = '<p class="muted">Nessuna classe ancora. Creane una qui sotto!</p>';
+  }
+  el.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'clsbtn' + (att && att.id === c.id ? ' on' : '');
+    b.innerHTML = '<span>' + esc(c.nome) + '</span><small>' + c.alunni.length + ' alunni · ★ ' + c.punti + '</small>';
+    b.addEventListener('click', () => { C.setAttiva(c.id); render(); });
+    box.appendChild(b);
+  });
+}
+
+$('creaclasse').addEventListener('click', () => {
+  const n = $('nuovaclasse').value.trim();
+  if (!n) { $('nuovaclasse').focus(); return; }
+  C.creaClasse(n);
+  $('nuovaclasse').value = '';
+  scheda = 'alunni';
+  render();
+  setTimeout(() => { const t = $('nuovialunni'); if (t) t.focus(); }, 50);
+});
+$('nuovaclasse').addEventListener('keydown', e => { if (e.key === 'Enter') $('creaclasse').click(); });
+
+/* ============ ESPORTA / IMPORTA ============ */
+function ioMsg(t, err) { $('iomsg').textContent = t; $('iomsg').classList.toggle('err', !!err); }
+$('esporta').addEventListener('click', () => {
+  if (!C.elenco().length) { ioMsg('Non ci sono classi da esportare.', true); return; }
+  C.scaricaEsportazione();
+  ioMsg('✓ File scaricato: portalo sull\'altro computer.');
+});
+$('fileimport').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const r = C.importa(await f.text());
+    ioMsg('✓ Importate: ' + r.nuove + ' nuove, ' + r.aggiornate + ' aggiornate.');
+    render();
+  } catch (err) {
+    ioMsg(err.message || 'File non valido.', true);
+  }
+  e.target.value = '';
+});
+
+/* ============ CLASSE SELEZIONATA ============ */
+function render() {
+  renderElenco();
+  const main = $('main'), c = C.getAttiva();
+  if (!c) {
+    main.innerHTML = '<div class="vuoto"><p>Scegli una classe a sinistra, oppure creane una nuova.</p>' +
+      '<p class="muted" style="font-family:Nunito;font-size:14px;">Senza classe si gioca in modalità libera, con un punteggio unico.</p></div>';
+    return;
+  }
+  main.innerHTML = `
+    <div class="clshead">
+      <input type="text" id="nomeclasse" value="${esc(c.nome)}" maxlength="30" title="Clicca per rinominare">
+      <span class="badge">✓ classe in gioco</span>
+      <span class="spacer"></span>
+      <button class="btn red" id="eliminaclasse">🗑 elimina classe</button>
+    </div>
+    <p class="muted">È la classe che trovi nelle aule: i punti vanno a lei, alle squadre e a ogni alunno.</p>
+    <div class="tabs">
+      <button class="tab ${scheda === 'alunni' ? 'on' : ''}" data-s="alunni">👩‍🎓 Alunni e gruppi</button>
+      <button class="tab ${scheda === 'punti' ? 'on' : ''}" data-s="punti">🏆 Punteggi</button>
+    </div>
+    <div class="pane ${scheda === 'alunni' ? 'on' : ''}" id="pane-alunni"></div>
+    <div class="pane ${scheda === 'punti' ? 'on' : ''}" id="pane-punti"></div>`;
+
+  $('nomeclasse').addEventListener('change', e => { C.rinominaClasse(c.id, e.target.value); renderElenco(); });
+  $('eliminaclasse').addEventListener('click', e =>
+    conferma(e.currentTarget, 'sicuro? clicca ancora', () => { C.eliminaClasse(c.id); render(); }));
+  main.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => { scheda = t.dataset.s; render(); }));
+
+  renderAlunni(c);
+  renderPunti(c);
+}
+
+/* ---------- ALUNNI E GRUPPI ---------- */
+function renderAlunni(c) {
+  const pane = $('pane-alunni');
+  const opzGruppi = c.gruppi.map(g => `<option value="${g.id}">${g.emoji} ${esc(g.nome)}</option>`).join('');
+  pane.innerHTML = `
+    <h3>Aggiungi alunni</h3>
+    <textarea id="nuovialunni" placeholder="Uno per riga (pseudonimi!), per esempio:&#10;Leo&#10;Mia&#10;Capitan Virgola"></textarea>
+    <div class="row" style="margin-top:8px;">
+      <button class="btn blue" id="aggiungi">+ AGGIUNGI ALLA CLASSE</button>
+      <span class="msg" id="almsg"></span>
+    </div>
+
+    <h3>Gruppi di oggi</h3>
+    <div class="grpbar">
+      <span class="lab">🎲 casuali:</span>
+      <button class="btn light" data-dim="2">da 2</button>
+      <button class="btn light" data-dim="3">da 3</button>
+      <button class="btn light" data-dim="4">da 4</button>
+      <button class="btn light" data-dim="5">da 5</button>
+      <button class="btn light" data-dim="1">👤 tutti singoli</button>
+    </div>
+    <p class="muted" style="margin-top:6px;">Ogni clic rimescola i gruppi (solo tra i presenti). I punti personali restano sempre;
+      quelli del gruppo valgono finché il gruppo resta insieme. Puoi anche spostare un alunno a mano dal menu accanto al suo nome.</p>
+    <div class="gruppi" id="gruppi"></div>
+
+    <h3>Alunni (${c.alunni.length})</h3>
+    <div class="alunni" id="alunni"></div>`;
+
+  $('aggiungi').addEventListener('click', () => {
+    const righe = $('nuovialunni').value.split(/\n|,|;/);
+    const n = C.aggiungiAlunni(c.id, righe);
+    render();
+    const m = $('almsg');
+    if (m) m.textContent = n ? '✓ ' + n + (n === 1 ? ' alunno aggiunto' : ' alunni aggiunti') : 'Nessun nome nuovo da aggiungere.';
+  });
+  pane.querySelectorAll('.grpbar .btn').forEach(b => b.addEventListener('click', () => {
+    C.gruppiCasuali(c.id, +b.dataset.dim); render();
+  }));
+
+  /* anteprima squadre */
+  const cols = ['#e2574c','#3b6ea5','#4d8f4d','#e5b93c','#8a6a9e','#2aa198','#c75b9b','#b3622e'];
+  const gbox = $('gruppi');
+  const sq = C.squadre(c);
+  if (!sq.length) gbox.innerHTML = '<p class="muted">Aggiungi degli alunni per formare le squadre.</p>';
+  sq.forEach((s, i) => {
+    const d = document.createElement('div');
+    d.className = 'gr' + (s.solo ? ' solo' : '');
+    d.style.setProperty('--g', cols[i % cols.length]);
+    d.innerHTML = `<span class="pt">★ ${s.punti}</span><b>${s.emoji ? s.emoji + ' ' : ''}${esc(s.nome)}</b>` +
+      (s.solo ? '<ul><li class="muted">gioca da solo/a</li></ul>' : '<ul>' + s.membri.map(a => '<li>' + esc(a.nome) + '</li>').join('') + '</ul>');
+    gbox.appendChild(d);
+  });
+
+  /* elenco alunni */
+  const box = $('alunni');
+  if (!c.alunni.length) box.innerHTML = '<p class="muted">Ancora nessun alunno.</p>';
+  const gruppoDi = {};
+  c.gruppi.forEach(g => g.membri.forEach(m => { gruppoDi[m] = g.id; }));
+  c.alunni.forEach(a => {
+    const r = document.createElement('div');
+    r.className = 'al' + (a.assente ? ' assente' : '');
+    r.innerHTML = `
+      <input type="text" value="${esc(a.nome)}" maxlength="24" title="Clicca per rinominare">
+      <button class="pres">${a.assente ? 'assente' : 'presente'}</button>
+      <select title="Gruppo">
+        <option value="">👤 da solo/a</option>
+        ${opzGruppi}
+        <option value="nuovo">+ nuovo gruppo</option>
+      </select>
+      <button class="del" title="Rimuovi dalla classe">🗑</button>`;
+    const [inp, pres, sel, del] = [r.querySelector('input'), r.querySelector('.pres'), r.querySelector('select'), r.querySelector('.del')];
+    sel.value = gruppoDi[a.id] || '';
+    sel.disabled = a.assente;
+    inp.addEventListener('change', () => { C.rinominaAlunno(c.id, a.id, inp.value); render(); });
+    pres.addEventListener('click', () => { C.setAssente(c.id, a.id, !a.assente); render(); });
+    sel.addEventListener('change', () => { C.spostaAlunno(c.id, a.id, sel.value || null); render(); });
+    del.addEventListener('click', () => conferma(del, 'sicuro?', () => { C.rimuoviAlunno(c.id, a.id); render(); }));
+    box.appendChild(r);
+  });
+}
+
+/* ---------- PUNTEGGI ---------- */
+function renderPunti(c) {
+  const pane = $('pane-punti');
+  const materie = Object.keys(c.perMateria).filter(k => c.perMateria[k]);
+  const chips = materie.map(m =>
+    `<span class="chip" style="--c:${coloreMateria(m)}">${esc(nomeMateria(m))} <b>${c.perMateria[m]}</b></span>`).join('');
+  const alunni = c.alunni.slice().sort(ordine === 'classifica'
+    ? (a, b) => b.punti - a.punti || a.nome.localeCompare(b.nome, 'it')
+    : (a, b) => a.nome.localeCompare(b.nome, 'it'));
+  const righe = alunni.map(a => `<tr class="${a.assente ? 'assente' : ''}"><td>${esc(a.nome)}</td>` +
+      `<td class="totcol">${a.punti}</td>` +
+      materie.map(m => { const v = a.perMateria[m] || 0; return `<td class="${v ? '' : 'zero'}">${v}</td>`; }).join('') + '</tr>').join('');
+  const gruppi = c.gruppi.filter(g => g.membri.length);
+
+  pane.innerHTML = `
+    <div class="tot">
+      <span class="chip big">🏫 ${esc(c.nome)} · totale <b>${c.punti}</b></span>
+      ${chips || '<span class="muted">Ancora nessun punto: si comincia!</span>'}
+    </div>
+    ${gruppi.length ? '<h3>Gruppi di oggi</h3><div class="tot">' + gruppi.map(g =>
+      `<span class="chip" style="--c:#8a5a33">${g.emoji} ${esc(g.nome)} <b>${g.punti}</b></span>`).join('') + '</div>' : ''}
+    <h3>Alunni</h3>
+    <div class="sortrow">
+      <span class="muted">Ordina:</span>
+      <button class="btn light ${ordine === 'alfa' ? 'on' : ''}" data-o="alfa">A → Z</button>
+      <button class="btn light ${ordine === 'classifica' ? 'on' : ''}" data-o="classifica">🏆 classifica</button>
+    </div>
+    ${c.alunni.length ? `<div class="tablewrap"><table>
+      <thead><tr><th>Alunno</th><th>Totale</th>${materie.map(m => '<th>' + esc(nomeMateria(m)) + '</th>').join('')}</tr></thead>
+      <tbody>${righe}</tbody></table></div>` : '<p class="muted">Ancora nessun alunno.</p>'}
+    <div class="row" style="margin-top:18px;">
+      <button class="btn red" id="azzera">↺ azzera tutti i punti di ${esc(c.nome)}</button>
+    </div>`;
+
+  pane.querySelectorAll('.sortrow .btn').forEach(b => b.addEventListener('click', () => { ordine = b.dataset.o; render(); }));
+  $('azzera').addEventListener('click', e =>
+    conferma(e.currentTarget, 'sicuro? i punti spariscono', () => { C.azzeraPunti(c.id); render(); }));
+}
+
+/* modalità tranquilla condivisa con le aule */
+P.applicaCalma();
+window.addEventListener('focus', () => {
+  const a = document.activeElement;
+  if (a && (a.tagName === 'TEXTAREA' || a.tagName === 'INPUT') && a.value) return; // non perdere quello che si sta scrivendo
+  render();
+});
+render();
+</script>
+</body>
+</html>

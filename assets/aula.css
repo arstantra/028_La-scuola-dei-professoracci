@@ -180,6 +180,67 @@ body::after {
 .answer:focus { outline:none; border-color:var(--accent,#5a4fcf); }
 .answer::placeholder { color:#b3a27f; }
 
+/* ============ SQUADRE IN GARA ============ */
+.squadre {
+  position:relative; z-index:3; margin-top:16px;
+  background:#fdf6df; border:3px solid #8a5a33; border-radius:14px;
+  box-shadow:0 6px 0 #6b4423, 0 12px 24px rgba(0,0,0,.2);
+  padding:10px 16px 14px;
+}
+.sqhead { display:flex; align-items:center; gap:10px 16px; flex-wrap:wrap; }
+.sqtitle { font-family:'Fredoka',sans-serif; font-weight:700; font-size:18px; color:#5d4426; }
+.sqcls { font-family:'Caveat',cursive; font-weight:700; font-size:21px; color:#5d4426; display:flex; align-items:center; gap:6px; }
+.sqcls select {
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:15px; color:#3a2c18; cursor:pointer;
+  background:#fff; border:3px solid #d9bd8a; border-radius:10px; padding:4px 8px;
+}
+.sqgruppi { display:none; align-items:center; gap:5px; flex-wrap:wrap; }
+body.conclasse .sqgruppi { display:flex; }
+.sqgruppi .lab { font-family:'Caveat',cursive; font-weight:700; font-size:20px; color:#5d4426; }
+.gbtn {
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:13px; cursor:pointer;
+  color:#5d4426; background:#fff; border:2.5px solid #d9bd8a; border-radius:99px; padding:4px 11px;
+  transition:all .12s;
+}
+.gbtn:hover { background:var(--accent,#5a4fcf); border-color:var(--accent-d,#463db3); color:#fff; }
+.sqlink {
+  margin-left:auto; font-family:'Fredoka',sans-serif; font-weight:600; font-size:14px; text-decoration:none;
+  color:#fff; background:#8a5a33; border:2.5px solid #6b4423; border-radius:99px; padding:5px 14px;
+  box-shadow:0 3px 0 #4a2d15;
+}
+.sqhint { font-size:13.5px; color:#8a7658; margin:6px 0 8px; line-height:1.45; }
+.sqhint a { color:#8a5a33; font-weight:800; }
+.sqgrid { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:10px; }
+.sq {
+  position:relative; background:#fff; border:3px solid var(--sq,#d9bd8a); border-radius:12px;
+  padding:7px 10px 8px; display:flex; flex-direction:column; gap:3px;
+  box-shadow:0 3px 0 color-mix(in srgb, var(--sq,#d9bd8a) 70%, #000);
+  transition:transform .15s;
+}
+.sqname { font-family:'Fredoka',sans-serif; font-weight:700; font-size:16px; color:#3a2c18; line-height:1.15; overflow-wrap:anywhere; }
+.sqmembers { font-size:12.5px; font-weight:700; color:#8a7658; line-height:1.3; }
+.sqpts { font-family:'Fredoka',sans-serif; font-size:14px; color:#8a7658; margin-top:auto; }
+.sqpts b { font-size:22px; color:var(--sq,#5d4426); }
+.sqbtns { display:flex; gap:6px; }
+.sqbtns button {
+  flex:1; font-size:20px; line-height:1; cursor:pointer; padding:6px 0;
+  background:#fdf6df; border:2.5px solid #d9bd8a; border-radius:10px;
+  transition:transform .1s, background .1s;
+}
+.sqbtns .sqok:hover { background:#d8f0d2; border-color:#4d8f4d; }
+.sqbtns .sqko:hover { background:#f7d6d2; border-color:#c94f44; }
+.sqbtns button:active { transform:scale(.92); }
+.sqgrid.attesa .sqbtns button { opacity:.4; cursor:default; }
+.sqgrid.attesa .sqbtns button:hover { background:#fdf6df; border-color:#d9bd8a; }
+.sq.vince { animation:vince .9s ease 2; background:#fff9dc; border-color:#e5b93c; }
+@keyframes vince { 0%,100%{transform:scale(1);} 40%{transform:scale(1.08) rotate(-1.5deg);} }
+.sq.gnee { animation:gneeshake .5s ease; }
+@keyframes gneeshake { 0%,100%{transform:translateX(0);} 20%{transform:translateX(-7px) rotate(-2deg);} 40%{transform:translateX(6px) rotate(1.5deg);} 60%{transform:translateX(-4px);} 80%{transform:translateX(3px);} }
+.sqgrid.chiedi .sq { animation:chiedi .6s ease 3; }
+@keyframes chiedi { 0%,100%{box-shadow:0 3px 0 color-mix(in srgb, var(--sq,#d9bd8a) 70%, #000);} 50%{box-shadow:0 0 0 5px rgba(229,185,60,.6);} }
+.scorecls { color:#fdf6df; font-weight:700; }
+body.senzachiave .squadre, body.senzaprof .squadre { display:none; }
+
 /* ============ CATTEDRA (materiale dell'insegnante) ============ */
 .cattedra {
   position:relative; z-index:3; margin-top:16px;
@@ -263,11 +324,16 @@ body.calma .globe,
 body.calma .easel,
 body.calma .drip,
 body.calma .bubbleup,
-body.calma .poster .orbit { animation:none !important; }
+body.calma .poster .orbit,
+body.calma .phonebox,
+body.calma .letterfloat,
+body.calma .steam { animation:none !important; }
+body.calma .sq.vince, body.calma .sq.gnee, body.calma .sqgrid.chiedi .sq { animation:none !important; }
 body.calma .profcol.felice .prof { animation:none !important; transform:rotate(-2deg); }
 body.calma .profcol.sconfitto .prof { animation:none !important; }
 @media (prefers-reduced-motion: reduce) {
   .mote { display:none; }
   .prof, .plant, .poster, .clock .hand, .paper, .numfloat,
-  .globe, .easel, .drip, .bubbleup, .poster .orbit { animation:none !important; }
+  .globe, .easel, .drip, .bubbleup, .poster .orbit,
+  .phonebox, .letterfloat, .steam, .sq.vince, .sq.gnee, .sqgrid.chiedi .sq { animation:none !important; }
 }

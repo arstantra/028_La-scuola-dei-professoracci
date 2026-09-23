@@ -7,7 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;700;800;900&family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
-<script src="assets/professoracci.js?v=3"></script>
+<script src="assets/professoracci.js?v=4"></script>
+<script src="assets/classi.js?v=4"></script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 
@@ -153,6 +154,27 @@ body::after {
 .keyrow button:hover { transform:translateY(2px); box-shadow:0 2px 0 #223d5c; }
 .keymsg { font-family:'Caveat',cursive; font-size:20px; font-weight:600; color:#4d8f4d; margin-top:8px; min-height:24px; }
 .keymsg.err { color:#c94f44; }
+
+/* ============ REGISTRO: classe in gioco ============ */
+.registro {
+  max-width:640px; margin:-18px auto 40px; position:relative;
+  display:flex; align-items:center; gap:10px 14px; flex-wrap:wrap;
+  background:#2f4a3b; border:6px solid #6b4423; border-radius:12px;
+  box-shadow:inset 0 0 26px rgba(0,0,0,.45), 0 10px 22px rgba(0,0,0,.25);
+  padding:12px 18px;
+  font-family:'Caveat',cursive; font-weight:700; font-size:23px; color:#f6f3e9;
+}
+.registro select {
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:16px; color:#3a2c18; cursor:pointer;
+  background:#fdf6df; border:3px solid #d9bd8a; border-radius:10px; padding:5px 10px;
+}
+.registro .info { font-family:'Nunito',sans-serif; font-weight:700; font-size:13.5px; color:#cfe0d4; }
+.registro a {
+  margin-left:auto; font-family:'Fredoka',sans-serif; font-weight:600; font-size:15px; text-decoration:none;
+  color:#3a2c18; background:#f2d98c; border:3px solid #b8923f; border-radius:99px; padding:6px 16px;
+  box-shadow:0 3px 0 #8a6a2a; transition:transform .12s;
+}
+.registro a:hover { transform:translateY(2px); }
 
 /* ============ PORTE ============ */
 .doors {
@@ -321,6 +343,13 @@ footer {
     </div>
   </div>
 
+  <div class="registro" id="registro">
+    <span>🏫 Classe in gioco:</span>
+    <select id="selclasse"></select>
+    <span class="info" id="clsinfo"></span>
+    <a href="registro.html">📒 registro di classe</a>
+  </div>
+
   <main class="doors" id="doors"></main>
 
   <button class="calmbtn" id="calmbtn" title="Riduce le animazioni e gli stimoli visivi">🌿 modalità tranquilla</button>
@@ -331,7 +360,7 @@ footer {
 <script>
 /* ============ I PROFESSORACCI (config in assets/professoracci.js) ============ */
 const PX = window.Professoracci;
-const ORDINE = ['sgrammaticus', 'confusione', 'sbagliotti', 'terranova', 'bubbolo', 'storditella'];
+const ORDINE = ['sgrammaticus', 'missspelling', 'confusione', 'sbagliotti', 'terranova', 'bubbolo', 'storditella'];
 const PROFS = ORDINE.map(id => {
   const c = PX.PROFS[id];
   return { id: c.id, nome: c.nome, materia: c.materia, colore: c.tema.c,
@@ -433,6 +462,22 @@ document.getElementById('knock').addEventListener('click', () => {
 });
 refresh();
 if (getKey()) seg.classList.add('closed');               // già consegnata: sportello chiuso
+
+/* ============ CLASSE IN GIOCO ============ */
+const CL = window.Classi;
+function renderClasse() {
+  const sel = document.getElementById('selclasse'), info = document.getElementById('clsinfo');
+  const att = CL.getAttiva(), el = CL.elenco();
+  sel.innerHTML = '<option value="">— gioco libero —</option>' +
+    el.map(c => '<option value="' + c.id + '">' + PX.escapeHtml(c.nome) + '</option>').join('');
+  sel.value = att ? att.id : '';
+  info.textContent = att
+    ? att.alunni.length + ' alunni · ★ ' + att.punti + ' punti'
+    : (el.length ? 'scegli una classe per giocare a squadre' : 'crea le tue classi nel registro');
+}
+document.getElementById('selclasse').addEventListener('change', e => { CL.setAttiva(e.target.value || null); renderClasse(); });
+window.addEventListener('focus', renderClasse);
+renderClasse();
 
 /* ============ MODALITÀ TRANQUILLA ============ */
 PX.applicaCalma();
