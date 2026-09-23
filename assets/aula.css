@@ -81,6 +81,16 @@ body::after {
   margin-top:8px; min-height:128px;
 }
 .chalktext .evid { color:#f2d98c; text-decoration:underline wavy rgba(242,217,140,.75) 2.5px; }
+.chalktext .corr { color:#a9d8f2; font-size:.8em; text-shadow:0 0 3px rgba(169,216,242,.35); white-space:nowrap; }
+/* contatore errori sulla lavagna */
+.errcount {
+  position:absolute; top:-10px; left:18px; z-index:3; transform:rotate(-2deg);
+  font-family:'Caveat',cursive; font-weight:700; font-size:18px; color:#1d2e25;
+  background:#a9d8f2; border:2px solid #5d9ec2; border-radius:6px;
+  padding:2px 12px; box-shadow:0 4px 8px rgba(0,0,0,.3); display:none;
+}
+.errcount.on { display:block; }
+.errcount.fatto { background:#f2d98c; border-color:#b8923f; }
 .chalkcursor {
   display:inline-block; width:9px; height:22px; margin-left:3px;
   background:#f6f3e9; vertical-align:-3px; border-radius:2px;
