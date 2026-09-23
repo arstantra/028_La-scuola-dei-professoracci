@@ -7,8 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;700;800;900&family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
-<script src="assets/professoracci.js?v=4"></script>
-<script src="assets/classi.js?v=4"></script>
+<script src="assets/professoracci.js?v=5"></script>
+<script src="assets/classi.js?v=5"></script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 html { background:#cfa96f; }
@@ -158,14 +158,45 @@ tr.assente td:first-child { color:#a3957a; font-style:italic; }
 .sortrow .btn { font-size:13px; padding:5px 12px; }
 .sortrow .btn.light.on { background:#5d4426; color:#fff; border-color:#3a2c18; }
 
+/* torna in aula */
+.back.aula { background:#e2574c; border-color:#b03a31; box-shadow:0 4px 0 #8f2d26; font-size:17px; padding:9px 22px; }
+.back.aula:hover { box-shadow:0 2px 0 #8f2d26; }
+.back.small { font-size:13px; padding:6px 14px; }
+
+/* gioco libero nell'elenco classi */
+.clsbtn.libero { font-size:15px; border-style:dashed; }
+.clsbtn small { white-space:nowrap; }
+.clsbtn.libero.on { background:#8a5a33; border-color:#6b4423; border-style:solid; box-shadow:0 3px 0 #4a2d15; }
+
+/* livello degli errori */
+.livello {
+  display:flex; align-items:center; gap:8px 10px; flex-wrap:wrap;
+  margin:12px 0 4px; padding:10px 14px; background:#fff; border:3px solid #eadcb9; border-radius:14px;
+}
+.livello .lab { font-family:'Fredoka',sans-serif; font-weight:600; font-size:16px; color:#5d4426; margin-right:4px; }
+.lvl {
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:15px; cursor:pointer; line-height:1.15;
+  color:#5d4426; background:#fdf6df; border:3px solid #d9bd8a; border-radius:12px; padding:6px 16px; transition:all .12s;
+}
+.lvl small { display:block; font-family:'Nunito',sans-serif; font-weight:800; font-size:11.5px; color:#8a7658; }
+.lvl:hover { border-color:#8a5a33; }
+.lvl.on { background:#3b6ea5; border-color:#2c4f78; color:#fff; box-shadow:0 3px 0 #223d5c; }
+.lvl.on small { color:#dce8f5; }
+
 .vuoto { text-align:center; padding:30px 10px; }
 .vuoto p { font-family:'Caveat',cursive; font-size:24px; font-weight:700; color:#8a7658; }
 </style>
+<script src="assets/app.js?v=7"></script>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2f4a3b">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icone/icona-192.png">
+<link rel="apple-touch-icon" href="assets/icone/icona-192.png">
 </head>
 <body>
 <div class="wrap">
   <div class="topbar">
-    <a class="back" href="index.html">← corridoio</a>
+    <a class="back aula" id="tornaaula" href="#" hidden>← torna in aula</a>
+    <a class="back" id="corridoio" href="index.html">← corridoio</a>
     <h1>📒 Registro di classe</h1>
   </div>
 
@@ -204,6 +235,28 @@ const esc = s => P.escapeHtml(s);
 let scheda = 'alunni';
 let ordine = 'alfa';
 
+/* ============ ARRIVO DA UN'AULA: pulsante "torna in aula" ============ */
+(() => {
+  const t = new URLSearchParams(location.search).get('torna') || '';
+  if (/^aule\/aula\.html\?prof=[\w-]+$/.test(t)) {
+    $('tornaaula').href = t;
+    $('tornaaula').hidden = false;
+    $('corridoio').classList.add('small');
+  }
+})();
+
+/* ============ LIVELLO DEGLI ERRORI (per classe o gioco libero) ============ */
+function htmlLivello(classeId, attuale) {
+  return '<div class="livello"><span class="lab">📚 Livello degli errori:</span>' +
+    C.LIVELLI.map(l => `<button class="lvl ${l.id === attuale ? 'on' : ''}" data-lvl="${l.id}" data-cls="${classeId || ''}">` +
+      `${l.nome}<small>${l.info}</small></button>`).join('') + '</div>';
+}
+function agganciaLivello(root) {
+  root.querySelectorAll('.lvl').forEach(b => b.addEventListener('click', () => {
+    C.setLivello(b.dataset.cls || null, b.dataset.lvl); render();
+  }));
+}
+
 function nomeMateria(profId) {
   const p = P.getProf(profId);
   return p ? p.materia : profId;
@@ -226,8 +279,13 @@ function renderElenco() {
   const box = $('clslist'), att = C.getAttiva();
   box.innerHTML = '';
   const el = C.elenco();
+  const lib = document.createElement('button');
+  lib.className = 'clsbtn libero' + (att ? '' : ' on');
+  lib.innerHTML = '<span>🎈 Gioco libero</span><small>senza classe</small>';
+  lib.addEventListener('click', () => { C.setAttiva(null); render(); });
+  box.appendChild(lib);
   if (!el.length) {
-    box.innerHTML = '<p class="muted">Nessuna classe ancora. Creane una qui sotto!</p>';
+    box.insertAdjacentHTML('beforeend', '<p class="muted">Nessuna classe ancora. Creane una qui sotto!</p>');
   }
   el.forEach(c => {
     const b = document.createElement('button');
@@ -273,8 +331,11 @@ function render() {
   renderElenco();
   const main = $('main'), c = C.getAttiva();
   if (!c) {
-    main.innerHTML = '<div class="vuoto"><p>Scegli una classe a sinistra, oppure creane una nuova.</p>' +
-      '<p class="muted" style="font-family:Nunito;font-size:14px;">Senza classe si gioca in modalità libera, con un punteggio unico.</p></div>';
+    main.innerHTML = '<div class="clshead"><h2 style="margin:0;">🎈 Gioco libero</h2><span class="badge">✓ in gioco</span></div>' +
+      '<p class="muted">Senza classe si gioca con un punteggio unico per questo computer, senza squadre.</p>' +
+      htmlLivello(null, C.getLivello()) +
+      '<div class="vuoto"><p>Per giocare a squadre scegli una classe a sinistra, oppure creane una nuova.</p></div>';
+    agganciaLivello(main);
     return;
   }
   main.innerHTML = `
@@ -285,6 +346,7 @@ function render() {
       <button class="btn red" id="eliminaclasse">🗑 elimina classe</button>
     </div>
     <p class="muted">È la classe che trovi nelle aule: i punti vanno a lei, alle squadre e a ogni alunno.</p>
+    ${htmlLivello(c.id, c.livello)}
     <div class="tabs">
       <button class="tab ${scheda === 'alunni' ? 'on' : ''}" data-s="alunni">👩‍🎓 Alunni e gruppi</button>
       <button class="tab ${scheda === 'punti' ? 'on' : ''}" data-s="punti">🏆 Punteggi</button>
@@ -296,6 +358,7 @@ function render() {
   $('eliminaclasse').addEventListener('click', e =>
     conferma(e.currentTarget, 'sicuro? clicca ancora', () => { C.eliminaClasse(c.id); render(); }));
   main.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => { scheda = t.dataset.s; render(); }));
+  agganciaLivello(main);
 
   renderAlunni(c);
   renderPunti(c);

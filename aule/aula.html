@@ -7,25 +7,27 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;700;800;900&family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/aula.css?v=4">
+<link rel="stylesheet" href="../assets/aula.css?v=7">
 <link rel="modulepreload" href="https://esm.sh/@google/genai@0.14.1">
-<script src="../assets/professoracci.js?v=4"></script>
-<script src="../assets/classi.js?v=4"></script>
+<script src="../assets/professoracci.js?v=7"></script>
+<script src="../assets/classi.js?v=7"></script>
+<script src="../assets/orologio.js?v=7"></script>
+<script src="../assets/app.js?v=7"></script>
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#2f4a3b">
+<link rel="icon" type="image/png" sizes="192x192" href="../assets/icone/icona-192.png">
 </head>
 <body>
-<div class="wrap">
+<div class="wrap" data-adatta=".scene, .pavimento, .dock" data-larghezza="1280" data-min="0.75">
 
   <div class="topbar">
-    <a class="back" href="../index.html">← corridoio</a>
+    <a class="back" href="../index.html"><svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg> Corridoio</a>
     <div class="roomtitle" id="roomtitle">Aula</div>
-    <svg class="clock" width="34" height="34" viewBox="0 0 60 60">
-      <circle cx="30" cy="30" r="26" fill="#fff" stroke="#6b4423" stroke-width="5"/>
-      <line class="hand slow" x1="30" y1="30" x2="30" y2="16" stroke="#333" stroke-width="3" stroke-linecap="round"/>
-      <line class="hand" x1="30" y1="30" x2="42" y2="30" stroke="#e2574c" stroke-width="2" stroke-linecap="round"/>
-      <circle cx="30" cy="30" r="2.5" fill="#333"/>
-    </svg>
-    <button class="calmbtn" id="calmbtn" title="Riduce le animazioni e gli stimoli visivi">🌿 modalità tranquilla</button>
-    <div class="score" id="score" title="Punti totali"><span class="scorecls" id="scorecls"></span>★ <b id="pts">0</b> punti</div>
+    <div class="tbtns">
+      <button class="tbtn catbtn" id="catbtn" title="Cattedra: materiale della lezione, voce e velocità" aria-label="Cattedra"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5"/></svg></button>
+      <button class="tbtn calmbtn" id="calmbtn" title="Modalità tranquilla: riduce animazioni e stimoli" aria-label="Modalità tranquilla"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19c0-8 5-14 15-14 0 10-6 15-14 15"/><path d="M5 19l8-8"/></svg></button>
+      <button class="tbtn fsbtn" id="fsbtn" title="Schermo intero (F11)" aria-label="Schermo intero"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+    </div>
   </div>
 
   <div id="decor"></div>
@@ -43,6 +45,7 @@
   </div>
 
   <div class="scene">
+    <div class="wallclock" id="orologio"></div>
     <div class="board" id="board">
       <div class="matbadge" id="matbadge">📎 materiale</div>
       <div class="errcount" id="errcount"></div>
@@ -55,62 +58,48 @@
     </div>
 
     <div class="profcol" id="profcol">
-      <div class="bubble" id="bubble"></div>
+      <div class="bubble" id="bubble"><span class="nameplate" id="nameplate"></span><div class="btxt" id="btxt"></div></div>
       <svg class="prof" id="profsvg" viewBox="0 0 190 260"></svg>
-      <div><span class="nameplate" id="nameplate"></span></div>
     </div>
   </div>
 
-  <div class="controls">
-    <div class="levels">
-      <span class="lab">Classe:</span>
-      <button class="lvl on" data-lvl="facile">1ª – 2ª</button>
-      <button class="lvl" data-lvl="media">3ª – 4ª</button>
-      <button class="lvl" data-lvl="difficile">5ª e medie</button>
-    </div>
-    <button class="btn blue" id="speak">🔊 ASCOLTA</button>
-    <button class="btn wood" id="stopaudio">🔇 STOP AUDIO</button>
-    <label class="speedctl" title="Velocità di voce e scrittura">
-      <span class="lab">Velocità</span> 🐢
-      <input type="range" id="velocita" min="0.5" max="2" step="0.1" value="1">
-      🐇 <span id="velval">1×</span>
-    </label>
-    <button class="btn red" id="nuova" style="margin-left:auto;" disabled>NUOVA SPIEGAZIONE</button>
-  </div>
-
-  <div class="answerrow">
-    <input class="answer" id="answer" placeholder="Dov'è l'errore? Scrivi qui la tua correzione..." autocomplete="off">
-    <button class="btn red" id="verifica" disabled>HO TROVATO L'ERRORE!</button>
-  </div>
-
-  <!-- ============ SQUADRE IN GARA (classe attiva) ============ -->
-  <section class="squadre" id="squadre">
-    <div class="sqhead">
-      <span class="sqtitle">🏆 Squadre in gara</span>
-      <label class="sqcls">Classe
-        <select id="selclasse"></select>
-      </label>
-      <div class="sqgruppi" id="sqgruppi" title="Ogni clic rimescola i gruppi a caso (solo tra i presenti)">
-        <span class="lab">🎲 Gruppi:</span>
-        <button class="gbtn" data-dim="1">singoli</button>
-        <button class="gbtn" data-dim="2">da 2</button>
-        <button class="gbtn" data-dim="3">da 3</button>
-        <button class="gbtn" data-dim="4">da 4</button>
-        <button class="gbtn" data-dim="5">da 5</button>
+  <!-- ============ PAVIMENTO: tabellone delle squadre ============ -->
+  <section class="pavimento" id="squadre" data-suolo>
+    <div class="tabellone">
+      <div class="tabhead">
+        <span class="thcls" id="thcls"></span>
+        <span class="thinfo" id="thinfo"></span>
+        <span class="score" id="score"><span class="scorecls" id="scorecls"></span>★ <b id="pts">0</b></span>
+        <span class="sqhint" id="sqhint"></span>
+        <a class="thlink regl" href="../registro.html" title="Classe, gruppi e livello si scelgono nel registro">registro</a>
       </div>
-      <a class="sqlink" href="../registro.html">📒 registro di classe</a>
+      <div class="sqgrid" id="sqgrid"></div>
     </div>
-    <p class="sqhint" id="sqhint"></p>
-    <div class="sqgrid" id="sqgrid"></div>
   </section>
 
+  <!-- ============ TELECOMANDO dell'insegnante ============ -->
+  <div class="dock">
+    <button class="dk-nuova" id="nuova" disabled><svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 5l11 7-11 7z" fill="currentColor"/></svg><span id="nuovatxt">Nuova spiegazione</span></button>
+    <button class="dk" id="speak" title="Ascolta di nuovo" aria-label="Ascolta"><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg></button>
+    <button class="dk" id="stopaudio" title="Ferma la voce" aria-label="Ferma la voce"><svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg></button>
+    <span class="dk-sep"></span>
+    <div class="modoinput" id="modoinput">
+      <button data-m="risposta" class="on" title="Scrivi dov'è l'errore" aria-label="Risposta"><svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg></button>
+      <button data-m="chat" title="Parla con il professore" aria-label="Chat"><svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg></button>
+    </div>
+    <label class="dk-input"><svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg><input class="answer" id="answer" autocomplete="off" aria-label="Scrivi qui"></label>
+    <button class="dk mic" id="mic" title="Parla al microfono" aria-label="Microfono" hidden><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg></button>
+    <button class="dk-invia" id="verifica" disabled>HO TROVATO L'ERRORE!</button>
+  </div>
+
   <!-- ============ CATTEDRA: materiale dell'insegnante ============ -->
-  <details class="cattedra" id="cattedra">
-    <summary>
-      🍎 Cattedra — materiale dell'insegnante
-      <span class="stato" id="matstato">nessun materiale: il professore inventa gli argomenti</span>
-    </summary>
+  <dialog class="cattedra" id="cattedra">
+    <div class="cathead">
+      <span>🍎 Cattedra — preparazione della lezione</span>
+      <button class="chiudi" id="catchiudi" title="Chiudi">✕</button>
+    </div>
     <div class="inner">
+      <h3>📎 Materiale della lezione <span class="stato" id="matstato">nessun materiale: il professore inventa gli argomenti</span></h3>
       <p class="hint">
         Incolla il testo della lezione oppure carica un file <b>.txt</b>, <b>.md</b> o <b>.pdf</b>:
         gli errori del professore verranno presi <b>solo da questo materiale</b>, così il gioco
@@ -126,8 +115,15 @@
         <button class="btn wood" id="matrimuovi">RIMUOVI</button>
       </div>
       <div class="msgmat" id="matmsg"></div>
+
+      <h3>🔊 Voce e scrittura</h3>
+      <label class="speedctl" title="Velocità di voce e scrittura">
+        <span class="lab">Velocità</span> 🐢
+        <input type="range" id="velocita" min="0.5" max="2" step="0.1" value="1">
+        🐇 <span id="velval">1×</span>
+      </label>
     </div>
-  </details>
+  </dialog>
 
   <svg class="plant" width="70" height="90" viewBox="0 0 70 90">
     <path d="M22 60 h26 l-4 28 h-18 Z" fill="#c0603f"/>
@@ -170,7 +166,7 @@ if (cfg) {
   $('roomtitle').textContent = cfg.roomtitle;
   $('boardtitle').textContent = cfg.boardtitle;
   $('chalktext').textContent = cfg.benvenutoLavagna;
-  $('bubble').textContent = cfg.benvenutoBolla;
+  $('btxt').textContent = cfg.benvenutoBolla;
   $('nameplate').textContent = cfg.nome;
   $('answer').placeholder = cfg.placeholder;
   $('nokeymsg').textContent = cfg.nokey;
@@ -180,10 +176,11 @@ if (cfg) {
   if (cfg.profExtraHtml) $('profcol').insertAdjacentHTML('afterbegin', cfg.profExtraHtml);
   if (cfg.trayExtraHtml) $('tray').insertAdjacentHTML('afterbegin', cfg.trayExtraHtml);
   if (cfg.ui) {
-    if (cfg.ui.nuova) $('nuova').textContent = cfg.ui.nuova;
+    if (cfg.ui.nuova) $('nuovatxt').textContent = P.capitalizza(cfg.ui.nuova.toLowerCase());
     if (cfg.ui.verifica) $('verifica').textContent = cfg.ui.verifica;
-    if (cfg.ui.ascolta) $('speak').textContent = cfg.ui.ascolta;
-    if (cfg.ui.stop) $('stopaudio').textContent = cfg.ui.stop;
+    const pulito = t => t.replace(/^[^A-Za-zÀ-ÿ]+/, '');
+    if (cfg.ui.ascolta) { $('speak').title = pulito(cfg.ui.ascolta); $('speak').setAttribute('aria-label', pulito(cfg.ui.ascolta)); }
+    if (cfg.ui.stop) { $('stopaudio').title = pulito(cfg.ui.stop); $('stopaudio').setAttribute('aria-label', pulito(cfg.ui.stop)); }
   }
   if (cfg.lang) document.documentElement.lang = cfg.lang.slice(0, 2);
 }
@@ -204,6 +201,9 @@ const CHI_IT = 'Mmm... chi ha risposto? Insegnante, premi ✅ sulla sua squadra!
 const frasiGnee = () => (cfg && cfg.msg.gnee) || GNEE_IT;
 const frasiBravi = () => (cfg && cfg.msg.bravi) || BRAVI_IT;
 
+/* ============ OROLOGIO DA PARETE ============ */
+const orologio = window.Orologio.monta($('orologio')) || { avviaAuto() {}, ferma() {}, onFine() {} };
+
 /* ============ MODALITÀ TRANQUILLA ============ */
 P.applicaCalma();
 function refreshCalm() { $('calmbtn').classList.toggle('on', P.isCalma()); }
@@ -213,13 +213,15 @@ refreshCalm();
 /* ============ STATO DI GIOCO ============ */
 const MODEL = 'gemini-2.5-flash-lite';
 const RECENTI_KEY = 'recenti_' + profId;
-let livello = 'facile';
 let lezione = null;          // { spiegazione, errori:[{errore, correzione, indizio, trovato}], aVoce, pronta }
 let punti = +(localStorage.getItem('professoracci_punti') || 0);   // gioco libero (senza classe)
 let erroriRecenti = JSON.parse(sessionStorage.getItem(RECENTI_KEY) || '[]');
 let occupato = false;
 let inAttesa = null;    // indice dell'errore riconosciuto dall'AI (casella) in attesa del ✅ dell'insegnante
 let premiata = false;   // tutti gli errori di questa spiegazione sono stati trovati e premiati
+let turno = null;       // squadra che sta rispondendo (toccata dall'insegnante)
+let modoInput = 'risposta';   // gioco libero: 'risposta' o 'chat' (con una classe: sempre chat)
+let chatStoria = [];    // ultime domande e risposte della chat con il prof
 
 const EN = () => !!(cfg && cfg.lang && /^en/i.test(cfg.lang));
 /* errori ancora da scoprire (quelli trovati a voce con ✅ senza casella contano come trovati) */
@@ -239,80 +241,89 @@ function classe() { return C.getAttiva(); }
 
 function aggiornaScore(pop) {
   const c = classe();
-  $('scorecls').textContent = c ? '🏫 ' + c.nome + ' · ' : '';
+  $('scorecls').textContent = '';
   $('pts').textContent = c ? c.punti : punti;
   $('score').title = c ? 'Punti totali della classe ' + c.nome + ' (tutte le materie)' : 'Punti del gioco libero';
   if (pop) { const s = $('score'); s.classList.remove('pop'); void s.offsetWidth; s.classList.add('pop'); }
 }
 
-function renderSelClasse() {
-  const sel = $('selclasse'), c = classe();
-  sel.innerHTML = '';
-  const o0 = document.createElement('option');
-  o0.value = ''; o0.textContent = '— gioco libero —';
-  sel.appendChild(o0);
-  C.elenco().forEach(k => {
-    const o = document.createElement('option');
-    o.value = k.id; o.textContent = k.nome;
-    sel.appendChild(o);
-  });
-  sel.value = c ? c.id : '';
+/* il registro sa a quale aula tornare */
+const LINK_REGISTRO = '../registro.html?torna=' + encodeURIComponent('aule/aula.html?prof=' + profId);
+document.querySelectorAll('a.regl').forEach(a => { a.href = LINK_REGISTRO; });
+const aReg = testo => '<a class="regl" href="' + LINK_REGISTRO + '">' + testo + '</a>';
+
+function renderInfo() {
+  const c = classe();
+  $('thcls').textContent = c ? c.nome : 'Gioco libero';
+  const sq = c ? C.squadre(c) : [];
+  const quante = !c ? '' : sq.length > 8 || sq.every(x => x.solo)
+    ? sq.length + (sq.length === 1 ? ' alunno' : ' alunni') + ' · '
+    : sq.length + (sq.length === 1 ? ' squadra' : ' squadre') + ' · ';
+  $('thinfo').textContent = quante + 'livello ' + C.nomeLivello(C.getLivello());
+  document.querySelector('.thlink').textContent = c ? 'registro' : 'gioca con una classe';
 }
 
-const COLORI_SQ = ['#e2574c','#3b6ea5','#4d8f4d','#e5b93c','#8a6a9e','#2aa198','#c75b9b','#b3622e'];
+const COLORI_SQ = ['#e2574c','#3b6ea5','#2aa198','#d9a21b','#8a6a9e','#b3622e','#5d6f7a','#c75b9b'];
+const ICO_OK = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const ICO_KO = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
 
+/* Tabellone sul pavimento.
+   Fino a 8 squadre: schede con componenti e punti grandi.
+   Di più (es. tutti singoli): targhette compatte in ordine alfabetico.
+   I pulsanti ✓ ✗ compaiono solo sulla squadra che sta rispondendo. */
 function renderSquadre() {
   const c = classe(), grid = $('sqgrid'), hint = $('sqhint');
   document.body.classList.toggle('conclasse', !!c);
   grid.innerHTML = '';
-  if (!c) {
-    hint.innerHTML = 'Nessuna classe scelta: si gioca <b>in modalità libera</b> (punti unici per questo computer). ' +
-      'Scegli una classe dal menu qui sopra oppure creala nel <a href="../registro.html">📒 registro di classe</a>.';
-    return;
-  }
-  const sq = C.squadre(c);
+  grid.className = 'sqgrid';
+  hint.textContent = '';
+  if (!c) return;
+  let sq = C.squadre(c);
   if (!sq.length) {
-    hint.innerHTML = 'La classe <b>' + P.escapeHtml(c.nome) + '</b> non ha ancora alunni presenti: aggiungili nel <a href="../registro.html">📒 registro di classe</a>.';
+    hint.innerHTML = 'Nessun alunno presente: aggiungili nel ' + aReg('registro') + '.';
     return;
   }
-  hint.textContent = (lezione && !premiata)
-    ? 'Chi alza la mano risponde a voce: premi ✅ se ha trovato l\'errore (+' + C.PUNTI_GIUSTO + ' punti alla squadra), ❌ se ha sbagliato e il gioco continua.'
-    : 'Premi «' + $('nuova').textContent + '» per iniziare: poi ✅ o ❌ sulla squadra che risponde.';
+  const targhette = sq.length > 8;
+  if (targhette) sq = sq.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'it'));
+  grid.classList.add(targhette ? 'targhette' : 'schede');
+  if (targhette && sq.length > 24) grid.classList.add('fitte');
+  if (lezione && !premiata) {
+    hint.textContent = inAttesa != null ? 'chi l\'ha trovato? tocca la squadra'
+      : turno ? 'tocca la parola sbagliata sulla lavagna'
+      : 'tocca chi risponde, poi la parola sbagliata';
+  }
   sq.forEach((s, i) => {
     const d = document.createElement('div');
-    d.className = 'sq' + (s.solo ? ' solo' : '');
+    d.className = 'sq' + (turno === s.id ? ' turno' : '');
     d.dataset.id = s.id;
     d.style.setProperty('--sq', COLORI_SQ[i % COLORI_SQ.length]);
-    const nome = document.createElement('div');
-    nome.className = 'sqname';
-    nome.textContent = (s.emoji ? s.emoji + ' ' : '') + s.nome;
-    d.appendChild(nome);
-    if (!s.solo) {
-      const m = document.createElement('div');
-      m.className = 'sqmembers';
-      m.textContent = s.membri.map(a => a.nome).join(' · ');
-      d.appendChild(m);
+    const nome = P.escapeHtml(s.nome), pts = s.punti;
+    const main = document.createElement('button');
+    main.className = 'sqmain';
+    main.title = 'Tocca quando ' + (s.solo ? 'risponde' : 'questa squadra risponde');
+    main.innerHTML = targhette
+      ? '<span class="dot"></span><span class="sqname">' + nome + '</span><span class="sqpts' + (pts ? '' : ' zero') + '">' + pts + '</span>'
+      : '<span class="sqtop"><span class="dot"></span><span class="sqname">' + nome + '</span></span>' +
+        (s.solo ? '' : '<span class="sqmembers">' + P.escapeHtml(s.membri.map(a => a.nome).join(' · ')) + '</span>') +
+        '<span class="sqpts' + (pts ? '' : ' zero') + '">' + pts + '<small> pt</small></span>';
+    main.addEventListener('click', () => toccaSquadra(s.id));
+    d.appendChild(main);
+    if (turno === s.id) {
+      const act = document.createElement('div');
+      act.className = 'sqact';
+      act.innerHTML = (targhette ? '<div class="sqpoptop"><span class="dot"></span><b>' + nome + '</b><span class="sqpts">' + pts + '</span></div>' : '') +
+        '<div class="sqbtns"><button class="sqok" title="Giusto! +' + C.PUNTI_GIUSTO + ' punti" aria-label="Giusto">' + ICO_OK + '</button>' +
+        '<button class="sqko" title="Sbagliato: gneee e si continua" aria-label="Sbagliato">' + ICO_KO + '</button></div>';
+      act.querySelector('.sqok').addEventListener('click', () => premiaSquadra(s.id));
+      act.querySelector('.sqko').addEventListener('click', () => sbagliaSquadra(s.id));
+      if (targhette) act.querySelector('.sqpoptop').addEventListener('click', () => toccaSquadra(s.id));
+      d.appendChild(act);
     }
-    const pt = document.createElement('div');
-    pt.className = 'sqpts';
-    pt.innerHTML = '<b>' + s.punti + '</b> pt';
-    d.appendChild(pt);
-    const bt = document.createElement('div');
-    bt.className = 'sqbtns';
-    const ok = document.createElement('button');
-    ok.className = 'sqok'; ok.textContent = '✅'; ok.title = 'Giusto! +' + C.PUNTI_GIUSTO + ' punti';
-    ok.addEventListener('click', () => premiaSquadra(s.id));
-    const ko = document.createElement('button');
-    ko.className = 'sqko'; ko.textContent = '❌'; ko.title = 'Sbagliato: gneee e si continua';
-    ko.addEventListener('click', () => sbagliaSquadra(s.id));
-    bt.append(ok, ko);
-    d.appendChild(bt);
     grid.appendChild(d);
   });
-  grid.classList.toggle('attesa', !lezione || premiata);
 }
 
-function renderClasse() { renderSelClasse(); renderSquadre(); aggiornaScore(); }
+function renderClasse() { renderInfo(); renderSquadre(); aggiornaScore(); aggiornaModoInput(); if (window.adattaSchermo) adattaSchermo(); }
 
 function cardSquadra(id) { return $('sqgrid').querySelector('.sq[data-id="' + id + '"]'); }
 function nomeSquadra(id) {
@@ -320,8 +331,23 @@ function nomeSquadra(id) {
   return s ? (s.emoji ? s.emoji + ' ' : '') + s.nome : '';
 }
 
+/* l'insegnante tocca la squadra che alza la mano: ora risponde lei */
+function toccaSquadra(id) {
+  if (occupato) return;
+  if (!lezione || premiata) { bolla(cfg.msg.noLezione); return; }
+  if (inAttesa != null) { premiaSquadra(id); return; }   // errore già toccato: chi l'ha trovato?
+  turno = turno === id ? null : id;
+  renderSquadre();
+  if (turno) {
+    const f = EN() ? 'Oh really, ' + nomeSquadra(id) + '? Go on then, show me this so-called mistake on the board!'
+                   : 'Ah sì, ' + nomeSquadra(id) + '? Sentiamo... toccate sulla lavagna questo presunto errore!';
+    bolla('🙋 ' + f);
+  }
+}
+
 function premiaSquadra(id) {
   if (occupato) return;
+  turno = null;
   if (!lezione) { bolla(cfg.msg.noLezione); return; }
   if (premiata) return;
   const c = classe(); if (!c) return;
@@ -336,7 +362,7 @@ function premiaSquadra(id) {
   const resto = rimasti();
   if (!resto) lezione.errori.forEach(e => { e.trovato = true; });
   evidenziaErrori();
-  if (!resto) { premiata = true; lezione = null; aggiornaContatore(); }
+  if (!resto) { premiata = true; orologio.ferma(); lezione = null; aggiornaContatore(); }
   const frase = pick(frasiBravi());
   bolla('✅ ' + nome + ' — ' + frase + ' (+' + C.PUNTI_GIUSTO + ')' + (resto ? ' ' + msgAncora(resto) : ''));
   parla(frase + (resto ? ' ' + msgAncora(resto) : ''));
@@ -348,6 +374,8 @@ function premiaSquadra(id) {
 
 function sbagliaSquadra(id) {
   if (occupato) return;
+  turno = null;
+  renderSquadre();
   if (!lezione) { bolla(cfg.msg.noLezione); return; }
   if (premiata) return;
   const nome = nomeSquadra(id);
@@ -361,12 +389,6 @@ function sbagliaSquadra(id) {
   if (card) { card.classList.remove('gnee'); void card.offsetWidth; card.classList.add('gnee'); }
 }
 
-$('selclasse').addEventListener('change', e => { C.setAttiva(e.target.value || null); renderClasse(); });
-document.querySelectorAll('.gbtn').forEach(b => b.addEventListener('click', () => {
-  const c = classe(); if (!c) return;
-  C.gruppiCasuali(c.id, +b.dataset.dim);
-  renderSquadre();
-}));
 /* se il registro è stato modificato in un'altra scheda, riallinea */
 window.addEventListener('focus', renderClasse);
 window.addEventListener('storage', e => { if (e.key === 'professoracci_classi') renderClasse(); });
@@ -384,12 +406,14 @@ function refreshMateriale() {
     stato.classList.add('attivo');
     badge.textContent = '📎 ' + m.titolo;
     badge.classList.add('on');
+    $('catbtn').classList.add('attivo');
     $('mattitolo').value = m.titolo;
     $('mattesto').value = m.testo;
   } else {
     stato.textContent = 'nessun materiale: il professore inventa gli argomenti';
     stato.classList.remove('attivo');
     badge.classList.remove('on');
+    $('catbtn').classList.remove('attivo');
   }
 }
 
@@ -515,13 +539,13 @@ function promptGenerazione() {
 ${m.testo}
 >>>
 
-COMPITO: scrivi una breve spiegazione (2-4 frasi, massimo 60 parole) rivolta a ${cfg.livelli[livello]}.
+COMPITO: scrivi una breve spiegazione (2-4 frasi, massimo 60 parole) rivolta a ${cfg.livelli[C.getLivello()]}.
 La spiegazione deve essere basata ESCLUSIVAMENTE sul materiale della lezione qui sopra: usa solo argomenti, fatti, nomi e numeri presenti nel materiale, senza aggiungere contenuti esterni.
 La spiegazione deve contenere ESATTAMENTE UN ${cfg.tipoErrore} deliberato e riconoscibile rispetto a ciò che dice il materiale, ${cfg.stileCompito}
 ${antiripeti}` + jsonRichiesto;
   }
   return base +
-`COMPITO: scrivi una breve spiegazione di ${cfg.argomento} (2-4 frasi, massimo 60 parole) rivolta a ${cfg.livelli[livello]}.
+`COMPITO: scrivi una breve spiegazione di ${cfg.argomento} (2-4 frasi, massimo 60 parole) rivolta a ${cfg.livelli[C.getLivello()]}.
 La spiegazione deve contenere ESATTAMENTE UN ${cfg.tipoErrore} deliberato e riconoscibile, ${cfg.stileCompito}
 ${antiripeti}` + jsonRichiesto;
 }
@@ -594,24 +618,25 @@ async function nuovaSpiegazione() {
   $('chalktext').innerHTML = '';
   $('answer').value = '';
   $('nuova').disabled = true; $('verifica').disabled = true;
-  lezione = null; inAttesa = null; premiata = false;
+  lezione = null; inAttesa = null; premiata = false; turno = null;
+  orologio.ferma();
   aggiornaContatore();
   $('sqgrid').querySelectorAll('.vince').forEach(x => x.classList.remove('vince'));
 
   try {
     const L = await chiamaGemini(promptGenerazione(), 1.0);
-    lezione = {
+    const lz0 = lezione = {
       spiegazione: String(L.spiegazione || ''),
       errori: [{ errore: String(L.errore || ''), correzione: String(L.correzione || ''), indizio: String(L.indizio || ''), trovato: false }],
       aVoce: 0
     };
     /* il correttore cerca eventuali errori "involontari" mentre il prof scrive e parla */
-    lezione.pronta = cercaAltriErrori(lezione);
+    lezione.pronta = cercaAltriErrori(lezione).then(() => { lz0.revisionato = true; });
     aggiornaContatore();
     erroriRecenti = [...erroriRecenti.slice(-7), lezione.errori[0].errore];
     sessionStorage.setItem(RECENTI_KEY, JSON.stringify(erroriRecenti));
     bolla(cfg.msg.pronto);
-    scriviEParla(lezione.spiegazione);
+    scriviEParla(lezione.spiegazione, () => { if (lz0 === lezione) scrittaFinita(); });
   } catch (e) {
     console.error(e);
     const msg = /503|UNAVAILABLE/i.test(String(e)) ? cfg.msg.err503 :
@@ -692,7 +717,7 @@ Rispondi SOLO con questo JSON:
       aggiornaPunti(10);
       setProf('sconfitto');
       stelle();
-      if (!resto) { premiata = true; lezione = null; aggiornaContatore(); }
+      if (!resto) { premiata = true; orologio.ferma(); lezione = null; aggiornaContatore(); }
       bolla('✅ ' + v.commento + ' (+10 punti!)' + coda);
     } else if (v.esito === 'quasi') {
       aggiornaPunti(2);
@@ -709,6 +734,72 @@ Rispondi SOLO con questo JSON:
   } catch (e) {
     console.error(e);
     bolla(cfg.msg.registro);
+  }
+  $('verifica').disabled = false; $('nuova').disabled = false;
+  occupato = false;
+}
+
+/* ============ CASELLA: risposta (gioco libero) o chat con il prof ============ */
+function modoAttuale() { return classe() ? 'chat' : modoInput; }
+function aggiornaModoInput() {
+  if (!cfg) return;
+  const cl = !!classe(), m = modoAttuale(), en = EN();
+  $('modoinput').hidden = cl;
+  document.querySelectorAll('#modoinput button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+  $('answer').placeholder = m === 'chat'
+    ? (en ? 'Ask the teacher something... (no real names)' : 'Chiedete qualcosa al professore… (niente nomi veri)')
+    : cfg.placeholder;
+  const cap = t => t.charAt(0) + t.slice(1).toLowerCase();
+  $('verifica').textContent = m === 'chat' ? (en ? 'Ask' : 'Chiedi')
+    : cap((cfg.ui && cfg.ui.verifica) || 'HO TROVATO L\'ERRORE!');
+  document.body.classList.toggle('modochat', m === 'chat');
+}
+
+function promptChat(domanda) {
+  const m = materiale();
+  let lavagna = '';
+  if (lezione) {
+    const nascosti = lezione.errori.filter(e => !e.trovato);
+    lavagna = 'Sulla lavagna in questo momento c\'è la tua spiegazione:\n"""' + lezione.spiegazione + '"""\n' +
+      (nascosti.length
+        ? 'Contiene errori che la classe deve ancora trovare: NON svelarli, NON correggerli e non dire dove sono. ' +
+          'Se te lo chiedono, nega con orgoglio nel tuo personaggio oppure dai al massimo questo piccolo indizio: "' + nascosti[0].indizio + '".\n'
+        : 'Gli errori della lavagna sono già stati tutti scoperti.\n');
+  }
+  const storia = chatStoria.map(x => 'CLASSE: ' + x.q + '\nTU: ' + x.a).join('\n');
+  return `${cfg.persona}
+
+ADESSO NON STAI SPIEGANDO: stai chiacchierando con la classe, che ti fa domande a voce.
+Resta nel tuo personaggio (stesso carattere, stesso modo di parlare, stesse manie), ma in questa conversazione dici solo cose VERE e CORRETTE: nessun errore voluto, grammatica e contenuti perfetti.
+La classe è composta da ${cfg.livelli[C.getLivello()]}. Rispondi in modo breve: 1-3 frasi, massimo 50 parole, con parole semplici.
+Linguaggio sempre adatto a bambini e ragazzi. Se la domanda è inopportuna, personale o pericolosa, cambia argomento con garbo e riporta la classe alla lezione. Non chiedere e non usare mai nomi, indirizzi o dati personali.
+${m ? 'Se la domanda riguarda la lezione, basati su questo MATERIALE DELLA LEZIONE:\n<<<\n' + m.testo + '\n>>>\n' : ''}${lavagna}${storia ? 'CONVERSAZIONE FINORA:\n' + storia + '\n' : ''}
+DOMANDA DELLA CLASSE: "${domanda}"
+${cfg.notaLingua || ''}
+
+Rispondi SOLO con questo JSON:
+{"risposta":"..."}`;
+}
+
+async function chiedi() {
+  if (occupato) return;
+  const q = $('answer').value.trim();
+  if (!q) { bolla(EN() ? 'Well? Ask me anything, darlings!' : 'Allora? Chiedetemi pure qualcosa!'); return; }
+  occupato = true;
+  $('verifica').disabled = true; $('nuova').disabled = true;
+  speechSynthesis.cancel();
+  bollaChat(q, '');
+  try {
+    const r = await chiamaGemini(promptChat(q), 0.8);
+    const a = String(r.risposta || '').trim();
+    if (!a) throw new Error('risposta vuota');
+    chatStoria = [...chatStoria.slice(-5), { q, a }];
+    bollaChat(q, a);
+    parla(a);
+    $('answer').value = '';
+  } catch (e) {
+    console.error(e);
+    bolla(/503|UNAVAILABLE/i.test(String(e)) ? cfg.msg.err503 : /429/.test(String(e)) ? cfg.msg.err429 : cfg.msg.errAltro);
   }
   $('verifica').disabled = false; $('nuova').disabled = false;
   occupato = false;
@@ -768,14 +859,25 @@ function scriviEParla(testo, fine) {
     }
   }, 30);
 }
-/* Riscrive la lavagna segnando ogni errore trovato, con la correzione subito accanto */
+/* Riscrive la lavagna: ogni errore trovato è segnato con la correzione accanto,
+   tutte le altre parole diventano "toccabili" (span.w con la loro posizione nel testo) */
+function posErrore(e) { return lezione ? lezione.spiegazione.toLowerCase().indexOf(String(e.errore).toLowerCase()) : -1; }
 function evidenziaErrori() {
   if (!lezione) return;
   if (twTimer) { clearInterval(twTimer); twTimer = null; }
   const esc = P.escapeHtml;
-  const t = lezione.spiegazione, low = t.toLowerCase();
+  const t = lezione.spiegazione;
+  const parole = (a, b) => {
+    let h = '', m; const re = /\S+|\s+/g, sub = t.slice(a, b);
+    while ((m = re.exec(sub))) {
+      const x = m[0];
+      h += /\s/.test(x[0]) ? esc(x)
+        : '<span class="w" data-a="' + (a + m.index) + '" data-b="' + (a + m.index + x.length) + '">' + esc(x) + '</span>';
+    }
+    return h;
+  };
   const segni = lezione.errori.filter(e => e.trovato && e.errore)
-    .map(e => ({ e, i: low.indexOf(e.errore.toLowerCase()) }))
+    .map(e => ({ e, i: posErrore(e) }))
     .sort((a, b) => a.i - b.i);
   let out = '', pos = 0, fuori = '';
   segni.forEach(({ e, i }) => {
@@ -783,17 +885,84 @@ function evidenziaErrori() {
       fuori += ' <span class="corr">(' + esc(e.errore) + ' → ' + esc(e.correzione) + ')</span>';
       return;
     }
-    out += esc(t.slice(pos, i)) + '<span class="evid">' + esc(t.substr(i, e.errore.length)) + '</span>' +
+    out += parole(pos, i) + '<span class="evid">' + esc(t.substr(i, e.errore.length)) + '</span>' +
       '<span class="corr"> → ' + esc(e.correzione) + '</span>';
     pos = i + e.errore.length;
   });
-  $('chalktext').innerHTML = out + esc(t.slice(pos)) + fuori;
+  $('chalktext').innerHTML = out + parole(pos, t.length) + fuori;
   aggiornaContatore();
 }
+/* il prof ha finito di scrivere: la lavagna diventa toccabile e (se scelto) parte il timer */
+function scrittaFinita() {
+  evidenziaErrori();
+  if (!premiata) orologio.avviaAuto();
+}
+
+/* ============ TOCCO SULLA LAVAGNA (con una classe) ============ */
+$('chalktext').addEventListener('click', async ev => {
+  if (!lezione || premiata || !classe()) return;
+  if (twTimer) { scrittaFinita(); return; }          // un tocco mentre scrive: completa la lavagna
+  const w = ev.target.closest('.w');
+  if (!w || occupato) return;
+  if (inAttesa != null) { bolla(msgChiStato()); flashSquadre(); return; }
+  const lz = lezione;
+  if (!lz.revisionato) {                              // il correttore sta ancora rileggendo
+    bolla(EN() ? 'One moment, let me read the board again...' : 'Un attimo, rileggo la lavagna...');
+    await lz.pronta;
+    if (lz !== lezione) return;
+  }
+  const a = +w.dataset.a, b = +w.dataset.b;
+  const idx = lz.errori.findIndex(e => {
+    if (e.trovato || !e.errore) return false;
+    const i = posErrore(e);
+    return i >= 0 && a < i + e.errore.length && b > i;
+  });
+  if (idx >= 0) {
+    lz.errori[idx].trovato = true;
+    inAttesa = idx;
+    evidenziaErrori();
+    if (turno) { premiaSquadra(turno); return; }
+    C.suoni.evviva(); setProf('sconfitto'); stelle();
+    bolla('✅ ' + msgChiStato()); parla(msgChiStato());
+    renderSquadre(); flashSquadre();
+  } else {
+    w.classList.remove('no'); void w.offsetWidth; w.classList.add('no');
+    if (turno) { sbagliaSquadra(turno); return; }
+    C.suoni.gneee(); setProf('felice');
+    const f = EN() ? 'Ha! There is no mistake there, darling!' : 'Ah-ha! Lì non c\'è nessun errore!';
+    bolla('❌ ' + f); setTimeout(() => parla(f), 900);
+    setTimeout(() => setProf(''), 3500);
+  }
+});
+function msgChiStato() {
+  return EN() ? 'Oh no, you caught me! But who found it? Tap the team!'
+              : 'Nooo, mi avete scoperto! Ma chi è stato? Toccate la squadra!';
+}
+function flashSquadre() { const g = $('sqgrid'); g.classList.remove('chiedi'); void g.offsetWidth; g.classList.add('chiedi'); }
+
+/* ============ TIMER: tempo scaduto ============ */
+orologio.onFine(() => {
+  if (!lezione || premiata) return;
+  const e = lezione.errori.find(x => !x.trovato);
+  const f = (EN() ? 'Time is up! Ha-ha, my board resists! ' : 'Tempo scaduto! Ah-ha, la mia lavagna resiste! ') +
+    (e && e.indizio ? (EN() ? 'Oh well, a little clue: ' : 'Va bene, un piccolo indizio: ') + e.indizio : '');
+  C.suoni.gneee(); setProf('felice');
+  bolla('⏰ ' + f); setTimeout(() => parla(f), 900);
+  setTimeout(() => setProf(''), 3500);
+});
+
 function bolla(t) {
   const b = $('bubble');
-  b.textContent = t;
-  b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
+  $('btxt').textContent = t; $('btxt').scrollTop = 0;
+  b.classList.remove('pop', 'chat'); void b.offsetWidth; b.classList.add('pop');
+}
+function bollaChat(domanda, risposta) {
+  const b = $('bubble');
+  $('btxt').innerHTML = '<div class="domanda">🙋 ' + P.escapeHtml(domanda) + '</div>' +
+    (risposta ? P.escapeHtml(risposta) : '<span class="pensa">💭 …</span>');
+  $('btxt').scrollTop = 0;
+  b.classList.add('chat');
+  if (risposta) { b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop'); }
 }
 function setProf(stato) {
   const p = $('profcol');
@@ -846,14 +1015,49 @@ function parla(testo) {
 speechSynthesis.getVoices(); // precarica
 
 /* ============ EVENTI ============ */
-document.querySelectorAll('.lvl').forEach(b => b.addEventListener('click', () => {
-  document.querySelectorAll('.lvl').forEach(x => x.classList.remove('on'));
-  b.classList.add('on');
-  livello = b.dataset.lvl;
-}));
 $('nuova').addEventListener('click', nuovaSpiegazione);
-$('verifica').addEventListener('click', verifica);
-$('answer').addEventListener('keydown', e => { if (e.key === 'Enter') verifica(); });
+const invia = () => (modoAttuale() === 'chat' ? chiedi() : verifica());
+$('verifica').addEventListener('click', invia);
+$('answer').addEventListener('keydown', e => { if (e.key === 'Enter') invia(); });
+document.querySelectorAll('#modoinput button').forEach(b => b.addEventListener('click', () => {
+  modoInput = b.dataset.m; aggiornaModoInput(); $('answer').focus();
+}));
+
+/* ============ CATTEDRA (finestra) ============ */
+$('catbtn').addEventListener('click', () => $('cattedra').showModal());
+$('catchiudi').addEventListener('click', () => $('cattedra').close());
+$('cattedra').addEventListener('click', e => { if (e.target === $('cattedra')) $('cattedra').close(); });  // clic fuori
+
+/* ============ MICROFONO: la classe parla al professore ============ */
+(() => {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR || !cfg) return;
+  const mic = $('mic');
+  mic.hidden = false;
+  let rec = null;
+  mic.addEventListener('click', () => {
+    if (rec) { rec.stop(); return; }
+    speechSynthesis.cancel();
+    rec = new SR();
+    rec.lang = cfg.lang || 'it-IT';
+    rec.interimResults = true;
+    rec.continuous = false;
+    let finale = false;
+    rec.onresult = e => {
+      $('answer').value = Array.from(e.results).map(r => r[0].transcript).join('');
+      if (e.results[e.results.length - 1].isFinal) finale = true;
+    };
+    rec.onerror = e => {
+      if (e.error === 'not-allowed') bolla('🎤 Il microfono è bloccato: consentilo dalle impostazioni del browser.');
+    };
+    rec.onend = () => {
+      rec = null; mic.classList.remove('ascolta');
+      if (finale && $('answer').value.trim() && modoAttuale() === 'chat') chiedi();
+    };
+    mic.classList.add('ascolta');
+    rec.start();
+  });
+})();
 $('speak').addEventListener('click', () => {
   const t = $('chalktext').textContent;
   if (t) parla(t);

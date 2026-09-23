@@ -7,8 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;700;800;900&family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
-<script src="assets/professoracci.js?v=4"></script>
-<script src="assets/classi.js?v=4"></script>
+<script src="assets/professoracci.js?v=5"></script>
+<script src="assets/classi.js?v=5"></script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 
@@ -295,8 +295,15 @@ body.calma .porthole svg { animation:none !important; }
   .mote { display:none; }
   .lamp, .sign .board, .note, .porthole svg { animation:none !important; }
 }
+.angolo { position:fixed; right:16px; bottom:14px; z-index:20; display:flex; gap:10px; align-items:center; }
+.installa {
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:14px; cursor:pointer;
+  color:#fff; background:#3b6ea5; border:3px solid #2c4f78; border-radius:99px;
+  padding:7px 16px; box-shadow:0 4px 0 #223d5c, 0 4px 10px rgba(0,0,0,.2); transition:transform .12s;
+}
+.installa:hover { transform:translateY(2px); }
+.installa[hidden] { display:none; }
 .calmbtn {
-  position:fixed; right:16px; bottom:14px; z-index:20;
   font-family:'Fredoka',sans-serif; font-weight:600; font-size:13px; cursor:pointer;
   color:#5d4426; background:#fdf6df; border:3px solid #d9bd8a; border-radius:99px;
   padding:7px 14px; transition:all .15s; box-shadow:0 4px 10px rgba(0,0,0,.2);
@@ -308,6 +315,11 @@ footer {
   font-family:'Caveat',cursive; font-size:22px; font-weight:600; color:#7a6340;
 }
 </style>
+<script src="assets/app.js?v=7"></script>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2f4a3b">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icone/icona-192.png">
+<link rel="apple-touch-icon" href="assets/icone/icona-192.png">
 </head>
 <body>
 <div class="wrap">
@@ -352,7 +364,10 @@ footer {
 
   <main class="doors" id="doors"></main>
 
-  <button class="calmbtn" id="calmbtn" title="Riduce le animazioni e gli stimoli visivi">🌿 modalità tranquilla</button>
+  <div class="angolo">
+    <button class="installa" id="installa" hidden title="Apre i Professoracci in una finestra tutta sua, senza barre del browser">📲 installa come app</button>
+    <button class="calmbtn" id="calmbtn" title="Riduce le animazioni e gli stimoli visivi">🌿 modalità tranquilla</button>
+  </div>
 
   <footer>— fine del corridoio · piano terra —</footer>
 </div>

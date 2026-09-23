@@ -33,7 +33,18 @@ var NOMI_GRUPPI = [
 ];
 
 function uid(p) { return p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
-function vuoto() { return { v: 1, attiva: null, classi: [] }; }
+function vuoto() { return { v: 1, attiva: null, livelloLibero: 'facile', classi: [] }; }
+
+/* livelli di gioco (stesse chiavi di cfg.livelli nei professori) */
+var LIVELLI = [
+  { id: 'facile',    nome: '1ª – 2ª',     info: '6-7 anni' },
+  { id: 'media',     nome: '3ª – 4ª',     info: '8-9 anni' },
+  { id: 'difficile', nome: '5ª e medie',  info: '10-13 anni' }
+];
+function livelloValido(l) {
+  for (var i = 0; i < LIVELLI.length; i++) if (LIVELLI[i].id === l) return l;
+  return 'facile';
+}
 
 /* ---------- lettura / scrittura ---------- */
 function load() {
@@ -50,6 +61,7 @@ function save(db) {
 }
 function normalizza(c) {
   c.punti = +c.punti || 0;
+  c.livello = livelloValido(c.livello);
   c.perMateria = c.perMateria || {};
   c.alunni = Array.isArray(c.alunni) ? c.alunni : [];
   c.gruppi = Array.isArray(c.gruppi) ? c.gruppi : [];
@@ -80,6 +92,24 @@ function getAttiva() {
 }
 function setAttiva(id) {
   modifica(function (db) { db.attiva = id && trova(db, id) ? id : null; });
+}
+/* livello della classe in gioco (o del gioco libero se nessuna classe) */
+function getLivello() {
+  var db = load();
+  var c = db.attiva ? trova(db, db.attiva) : null;
+  return c ? c.livello : livelloValido(db.livelloLibero);
+}
+/* classeId null = gioco libero */
+function setLivello(classeId, livello) {
+  livello = livelloValido(livello);
+  modifica(function (db) {
+    var c = classeId ? trova(db, classeId) : null;
+    if (c) c.livello = livello; else db.livelloLibero = livello;
+  });
+}
+function nomeLivello(id) {
+  for (var i = 0; i < LIVELLI.length; i++) if (LIVELLI[i].id === id) return LIVELLI[i].nome;
+  return id;
 }
 function creaClasse(nome) {
   nome = String(nome || '').trim().slice(0, 30);
@@ -335,6 +365,7 @@ function evviva() {
 
 window.Classi = {
   PUNTI_GIUSTO: PUNTI_GIUSTO,
+  LIVELLI: LIVELLI, getLivello: getLivello, setLivello: setLivello, nomeLivello: nomeLivello,
   load: load, elenco: elenco, getClasse: getClasse,
   getAttiva: getAttiva, setAttiva: setAttiva,
   creaClasse: creaClasse, rinominaClasse: rinominaClasse, eliminaClasse: eliminaClasse,

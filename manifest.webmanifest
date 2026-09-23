@@ -1,0 +1,19 @@
+{
+  "name": "La Scuola dei Professoracci",
+  "short_name": "Professoracci",
+  "description": "I professori sbagliano... e la classe li corregge!",
+  "lang": "it",
+  "id": "./",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "landscape",
+  "background_color": "#2f4a3b",
+  "theme_color": "#2f4a3b",
+  "icons": [
+    { "src": "assets/icone/icona-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icone/icona-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icone/icona-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

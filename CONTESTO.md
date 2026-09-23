@@ -31,6 +31,9 @@ assets/professoracci.js    config dei 7 prof (persona, livelli, voce, tema, SVG,
                            + storage prof custom + generatore avatar + storage materiale + mod. tranquilla
 assets/classi.js           registro classi (localStorage 'professoracci_classi') + suoni Web Audio (gneee / evviva)
 assets/aula.css            stile Aula Viva condiviso, tematizzato con --wall/--accent/--accent-d/--accent-dd
+assets/orologio.js         orologio da parete a lancette: ora, cronometro, timer visivo (stato in sessionStorage)
+assets/app.js              PWA (service worker, pulsante installa), schermo intero, zoom automatico per il monitor di classe
+manifest.webmanifest, sw.js   app installabile (sw "prima la rete"); icone in assets/icone/
 _archivio/aule-standalone-v1/   le vecchie 6 aule standalone (superate dal refactor)
 ```
 
@@ -72,6 +75,20 @@ _archivio/aule-standalone-v1/   le vecchie 6 aule standalone (superate dal refac
 ### Modalità tranquilla (accessibilità)
 - Pulsante 🌿 in corridoio e nelle aule: spegne animazioni ambientali e riduce gli stimoli visivi (pensata per autismo/ADHD)
 - Salvata in `localStorage['professoracci_calma']`; rispettato anche `prefers-reduced-motion`
+
+### UX aula (settembre 2026)
+- **Impianto «palco e telecomando»** (scelto il 23/9 tra 3 proposte): il MURO è della classe (orologio, lavagna, professore), il PAVIMENTO dell'insegnante (tabellone + telecomando). Barra in alto: solo «Corridoio», titolo e 3 icone (cattedra, tranquilla, schermo intero). Unico pulsante rosso: Nuova spiegazione
+- Il professore sta in piedi sul pavimento; il suo nome è in cima alla nuvoletta. Il suolo (`--suolo`) lo calcola app.js dalla posizione del tabellone
+- Tabellone: fino a 8 squadre → schede (nome, componenti, punti grandi); più di 8 (es. tutti singoli) → targhette alfabetiche 8 per riga (10 oltre i 24). ✓ ✗ compaiono solo sulla squadra che risponde, che si alza sopra le altre
+- Telecomando (barra scura in basso): Nuova spiegazione, Ascolta, Stop, [🔍/💬 solo in gioco libero], casella, 🎤, Chiedi/Ho trovato l'errore
+- Classe, gruppi e **livello** (per classe, o per il gioco libero) si scelgono SOLO nel registro; l'aula mostra solo le squadre con ✅/❌ e il link «classe, gruppi e livello» (torna all'aula con ?torna=)
+- Orologio a lancette appeso sopra la lavagna; clic → cronometro o timer 1-10′ con campanella
+- `.wrap[data-adatta]`: l'aula si ingrandisce da sola fino a riempire il monitor (zoom 1–2.4)
+- Palco largo (schermi 16:9 con una classe in gioco, `html.largo`): squadre in colonna a destra della lavagna
+- **Lavagna toccabile** (con una classe): l'insegnante tocca la squadra che risponde (🙋) e poi la parola sbagliata sulla lavagna → se è un errore noto (dichiarato o trovato dal correttore) punti alla squadra e correzione in gesso azzurro; se no «gneee». Toccando prima la parola, il prof chiede «chi è stato?» e si tocca la squadra. ✅/❌ restano per gli errori non toccabili
+- **Chat con il prof** nella nuvoletta: con una classe la casella sotto la lavagna diventa «Chiedete qualcosa al professore» (+ 🎤 dettatura Web Speech, invio automatico). Il prof resta nel personaggio ma dice solo cose vere, breve, adatto all'età; non svela gli errori ancora nascosti (al massimo l'indizio). Storia: ultime 6 battute. Gioco libero: interruttore 🔍 risposta / 💬 chat
+- Cattedra in finestra (pulsante 🍎 in alto, 📎 se c'è materiale): materiale della lezione + velocità voce/scrittura
+- Timer automatico (opzione nel pannello dell'orologio, `localStorage['professoracci_timer']`): parte quando il prof finisce di scrivere, si ferma quando gli errori sono tutti trovati; a tempo scaduto il prof gongola e dà l'indizio
 
 ## Sistema di gioco
 
