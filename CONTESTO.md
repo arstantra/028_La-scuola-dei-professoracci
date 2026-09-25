@@ -90,6 +90,12 @@ _archivio/aule-standalone-v1/   le vecchie 6 aule standalone (superate dal refac
 - Cattedra in finestra (pulsante 🍎 in alto, 📎 se c'è materiale): materiale della lezione + velocità voce/scrittura
 - Timer automatico (opzione nel pannello dell'orologio, `localStorage['professoracci_timer']`): parte quando il prof finisce di scrivere, si ferma quando gli errori sono tutti trovati; a tempo scaduto il prof gongola e dà l'indizio
 
+### Professoracci in buona fede + casella delle domande (settembre 2026)
+- **I prof non sanno di sbagliare**: non dicono mai che ci sono errori da trovare, non ammiccano, non danno indizi. Sulla lavagna niente "trova l'errore": il titolo è "Lezione di <materia>" o l'argomento della lezione (campo `titolo` del JSON). Regola `BUONA_FEDE` in tutti i prompt di generazione.
+- Il contatore "errori trovati" resta (è il gioco, non il prof); quando ne restano altri pulsa, invece del vecchio "si nasconde ancora un errore" detto dal prof.
+- Gli indizi (risposta "quasi"/"sbagliato", tempo scaduto) compaiono su un **foglietto giallo** attaccato alla lavagna (`#postit`), mai in bocca al prof.
+- **Casella = domanda vera** (modo 💬, predefinito; con una classe sempre): "Parlaci di Giotto" → il prof spiega alla lavagna esattamente Giotto (anche fuori materia), con il suo errore in buona fede (`promptDomanda`). Saluti/chiacchiere/domande personali → risposta solo a voce, la lavagna resta com'è. In gioco libero, dopo la lezione la casella passa da sola a 🔍 risposta e torna alle domande quando la lavagna è risolta.
+
 ## Sistema di gioco
 
 - Persona nel prompt: MAI ammette errori spontaneamente, solo italiano, JSON-only

@@ -7,9 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;700;800;900&family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/aula.css?v=8">
+<link rel="stylesheet" href="../assets/aula.css?v=9">
 <link rel="modulepreload" href="https://esm.sh/@google/genai@0.14.1">
-<script src="../assets/professoracci.js?v=7"></script>
+<script src="../assets/professoracci.js?v=8"></script>
 <script src="../assets/classi.js?v=7"></script>
 <script src="../assets/orologio.js?v=7"></script>
 <script src="../assets/app.js?v=7"></script>
@@ -49,7 +49,8 @@
     <div class="board" id="board">
       <div class="matbadge" id="matbadge">📎 materiale</div>
       <div class="errcount" id="errcount"></div>
-      <div class="boardtitle" id="boardtitle">Trova l'errore!</div>
+      <div class="postit" id="postit" hidden></div>
+      <div class="boardtitle" id="boardtitle">Lezione</div>
       <div class="chalktext" id="chalktext"></div>
       <div class="chalkspin"></div>
       <div class="tray" id="tray">
@@ -84,8 +85,8 @@
     <button class="dk" id="stopaudio" title="Ferma la voce" aria-label="Ferma la voce"><svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg></button>
     <span class="dk-sep"></span>
     <div class="modoinput" id="modoinput">
-      <button data-m="risposta" class="on" title="Scrivi dov'è l'errore" aria-label="Risposta"><svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg></button>
-      <button data-m="chat" title="Parla con il professore" aria-label="Chat"><svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg></button>
+      <button data-m="chat" class="on" title="Chiedi al professore di spiegarti qualcosa" aria-label="Domanda"><svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg></button>
+      <button data-m="risposta" title="Rispondi: scrivi l'errore che hai trovato" aria-label="Risposta"><svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg></button>
     </div>
     <label class="dk-input"><svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg><input class="answer" id="answer" autocomplete="off" aria-label="Scrivi qui"></label>
     <button class="dk mic" id="mic" title="Parla al microfono" aria-label="Microfono" hidden><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg></button>
@@ -189,12 +190,12 @@ if (cfg) {
 const GNEE_IT = [
   'Gneee! Sbagliato! Lo sapevo che la mia lezione era perfetta!',
   'Gneee! Niente da fare, il professore resiste! Chi ci prova adesso?',
-  'Ah-ha! Acqua, acqua! Tocca a qualcun altro!',
+  'Ah-ha! Macché! Lì è tutto giustissimo! Tocca a qualcun altro!',
   'Gneee! Neanche vicino! Avanti il prossimo!'
 ];
 const BRAVI_IT = [
   'Ahi ahi... avete ragione voi. Ma solo per questa volta!',
-  'Nooo! Mi avete scoperto! Dieci punti, uffa.',
+  'Nooo! Avete ragione voi! Dieci punti, uffa.',
   'Va bene, va bene... era un errore. Piccolissimo. Dieci punti!'
 ];
 const CHI_IT = 'Mmm... chi ha risposto? Insegnante, premi ✅ sulla sua squadra!';
@@ -220,8 +221,7 @@ let occupato = false;
 let inAttesa = null;    // indice dell'errore riconosciuto dall'AI (casella) in attesa del ✅ dell'insegnante
 let premiata = false;   // tutti gli errori di questa spiegazione sono stati trovati e premiati
 let turno = null;       // squadra che sta rispondendo (toccata dall'insegnante)
-let modoInput = 'risposta';   // gioco libero: 'risposta' o 'chat' (con una classe: sempre chat)
-let chatStoria = [];    // ultime domande e risposte della chat con il prof
+let modoInput = 'chat';       // gioco libero: 'chat' (domanda al prof) o 'risposta' (con una classe: sempre chat)
 
 const EN = () => !!(cfg && cfg.lang && /^en/i.test(cfg.lang));
 /* errori ancora da scoprire (quelli trovati a voce con ✅ senza casella contano come trovati) */
@@ -229,13 +229,6 @@ function rimasti() {
   if (!lezione) return 0;
   return Math.max(0, lezione.errori.filter(e => !e.trovato).length - (lezione.aVoce || 0));
 }
-function msgAncora(n) {
-  if (EN()) return n === 1 ? 'But wait, darling... ONE more mistake is still hiding on the board!' :
-    'But wait, darling... ' + n + ' more mistakes are still hiding on the board!';
-  return n === 1 ? 'Ma attenzione: sulla lavagna si nasconde ancora UN errore!' :
-    'Ma attenzione: sulla lavagna si nascondono ancora ' + n + ' errori!';
-}
-
 /* ============ CLASSE ATTIVA E SQUADRE ============ */
 function classe() { return C.getAttiva(); }
 
@@ -364,8 +357,9 @@ function premiaSquadra(id) {
   evidenziaErrori();
   if (!resto) { premiata = true; orologio.ferma(); lezione = null; aggiornaContatore(); }
   const frase = pick(frasiBravi());
-  bolla('✅ ' + nome + ' — ' + frase + ' (+' + C.PUNTI_GIUSTO + ')' + (resto ? ' ' + msgAncora(resto) : ''));
-  parla(frase + (resto ? ' ' + msgAncora(resto) : ''));
+  bolla('✅ ' + nome + ' — ' + frase + ' (+' + C.PUNTI_GIUSTO + ')');
+  parla(frase);
+  if (resto) segnalaRimasti();
   renderSquadre();
   aggiornaScore(true);
   const card = cardSquadra(id);
@@ -521,16 +515,33 @@ async function chiamaGemini(prompt, temperature) {
   return JSON.parse(m[0]);
 }
 
-function promptGenerazione() {
-  const m = materiale();
-  const base = cfg.persona + '\n\n';
-  const antiripeti = 'NON usare questi errori già fatti di recente: ' +
+/* I professoracci NON sanno di sbagliare: l'errore è detto in buona fede,
+   mai annunciato, mai trasformato in un gioco "trova l'errore". */
+const BUONA_FEDE =
+  'IMPORTANTE — TU NON SAI DI SBAGLIARE: sei sinceramente convinto che tutto ciò che dici sia giusto. ' +
+  'L\'errore deve sembrare detto in perfetta buona fede, con sicurezza, come se fosse vero: non annunciarlo, non sottolinearlo, non fare l\'occhiolino. ' +
+  'Nel testo non parlare MAI di errori, sbagli, trabocchetti o indovinelli, non invitare a cercare o a correggere qualcosa e non sfidare chi ascolta.';
+
+function regoleErrore() {
+  return 'NON usare questi errori già fatti di recente: ' +
     (erroriRecenti.length ? erroriRecenti.join('; ') : 'nessuno') + '.\n' +
     'ATTENZIONE: gli esempi indicati per il livello mostrano solo il TIPO di errore: NON copiarli parola per parola, inventane uno nuovo.\n' +
     'Tutto il resto del testo deve essere PERFETTAMENTE corretto: un solo errore, mai due. ' +
-    'Prima di rispondere rileggi la spiegazione frase per frase: se trovi altri errori oltre a quello voluto, correggili.';
-  const jsonRichiesto = (cfg.notaLingua ? '\n' + cfg.notaLingua : '') + '\n\nRispondi SOLO con questo JSON:\n' +
-    '{"spiegazione":"il testo che scrivi alla lavagna, errore incluso","errore":"la parte sbagliata, citata esatta","correzione":"la forma corretta","indizio":"un piccolo aiuto senza svelare la soluzione"}';
+    'Prima di rispondere rileggi la spiegazione frase per frase: se trovi altri errori oltre a quello voluto, correggili.\n' +
+    BUONA_FEDE;
+}
+function jsonLezione(conTipo) {
+  return '{' + (conTipo ? '"tipo":"lezione",' : '') +
+    '"titolo":"l\'argomento in 1-4 parole, scritto correttamente, da mettere in alto sulla lavagna",' +
+    '"spiegazione":"il testo che scrivi alla lavagna, errore incluso","errore":"la parte sbagliata, citata esatta",' +
+    '"correzione":"la forma corretta","indizio":"un piccolo aiuto senza svelare la soluzione"}';
+}
+
+/* "NUOVA SPIEGAZIONE": argomento scelto dal prof (o dal materiale della Cattedra) */
+function promptGenerazione() {
+  const m = materiale();
+  const base = cfg.persona + '\n\n';
+  const jsonRichiesto = (cfg.notaLingua ? '\n' + cfg.notaLingua : '') + '\n\nRispondi SOLO con questo JSON:\n' + jsonLezione(false);
 
   if (m) {
     return base +
@@ -541,13 +552,39 @@ ${m.testo}
 
 COMPITO: scrivi una breve spiegazione (2-4 frasi, massimo 60 parole) rivolta a ${cfg.livelli[C.getLivello()]}.
 La spiegazione deve essere basata ESCLUSIVAMENTE sul materiale della lezione qui sopra: usa solo argomenti, fatti, nomi e numeri presenti nel materiale, senza aggiungere contenuti esterni.
-La spiegazione deve contenere ESATTAMENTE UN ${cfg.tipoErrore} deliberato e riconoscibile rispetto a ciò che dice il materiale, ${cfg.stileCompito}
-${antiripeti}` + jsonRichiesto;
+La spiegazione deve contenere ESATTAMENTE UN ${cfg.tipoErrore} rispetto a ciò che dice il materiale, ${cfg.stileCompito}
+${regoleErrore()}` + jsonRichiesto;
   }
   return base +
 `COMPITO: scrivi una breve spiegazione di ${cfg.argomento} (2-4 frasi, massimo 60 parole) rivolta a ${cfg.livelli[C.getLivello()]}.
-La spiegazione deve contenere ESATTAMENTE UN ${cfg.tipoErrore} deliberato e riconoscibile, ${cfg.stileCompito}
-${antiripeti}` + jsonRichiesto;
+La spiegazione deve contenere ESATTAMENTE UN ${cfg.tipoErrore}, ${cfg.stileCompito}
+${regoleErrore()}` + jsonRichiesto;
+}
+
+/* CASELLA DELLE DOMANDE: la classe chiede e il prof spiega PROPRIO quello
+   (se chiedono di Giotto parla di Giotto), sbagliando senza saperlo.
+   Se invece è una chiacchiera o una domanda personale, risponde solo a voce. */
+function promptDomanda(q) {
+  const m = materiale();
+  return cfg.persona + '\n\n' +
+`LA CLASSE TI HA FATTO QUESTA DOMANDA: "${q}"
+
+Capisci prima di che tipo è.
+
+CASO A — ti chiede di spiegare o raccontare qualcosa (una persona, un fatto, un luogo, un'opera, un animale, una regola, un concetto...), anche se non è della tua materia.
+Scrivi alla lavagna una breve spiegazione (2-4 frasi, massimo 60 parole) rivolta a ${cfg.livelli[C.getLivello()]}, che risponde PROPRIO a quella domanda e parla ESATTAMENTE dell'argomento richiesto: se chiedono di Giotto parli di Giotto, non di Leonardo né di altri; se chiedono delle frazioni parli delle frazioni. Non cambiare argomento e non allargarti ad altro.
+${m ? 'Se la domanda riguarda il MATERIALE DELLA LEZIONE qui sotto, usa i fatti del materiale; altrimenti rispondi comunque sull\'argomento richiesto.\n<<<\n' + m.testo + '\n>>>\n' : ''}La spiegazione deve contenere ESATTAMENTE UN ${cfg.tipoErrore}, ${cfg.stileCompito}
+Se l'argomento richiesto non si presta a un ${cfg.tipoErrore}, fai invece un errore di contenuto sull'argomento stesso (un fatto, una data, un nome o un numero sbagliato).
+${regoleErrore()}
+In questo caso rispondi con questo JSON:
+${jsonLezione(true)}
+
+CASO B — è un saluto, una chiacchiera, una domanda su di te, oppure una domanda inopportuna, personale o pericolosa.
+Non scrivi alla lavagna: rispondi a voce, nel tuo personaggio, in 1-2 frasi (massimo 35 parole), con linguaggio adatto a bambini e ragazzi. Se la domanda è inopportuna, personale o pericolosa, cambia argomento con garbo e invita la classe a chiederti di spiegare qualcosa. Non chiedere e non usare mai nomi, indirizzi o dati personali.
+In questo caso rispondi con questo JSON:
+{"tipo":"chiacchiera","risposta":"..."}
+${cfg.notaLingua ? '\n' + cfg.notaLingua + '\n' : ''}
+Rispondi SOLO con uno dei due JSON, senza testo prima o dopo.`;
 }
 
 /* Secondo passaggio: un "maestro correttore" (temperatura 0) rilegge la lavagna
@@ -609,46 +646,63 @@ function aggiornaContatore() {
 
 async function nuovaSpiegazione() {
   if (occupato) return;
-  occupato = true;
-  clearInterval(twTimer);
+  occupato = true; blocca(true);
+  pulisciLavagna();
+  $('board').classList.add('loading');
+  bolla(cfg.msg.preparo);
+  try {
+    const L = await chiamaGemini(promptGenerazione(), 1.0);
+    if (!String(L.spiegazione || '').trim()) throw new Error('spiegazione vuota');
+    bolla(cfg.msg.pronto);
+    avviaLezione(L);
+  } catch (e) {
+    console.error(e);
+    bolla(msgErrore(e, true));
+    $('chalktext').textContent = cfg.msg.lavagnaVuota;
+  }
+  $('board').classList.remove('loading');
+  blocca(false); occupato = false;
+  renderSquadre();
+}
+
+function blocca(si) { $('nuova').disabled = si; $('verifica').disabled = si; }
+function msgErrore(e, dettaglio) {
+  const s = String(e);
+  return /503|UNAVAILABLE/i.test(s) ? cfg.msg.err503 : /429/.test(s) ? cfg.msg.err429 :
+    cfg.msg.errAltro + (dettaglio ? ' (' + s.slice(0, 90) + ')' : '');
+}
+
+/* cancella la lavagna prima di una lezione nuova */
+function pulisciLavagna() {
+  clearInterval(twTimer); twTimer = null;
   speechSynthesis.cancel();
   setProf('');
-  bolla(cfg.msg.preparo);
-  $('board').classList.add('loading');
   $('chalktext').innerHTML = '';
+  $('boardtitle').textContent = cfg.boardtitle;
+  nascondiPostit();
   $('answer').value = '';
-  $('nuova').disabled = true; $('verifica').disabled = true;
   lezione = null; inAttesa = null; premiata = false; turno = null;
   orologio.ferma();
   aggiornaContatore();
   $('sqgrid').querySelectorAll('.vince').forEach(x => x.classList.remove('vince'));
+}
 
-  try {
-    const L = await chiamaGemini(promptGenerazione(), 1.0);
-    const lz0 = lezione = {
-      spiegazione: String(L.spiegazione || ''),
-      errori: [{ errore: String(L.errore || ''), correzione: String(L.correzione || ''), indizio: String(L.indizio || ''), trovato: false }],
-      aVoce: 0
-    };
-    /* il correttore cerca eventuali errori "involontari" mentre il prof scrive e parla */
-    lezione.pronta = cercaAltriErrori(lezione).then(() => { lz0.revisionato = true; });
-    aggiornaContatore();
-    erroriRecenti = [...erroriRecenti.slice(-7), lezione.errori[0].errore];
-    sessionStorage.setItem(RECENTI_KEY, JSON.stringify(erroriRecenti));
-    bolla(cfg.msg.pronto);
-    scriviEParla(lezione.spiegazione, () => { if (lz0 === lezione) scrittaFinita(); });
-  } catch (e) {
-    console.error(e);
-    const msg = /503|UNAVAILABLE/i.test(String(e)) ? cfg.msg.err503 :
-      /429/.test(String(e)) ? cfg.msg.err429 :
-      cfg.msg.errAltro + ' (' + String(e).slice(0, 90) + ')';
-    bolla(msg);
-    $('chalktext').textContent = cfg.msg.lavagnaVuota;
-  }
-  $('board').classList.remove('loading');
-  $('nuova').disabled = false; $('verifica').disabled = false;
-  occupato = false;
-  renderSquadre();
+/* il prof scrive alla lavagna (e dice a voce) la lezione arrivata da Gemini */
+function avviaLezione(L) {
+  const lz0 = lezione = {
+    spiegazione: String(L.spiegazione || ''),
+    errori: [{ errore: String(L.errore || ''), correzione: String(L.correzione || ''), indizio: String(L.indizio || ''), trovato: false }],
+    aVoce: 0
+  };
+  const titolo = String(L.titolo || '').trim();
+  if (titolo) $('boardtitle').textContent = titolo.slice(0, 60);
+  /* il correttore cerca eventuali errori "involontari" mentre il prof scrive e parla */
+  lezione.pronta = cercaAltriErrori(lezione).then(() => { lz0.revisionato = true; });
+  aggiornaContatore();
+  erroriRecenti = [...erroriRecenti.slice(-7), lezione.errori[0].errore];
+  sessionStorage.setItem(RECENTI_KEY, JSON.stringify(erroriRecenti));
+  if (!classe()) { modoInput = 'risposta'; aggiornaModoInput(); }   // gioco libero: ora si risponde
+  scriviEParla(lezione.spiegazione, () => { if (lz0 === lezione) scrittaFinita(); });
 }
 
 async function verifica() {
@@ -659,29 +713,37 @@ async function verifica() {
   if (!risposta) { bolla(cfg.msg.vuoto); return; }
   occupato = true;
   if (twTimer) { clearInterval(twTimer); twTimer = null; evidenziaErrori(); }
-  $('verifica').disabled = true; $('nuova').disabled = true;
+  blocca(true);
   bolla(cfg.msg.controllo);
 
   const lz = lezione;
   await lz.pronta;   // aspetta il correttore, se sta ancora rileggendo
   const daTrovare = lz.errori.map((e, i) => Object.assign({ i }, e)).filter(e => !e.trovato);
   const elenco = daTrovare.map((e, k) =>
-    (k + 1) + '. "' + e.errore + '" (forma corretta: "' + e.correzione + '"; indizio: "' + e.indizio + '")').join('\n');
+    (k + 1) + '. "' + e.errore + '" (forma corretta: "' + e.correzione + '")').join('\n');
 
   const prompt = `${cfg.persona}
 
-Nella tua spiegazione ci sono ${daTrovare.length === 1 ? 'questo errore ancora da scoprire' : 'questi ' + daTrovare.length + ' errori ancora da scoprire'}:
-${elenco}
+Hai appena spiegato alla lavagna questo testo:
+"""${lz.spiegazione}"""
 
-Chi gioca ha risposto: "${risposta}"
+INFORMAZIONE RISERVATA, SERVE SOLO PER VALUTARE: nel testo ${daTrovare.length === 1 ? 'c\'è questo sbaglio che nessuno ha ancora notato' : 'ci sono questi ' + daTrovare.length + ' sbagli che nessuno ha ancora notato'}:
+${elenco}
+Nel tuo personaggio però tu NON sai di aver sbagliato: sei convinto di aver spiegato tutto benissimo.
+
+Chi ti ascolta ti ha detto: "${risposta}"
 
 Valuta la risposta:
-- "bravo" se ha individuato UNO degli errori dell'elenco o ha scritto la sua correzione giusta (anche con parole sue o piccoli errori di battitura)
-- "quasi" se ha intuito la zona giusta di uno degli errori ma la correzione è incompleta o imprecisa
-- "sbagliato" se non ha trovato nessuno degli errori dell'elenco
-In "numero" scrivi il numero dell'errore dell'elenco che ha trovato (per "quasi" quello più vicino; per "sbagliato" 0).
+- "bravo" se ha individuato UNO degli sbagli dell'elenco o ha scritto la sua correzione giusta (anche con parole sue o piccoli errori di battitura)
+- "quasi" se ha intuito la zona giusta di uno degli sbagli ma la correzione è incompleta o imprecisa
+- "sbagliato" se non ha individuato nessuno degli sbagli dell'elenco
+In "numero" scrivi il numero dello sbaglio dell'elenco che ha individuato (per "quasi" quello più vicino; per "sbagliato" 0).
 
-Poi scrivi un commento nel tuo personaggio (2-3 frasi): se "bravo" ammetti quell'errore a malincuore con ${cfg.scusaBravo} e fai i complimenti; se "quasi" incoraggia e dai l'indizio di quell'errore; se "sbagliato" ${cfg.gongola || 'gongola bonariamente'} e invita a riprovare con l'indizio del primo errore dell'elenco. Non svelare mai la correzione degli errori non ancora trovati.
+Poi scrivi un commento nel tuo personaggio (2-3 frasi):
+- se "bravo": te ne accorgi solo ADESSO, resti sorpreso e ammetti lo sbaglio a malincuore con ${cfg.scusaBravo}, poi fai i complimenti;
+- se "quasi": vacilli un po' e non sei più così sicuro, ma non ammetti niente e non dici che cosa potrebbe essere sbagliato;
+- se "sbagliato": ${cfg.gongola || 'gongola bonariamente'} e difendi con convinzione quello che hai scritto, perché per te è tutto giusto.
+Non parlare mai di sbagli "nascosti", "da trovare" o "ancora da scoprire", non dare indizi e non svelare correzioni.
 
 ${cfg.notaLingua || ''}
 
@@ -693,8 +755,9 @@ Rispondi SOLO con questo JSON:
     if (lz !== lezione) throw new Error('lezione cambiata');
     const scelto = daTrovare[(parseInt(v.numero, 10) || 1) - 1] || daTrovare[0];
     if (v.esito === 'bravo') { lz.errori[scelto.i].trovato = true; evidenziaErrori(); }
+    else mostraPostit(scelto && scelto.indizio);   // il suggerimento non lo dà il prof: è un foglietto
     const resto = rimasti();
-    const coda = (v.esito === 'bravo' && resto) ? ' ' + msgAncora(resto) : '';
+    if (v.esito === 'bravo' && resto) segnalaRimasti();
     if (classe()) {
       /* ---- modalità classe: i punti li assegna l'insegnante con ✅ ---- */
       if (v.esito === 'bravo') {
@@ -702,7 +765,7 @@ Rispondi SOLO con questo JSON:
         C.suoni.evviva();
         setProf('sconfitto');
         stelle();
-        bolla('✅ ' + v.commento + coda + ' ' + (cfg.msg.chi || CHI_IT));
+        bolla('✅ ' + v.commento + ' ' + (cfg.msg.chi || CHI_IT));
         const g = $('sqgrid'); g.classList.remove('chiedi'); void g.offsetWidth; g.classList.add('chiedi');
       } else if (v.esito === 'quasi') {
         setProf('');
@@ -717,29 +780,41 @@ Rispondi SOLO con questo JSON:
       aggiornaPunti(10);
       setProf('sconfitto');
       stelle();
-      if (!resto) { premiata = true; orologio.ferma(); lezione = null; aggiornaContatore(); }
-      bolla('✅ ' + v.commento + ' (+10 punti!)' + coda);
+      if (!resto) {
+        premiata = true; orologio.ferma(); lezione = null; aggiornaContatore();
+        modoInput = 'chat'; aggiornaModoInput();   // lavagna risolta: si torna alle domande
+      }
+      bolla('✅ ' + v.commento + ' (+10 punti!)');
     } else if (v.esito === 'quasi') {
       aggiornaPunti(2);
       setProf('');
-      bolla('🤏 ' + v.commento + ' (+2 punti, riprova!)');
+      bolla('🤏 ' + v.commento + ' (+2 punti)');
     } else {
       C.suoni.gneee();
       setProf('felice');
       bolla('❌ ' + v.commento);
       setTimeout(() => setProf(''), 3500);
     }
-    if (v.esito === 'sbagliato') setTimeout(() => parla(v.commento), 900); else parla(v.commento + coda);
+    if (v.esito === 'sbagliato') setTimeout(() => parla(v.commento), 900); else parla(v.commento);
     if (v.esito === 'bravo') $('answer').value = '';
   } catch (e) {
     console.error(e);
     bolla(cfg.msg.registro);
   }
-  $('verifica').disabled = false; $('nuova').disabled = false;
+  blocca(false);
   occupato = false;
 }
 
-/* ============ CASELLA: risposta (gioco libero) o chat con il prof ============ */
+/* ============ CASELLA: risposta (gioco libero) o domanda al prof ============ */
+function esempioDomanda() {
+  const esempi = {
+    sgrammaticus: 'Spiegaci gli aggettivi', confusione: 'Parlaci di Giulio Cesare',
+    sbagliotti: 'Spiegaci le frazioni', terranova: 'Parlaci del fiume Po',
+    bubbolo: 'Come respirano i pesci?', storditella: 'Parlaci di Giotto',
+    missspelling: 'Tell us about London'
+  };
+  return esempi[cfg.id] || (EN() ? 'Tell us about ' + cfg.argomento : 'Spiegaci qualcosa di ' + cfg.argomento);
+}
 function modoAttuale() { return classe() ? 'chat' : modoInput; }
 function aggiornaModoInput() {
   if (!cfg) return;
@@ -747,7 +822,7 @@ function aggiornaModoInput() {
   $('modoinput').hidden = cl;
   document.querySelectorAll('#modoinput button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
   $('answer').placeholder = m === 'chat'
-    ? (en ? 'Ask the teacher something... (no real names)' : 'Chiedete qualcosa al professore… (niente nomi veri)')
+    ? (en ? 'Ask the teacher... e.g. «' : 'Chiedete al professore... es. «') + esempioDomanda() + '»'
     : cfg.placeholder;
   const cap = t => t.charAt(0) + t.slice(1).toLowerCase();
   $('verifica').textContent = m === 'chat' ? (en ? 'Ask' : 'Chiedi')
@@ -755,54 +830,50 @@ function aggiornaModoInput() {
   document.body.classList.toggle('modochat', m === 'chat');
 }
 
-function promptChat(domanda) {
-  const m = materiale();
-  let lavagna = '';
-  if (lezione) {
-    const nascosti = lezione.errori.filter(e => !e.trovato);
-    lavagna = 'Sulla lavagna in questo momento c\'è la tua spiegazione:\n"""' + lezione.spiegazione + '"""\n' +
-      (nascosti.length
-        ? 'Contiene errori che la classe deve ancora trovare: NON svelarli, NON correggerli e non dire dove sono. ' +
-          'Se te lo chiedono, nega con orgoglio nel tuo personaggio oppure dai al massimo questo piccolo indizio: "' + nascosti[0].indizio + '".\n'
-        : 'Gli errori della lavagna sono già stati tutti scoperti.\n');
-  }
-  const storia = chatStoria.map(x => 'CLASSE: ' + x.q + '\nTU: ' + x.a).join('\n');
-  return `${cfg.persona}
-
-ADESSO NON STAI SPIEGANDO: stai chiacchierando con la classe, che ti fa domande a voce.
-Resta nel tuo personaggio (stesso carattere, stesso modo di parlare, stesse manie), ma in questa conversazione dici solo cose VERE e CORRETTE: nessun errore voluto, grammatica e contenuti perfetti.
-La classe è composta da ${cfg.livelli[C.getLivello()]}. Rispondi in modo breve: 1-3 frasi, massimo 50 parole, con parole semplici.
-Linguaggio sempre adatto a bambini e ragazzi. Se la domanda è inopportuna, personale o pericolosa, cambia argomento con garbo e riporta la classe alla lezione. Non chiedere e non usare mai nomi, indirizzi o dati personali.
-${m ? 'Se la domanda riguarda la lezione, basati su questo MATERIALE DELLA LEZIONE:\n<<<\n' + m.testo + '\n>>>\n' : ''}${lavagna}${storia ? 'CONVERSAZIONE FINORA:\n' + storia + '\n' : ''}
-DOMANDA DELLA CLASSE: "${domanda}"
-${cfg.notaLingua || ''}
-
-Rispondi SOLO con questo JSON:
-{"risposta":"..."}`;
-}
-
 async function chiedi() {
   if (occupato) return;
   const q = $('answer').value.trim();
-  if (!q) { bolla(EN() ? 'Well? Ask me anything, darlings!' : 'Allora? Chiedetemi pure qualcosa!'); return; }
-  occupato = true;
-  $('verifica').disabled = true; $('nuova').disabled = true;
+  if (!q) { bolla(EN() ? 'Well? Ask me to explain something, darlings!' : 'Allora? Chiedetemi pure di spiegarvi qualcosa!'); return; }
+  occupato = true; blocca(true);
   speechSynthesis.cancel();
   bollaChat(q, '');
   try {
-    const r = await chiamaGemini(promptChat(q), 0.8);
-    const a = String(r.risposta || '').trim();
-    if (!a) throw new Error('risposta vuota');
-    chatStoria = [...chatStoria.slice(-5), { q, a }];
-    bollaChat(q, a);
-    parla(a);
-    $('answer').value = '';
+    const L = await chiamaGemini(promptDomanda(q), 0.9);
+    if (String(L.spiegazione || '').trim()) {
+      /* domanda su un argomento: il prof lo spiega alla lavagna */
+      pulisciLavagna();
+      bollaChat(q, cfg.msg.pronto);
+      avviaLezione(L);
+    } else {
+      /* chiacchiera: risponde solo a voce, la lavagna resta com'è */
+      const a = String(L.risposta || '').trim();
+      if (!a) throw new Error('risposta vuota');
+      bollaChat(q, a);
+      parla(a);
+      $('answer').value = '';
+    }
   } catch (e) {
     console.error(e);
-    bolla(/503|UNAVAILABLE/i.test(String(e)) ? cfg.msg.err503 : /429/.test(String(e)) ? cfg.msg.err429 : cfg.msg.errAltro);
+    bolla(msgErrore(e));
   }
-  $('verifica').disabled = false; $('nuova').disabled = false;
-  occupato = false;
+  blocca(false); occupato = false;
+  renderSquadre();
+}
+
+/* suggerimento su un foglietto attaccato alla lavagna (non lo dice il prof) */
+function mostraPostit(indizio) {
+  const el = $('postit');
+  if (!el || !indizio) return;
+  el.textContent = '💡 ' + indizio;
+  el.hidden = false;
+  el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
+}
+function nascondiPostit() { const el = $('postit'); if (el) el.hidden = true; }
+/* ne restano altri: lo dice il contatore sulla lavagna, non il prof */
+function segnalaRimasti() {
+  const el = $('errcount');
+  if (!el) return;
+  el.classList.remove('pulsa'); void el.offsetWidth; el.classList.add('pulsa');
 }
 
 /* ============ EFFETTI ============ */
@@ -864,6 +935,7 @@ function scriviEParla(testo, fine) {
 function posErrore(e) { return lezione ? lezione.spiegazione.toLowerCase().indexOf(String(e.errore).toLowerCase()) : -1; }
 function evidenziaErrori() {
   if (!lezione) return;
+  nascondiPostit();
   if (twTimer) { clearInterval(twTimer); twTimer = null; }
   const esc = P.escapeHtml;
   const t = lezione.spiegazione;
@@ -929,14 +1001,14 @@ $('chalktext').addEventListener('click', async ev => {
     w.classList.remove('no'); void w.offsetWidth; w.classList.add('no');
     if (turno) { sbagliaSquadra(turno); return; }
     C.suoni.gneee(); setProf('felice');
-    const f = EN() ? 'Ha! There is no mistake there, darling!' : 'Ah-ha! Lì non c\'è nessun errore!';
+    const f = EN() ? 'Ha! That is perfectly correct, darling!' : 'Ah-ha! Macché! Lì è tutto giustissimo!';
     bolla('❌ ' + f); setTimeout(() => parla(f), 900);
     setTimeout(() => setProf(''), 3500);
   }
 });
 function msgChiStato() {
-  return EN() ? 'Oh no, you caught me! But who found it? Tap the team!'
-              : 'Nooo, mi avete scoperto! Ma chi è stato? Toccate la squadra!';
+  return EN() ? 'Oh dear... you are right! But who spotted it? Tap the team!'
+              : 'Nooo... avete ragione! Ma chi se n\'è accorto? Toccate la squadra!';
 }
 function flashSquadre() { const g = $('sqgrid'); g.classList.remove('chiedi'); void g.offsetWidth; g.classList.add('chiedi'); }
 
@@ -944,8 +1016,9 @@ function flashSquadre() { const g = $('sqgrid'); g.classList.remove('chiedi'); v
 orologio.onFine(() => {
   if (!lezione || premiata) return;
   const e = lezione.errori.find(x => !x.trovato);
-  const f = (EN() ? 'Time is up! Ha-ha, my board resists! ' : 'Tempo scaduto! Ah-ha, la mia lavagna resiste! ') +
-    (e && e.indizio ? (EN() ? 'Oh well, a little clue: ' : 'Va bene, un piccolo indizio: ') + e.indizio : '');
+  const f = EN() ? 'Time is up, darlings! You see? Not a word to say about my perfect lesson!'
+                 : 'Driiin! Tempo scaduto! Visto? Nessuno ha avuto niente da ridire sulla mia lezione!';
+  if (e && e.indizio) mostraPostit(e.indizio);
   C.suoni.gneee(); setProf('felice');
   bolla('⏰ ' + f); setTimeout(() => parla(f), 900);
   setTimeout(() => setProf(''), 3500);
