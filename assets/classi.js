@@ -271,6 +271,29 @@ function azzeraPunti(classeId) {
   });
 }
 
+/* Fotografia dei soli punteggi di una classe (per il tasto "annulla"):
+   ripristinarla rimette i punti com'erano, senza toccare alunni, gruppi,
+   assenze o nomi cambiati nel frattempo. */
+function fotoPunti(classeId) {
+  var c = getClasse(classeId); if (!c) return null;
+  var f = { punti: c.punti, perMateria: JSON.parse(JSON.stringify(c.perMateria)), alunni: {}, gruppi: {} };
+  c.alunni.forEach(function (a) { f.alunni[a.id] = { punti: a.punti, perMateria: JSON.parse(JSON.stringify(a.perMateria)) }; });
+  c.gruppi.forEach(function (g) { f.gruppi[g.id] = g.punti; });
+  return f;
+}
+function ripristinaPunti(classeId, f) {
+  if (!f) return;
+  modifica(function (db) {
+    var c = trova(db, classeId); if (!c) return;
+    c.punti = f.punti; c.perMateria = f.perMateria;
+    c.alunni.forEach(function (a) {
+      var x = f.alunni[a.id];
+      if (x) { a.punti = x.punti; a.perMateria = x.perMateria; }
+    });
+    c.gruppi.forEach(function (g) { if (f.gruppi[g.id] != null) g.punti = f.gruppi[g.id]; });
+  });
+}
+
 /* ---------- esporta / importa ---------- */
 function esporta() {
   var db = load();
@@ -371,7 +394,7 @@ window.Classi = {
   creaClasse: creaClasse, rinominaClasse: rinominaClasse, eliminaClasse: eliminaClasse,
   aggiungiAlunni: aggiungiAlunni, rinominaAlunno: rinominaAlunno, rimuoviAlunno: rimuoviAlunno, setAssente: setAssente,
   gruppiCasuali: gruppiCasuali, tuttiSingoli: tuttiSingoli, spostaAlunno: spostaAlunno, squadre: squadre,
-  assegna: assegna, azzeraPunti: azzeraPunti,
+  assegna: assegna, azzeraPunti: azzeraPunti, fotoPunti: fotoPunti, ripristinaPunti: ripristinaPunti,
   esporta: esporta, scaricaEsportazione: scaricaEsportazione, importa: importa,
   suoni: { gneee: gneee, evviva: evviva }
 };

@@ -7,10 +7,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;700;800;900&family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/aula.css?v=9">
+<link rel="stylesheet" href="../assets/aula.css?v=10">
 <link rel="modulepreload" href="https://esm.sh/@google/genai@0.14.1">
-<script src="../assets/professoracci.js?v=8"></script>
-<script src="../assets/classi.js?v=7"></script>
+<script src="../assets/professoracci.js?v=9"></script>
+<script src="../assets/classi.js?v=8"></script>
 <script src="../assets/orologio.js?v=7"></script>
 <script src="../assets/app.js?v=7"></script>
 <link rel="manifest" href="../manifest.webmanifest">
@@ -73,6 +73,8 @@
         <span class="score" id="score"><span class="scorecls" id="scorecls"></span>★ <b id="pts">0</b></span>
         <span class="sqhint" id="sqhint"></span>
         <a class="thlink regl" href="../registro.html" title="Classe, gruppi e livello si scelgono nel registro">registro</a>
+        <button class="thbtn" id="annulla" hidden title="Annulla l'ultimo punteggio"><svg class="ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg><span>annulla</span></button>
+        <button class="thbtn" id="azzera" hidden title="Riporta a zero i punti e ricomincia la partita"><svg class="ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg><span>azzera</span></button>
       </div>
       <div class="sqgrid" id="sqgrid"></div>
     </div>
@@ -222,6 +224,8 @@ let inAttesa = null;    // indice dell'errore riconosciuto dall'AI (casella) in 
 let premiata = false;   // tutti gli errori di questa spiegazione sono stati trovati e premiati
 let turno = null;       // squadra che sta rispondendo (toccata dall'insegnante)
 let modoInput = 'chat';       // gioco libero: 'chat' (domanda al prof) o 'risposta' (con una classe: sempre chat)
+let ultimaLezione = null;     // l'ultima lezione scritta alla lavagna (resta anche quando è risolta)
+const storia = [];            // pila del tasto "annulla": fotografie di punti e stato di gioco
 
 const EN = () => !!(cfg && cfg.lang && /^en/i.test(cfg.lang));
 /* errori ancora da scoprire (quelli trovati a voce con ✅ senza casella contano come trovati) */
@@ -238,7 +242,91 @@ function aggiornaScore(pop) {
   $('pts').textContent = c ? c.punti : punti;
   $('score').title = c ? 'Punti totali della classe ' + c.nome + ' (tutte le materie)' : 'Punti del gioco libero';
   if (pop) { const s = $('score'); s.classList.remove('pop'); void s.offsetWidth; s.classList.add('pop'); }
+  aggiornaAnnulla();
 }
+
+/* ============ ANNULLA / AZZERA ============
+   Prima di ogni punteggio (e prima di azzerare) si fotografano i punti
+   e lo stato della lavagna. "Annulla" rimette tutto com'era: se i punti
+   erano andati alla squadra sbagliata, la lavagna torna a chiedere
+   "chi l'ha trovato?" e l'insegnante tocca la squadra giusta. */
+function fotoStato(descr) {
+  const c = classe();
+  const lz = lezione || ultimaLezione;
+  return {
+    descr,
+    classeId: c ? c.id : null,
+    punti: c ? C.fotoPunti(c.id) : punti,
+    gioco: lz ? { lz, trovati: lz.errori.map(e => e.trovato), aVoce: lz.aVoce || 0,
+                  inAttesa, premiata, attiva: lezione === lz } : null
+  };
+}
+function registra(f) {
+  storia.push(f);
+  if (storia.length > 30) storia.shift();
+  aggiornaAnnulla();
+}
+function aggiornaAnnulla() {
+  const b = $('annulla'), z = $('azzera');
+  if (!b || !z) return;
+  const cid = classe() ? classe().id : null;
+  const ultimo = storia[storia.length - 1];
+  const top = ultimo && ultimo.classeId === cid ? ultimo : null;   // un'altra classe in gioco: niente annulla
+  b.hidden = !top;
+  b.title = top ? 'Annulla: ' + top.descr : '';
+  const c = classe();
+  z.hidden = !(c ? c.punti : punti);
+  z.title = c ? 'Riporta a zero i punti della classe ' + c.nome + ' e ricomincia la partita (si può annullare)'
+              : 'Riporta a zero i punti del gioco libero (si può annullare)';
+}
+function annulla() {
+  if (occupato) return;
+  const f = storia[storia.length - 1];
+  if (!f || f.classeId !== (classe() ? classe().id : null)) return;
+  storia.pop();
+  /* punti */
+  if (f.classeId) C.ripristinaPunti(f.classeId, f.punti);
+  else { punti = f.punti; localStorage.setItem('professoracci_punti', punti); }
+  /* lavagna: solo se c'è ancora la stessa lezione */
+  const g = f.gioco;
+  let msg = EN() ? 'Undone.' : 'Fatto, annullato.';
+  if (g && g.lz === ultimaLezione) {
+    g.lz.errori.forEach((e, i) => { e.trovato = !!g.trovati[i]; });
+    g.lz.aVoce = g.aVoce;
+    premiata = g.premiata;
+    lezione = g.attiva ? g.lz : null;
+    inAttesa = g.inAttesa;
+    turno = null;
+    if (lezione) evidenziaErrori(); else aggiornaContatore();
+    if (lezione && !classe()) modoInput = 'risposta';   // gioco libero: si torna a rispondere
+    if (inAttesa != null) msg += EN() ? ' So who spotted it? Tap the right team!' : ' Allora, chi l\'ha trovato? Toccate la squadra giusta!';
+    else if (lezione && classe()) msg += EN() ? ' Tap the team that answered, then ✅.' : ' Toccate la squadra che ha risposto, poi ✅.';
+  }
+  $('sqgrid').querySelectorAll('.vince').forEach(x => x.classList.remove('vince'));
+  bolla('↶ ' + msg);
+  renderClasse();
+  aggiornaScore(true);
+}
+function confermaBtn(btn, testo, azione) {
+  if (btn.classList.contains('sure')) { btn.classList.remove('sure'); btn.querySelector('span').textContent = btn.dataset.orig; azione(); return; }
+  const s = btn.querySelector('span');
+  btn.dataset.orig = s.textContent;
+  btn.classList.add('sure'); s.textContent = testo;
+  clearTimeout(btn._t);
+  btn._t = setTimeout(() => { btn.classList.remove('sure'); s.textContent = btn.dataset.orig; }, 3000);
+}
+function azzera() {
+  if (occupato) return;
+  const c = classe();
+  registra(fotoStato(EN() ? 'reset all points' : 'azzera tutti i punti'));
+  if (c) C.azzeraPunti(c.id);
+  else { punti = 0; localStorage.setItem('professoracci_punti', 0); }
+  bolla(EN() ? '⟲ New game! Everyone starts from zero.' : '⟲ Nuova partita! Tutti ripartono da zero punti.');
+  renderClasse();
+  aggiornaScore(true);
+}
+$('annulla').addEventListener('click', annulla);
+$('azzera').addEventListener('click', e => confermaBtn(e.currentTarget, EN() ? 'sure? tap again' : 'sicuro? tocca ancora', azzera));
 
 /* il registro sa a quale aula tornare */
 const LINK_REGISTRO = '../registro.html?torna=' + encodeURIComponent('aule/aula.html?prof=' + profId);
@@ -345,8 +433,10 @@ function premiaSquadra(id) {
   if (premiata) return;
   const c = classe(); if (!c) return;
   const nome = nomeSquadra(id);
+  const foto = fotoStato('+' + C.PUNTI_GIUSTO + (EN() ? ' to ' : ' a ') + nome);
   const sq = C.assegna(c.id, id, cfg.id, C.PUNTI_GIUSTO);
   if (!sq) return;
+  registra(foto);
   C.suoni.evviva();
   setProf('sconfitto');
   stelle();
@@ -530,11 +620,61 @@ function regoleErrore() {
     'Prima di rispondere rileggi la spiegazione frase per frase: se trovi altri errori oltre a quello voluto, correggili.\n' +
     BUONA_FEDE;
 }
+/* L'ordine dei campi obbliga a PROGETTARE l'errore prima di scrivere:
+   prima la forma giusta, poi quella sbagliata, poi il testo che la contiene. */
 function jsonLezione(conTipo) {
   return '{' + (conTipo ? '"tipo":"lezione",' : '') +
     '"titolo":"l\'argomento in 1-4 parole, scritto correttamente, da mettere in alto sulla lavagna",' +
-    '"spiegazione":"il testo che scrivi alla lavagna, errore incluso","errore":"la parte sbagliata, citata esatta",' +
-    '"correzione":"la forma corretta","indizio":"un piccolo aiuto senza svelare la soluzione"}';
+    '"correzione":"PRIMA scegli il fatto o la forma GIUSTA che poi sbaglierai (es. un nome, una data, un numero, un colore, una parola)",' +
+    '"errore":"POI la versione SBAGLIATA che scriverai al suo posto: deve essere DIVERSA dalla correzione e davvero falsa",' +
+    '"spiegazione":"il testo che scrivi alla lavagna: contiene la versione sbagliata, citata parola per parola come in \\"errore\\", e NON contiene quella giusta",' +
+    '"indizio":"un piccolo aiuto senza svelare la soluzione"}';
+}
+
+/* Controllo "meccanico" della lezione: l'errore dichiarato deve esistere
+   davvero sulla lavagna ed essere diverso dalla correzione.
+   Restituisce null se va bene, altrimenti la spiegazione del problema
+   (che viene rimandata al modello per il nuovo tentativo). */
+const normTesto = s => String(s || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+function problemaLezione(L) {
+  const sp = String(L.spiegazione || ''), er = String(L.errore || '').trim(), co = String(L.correzione || '').trim();
+  if (!er || !co) return 'mancava il campo "errore" o "correzione".';
+  if (normTesto(er) === normTesto(co)) return 'la parte "sbagliata" era identica alla correzione, quindi alla lavagna non c\'era nessun errore.';
+  if (!normTesto(sp).includes(normTesto(er))) return 'la parte sbagliata "' + er + '" non compariva parola per parola nella spiegazione.';
+  if (!sp.toLowerCase().includes(er.toLowerCase())) {
+    /* c'è, ma con punteggiatura/spazi diversi: ricava il pezzo esatto dalla lavagna */
+    const parole = normTesto(er).split(' ').map(p => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    const m = sp.match(new RegExp(parole.join('[^\\p{L}\\p{N}]+'), 'iu'));
+    if (!m) return 'la parte sbagliata "' + er + '" non era citata esattamente come compare nella spiegazione.';
+    L.errore = m[0];
+  }
+  return null;
+}
+
+/* Genera una lezione e la controlla: prima il controllo meccanico, poi
+   il "maestro correttore" verifica che l'errore sia DAVVERO un errore
+   (e trova quelli in più). Se alla lavagna non resterebbe nessun errore
+   vero, si riprova (al massimo 3 volte) spiegando al modello cosa non andava.
+   Le risposte "chiacchiera" (senza spiegazione) passano così come sono. */
+async function generaLezione(prompt, temperatura) {
+  let nota = '';
+  for (let tentativo = 1; tentativo <= 3; tentativo++) {
+    const L = await chiamaGemini(prompt + nota, temperatura);
+    if (!String(L.spiegazione || '').trim()) return L;           // chiacchiera, o spiegazione vuota (gestita dal chiamante)
+    const problema = problemaLezione(L);
+    if (problema) {
+      console.warn('Lezione scartata (tentativo ' + tentativo + '):', problema, L);
+      nota = '\n\nATTENZIONE: nel tentativo precedente ' + problema +
+        ' Riscrivi tutto da capo: scegli la forma giusta, cambiala in una forma SBAGLIATA e scrivi alla lavagna solo quella sbagliata, citandola identica nel campo "errore".';
+      continue;
+    }
+    const errori = await rivediLezione(L);
+    if (errori.length) { L.errori = errori; return L; }
+    console.warn('Lezione scartata (tentativo ' + tentativo + '): il correttore non trova errori veri', L);
+    nota = '\n\nATTENZIONE: nel tentativo precedente la parte che avevi indicato come sbagliata ("' + String(L.errore) +
+      '") in realtà era GIUSTA, quindi alla lavagna non c\'era nessun errore. Questa volta cambia davvero un fatto, un nome, una data, un numero o una parola, in modo che sia chiaramente FALSO.';
+  }
+  throw new Error('nessun errore valido dopo 3 tentativi');
 }
 
 /* "NUOVA SPIEGAZIONE": argomento scelto dal prof (o dal materiale della Cattedra) */
@@ -588,10 +728,13 @@ Rispondi SOLO con uno dei due JSON, senza testo prima o dopo.`;
 }
 
 /* Secondo passaggio: un "maestro correttore" (temperatura 0) rilegge la lavagna
-   e trova gli errori in più che il prof ha commesso senza dichiararli.
-   Diventano errori validi da scoprire, così chi li trova viene premiato. */
-async function cercaAltriErrori(lz) {
-  const t = lz.spiegazione, p = lz.errori[0];
+   PRIMA che il prof la scriva:
+   1) controlla che l'errore dichiarato sia DAVVERO un errore (a volte il modello
+      "dimentica" di sbagliare e scrive la cosa giusta: la lavagna resterebbe senza errori);
+   2) trova gli errori in più commessi senza dichiararli: diventano errori validi da scoprire.
+   Restituisce l'elenco degli errori veri (vuoto = lezione da rifare). */
+async function rivediLezione(L) {
+  const t = String(L.spiegazione), p = { errore: String(L.errore), correzione: String(L.correzione), indizio: String(L.indizio || '') };
   const m = materiale();
   const prompt =
 `Sei un maestro correttore molto attento e preciso. Controlli un testo scritto alla lavagna da un insegnante di ${cfg.argomento} per bambini e ragazzi.
@@ -599,33 +742,40 @@ ${m ? 'Il contenuto deve rispettare questo MATERIALE DELLA LEZIONE:\n<<<\n' + m.
 TESTO ALLA LAVAGNA:
 """${t}"""
 
-Nel testo c'è già un errore dichiarato: "${p.errore}" (forma corretta: "${p.correzione}"). NON elencarlo.
-Trova TUTTI gli ALTRI errori veri presenti nel testo: ${cfg.tipoErrore}, oppure errori evidenti di grammatica o di ortografia. Sono gli errori che una maestra segnerebbe con la penna rossa.
+1) Secondo l'autore, nel testo c'è un errore: "${p.errore}", la cui forma corretta sarebbe "${p.correzione}".
+Controlla con attenzione: "${p.errore}", così come è scritto nel testo, è DAVVERO sbagliato (un fatto falso, un nome, una data, un numero o una parola scorretti)?
+Scrivi "dichiarato_vero": true solo se è davvero sbagliato; false se in realtà è giusto, se è identico alla correzione o se la correzione non è migliore.
+2) Trova TUTTI gli ALTRI errori veri presenti nel testo (non ripetere quello del punto 1): ${cfg.tipoErrore}, oppure errori evidenti di grammatica o di ortografia. Sono gli errori che una maestra segnerebbe con la penna rossa.
 NON segnalare: scelte di stile, esagerazioni, vanterie o tono del personaggio, metafore, frasi strane ma corrette, punteggiatura accettabile.
 Per ogni errore cita ESATTAMENTE le parole sbagliate così come compaiono nel testo (il pezzo più corto possibile).
 ${EN() ? 'Scrivi "correzione" e "indizio" in inglese semplice.' : 'Scrivi "correzione" e "indizio" in italiano, adatti a bambini.'}
 
 Rispondi SOLO con questo JSON (lista vuota se non ci sono altri errori):
-{"altri":[{"errore":"parole sbagliate citate esatte","correzione":"forma corretta","indizio":"piccolo aiuto senza svelare la soluzione"}]}`;
+{"dichiarato_vero":true,"altri":[{"errore":"parole sbagliate citate esatte","correzione":"forma corretta","indizio":"piccolo aiuto senza svelare la soluzione"}]}`;
+  const errori = [];
+  const low = t.toLowerCase();
+  const occupati = [];
+  const i0 = low.indexOf(p.errore.toLowerCase());
+  if (i0 >= 0) occupati.push([i0, i0 + p.errore.length]);
   try {
     const r = await chiamaGemini(prompt, 0);
+    if (r.dichiarato_vero !== false && r.dichiarato_vero !== 'false') errori.push(Object.assign({ trovato: false }, p));
     const lista = Array.isArray(r.altri) ? r.altri : [];
-    const low = t.toLowerCase();
-    const occupati = [];
-    const i0 = low.indexOf(p.errore.toLowerCase());
-    if (i0 >= 0) occupati.push([i0, i0 + p.errore.length]);
     for (const e of lista) {
-      if (lz.errori.length >= 4) break;
+      if (errori.length >= 4) break;
       const err = String(e.errore || '').trim(), cor = String(e.correzione || '').trim();
-      if (!err || !cor || err.toLowerCase() === cor.toLowerCase()) continue;
+      if (!err || !cor || normTesto(err) === normTesto(cor)) continue;
       const i = low.indexOf(err.toLowerCase());
       if (i < 0) continue;                                   // deve essere davvero sulla lavagna
       if (occupati.some(([a, b]) => i < b && i + err.length > a)) continue;   // doppione
       occupati.push([i, i + err.length]);
-      lz.errori.push({ errore: t.substr(i, err.length), correzione: cor, indizio: String(e.indizio || ''), trovato: false });
+      errori.push({ errore: t.substr(i, err.length), correzione: cor, indizio: String(e.indizio || ''), trovato: false });
     }
-  } catch (e) { console.warn('Revisione non riuscita:', e); }
-  if (lz === lezione) aggiornaContatore();
+  } catch (e) {
+    console.warn('Revisione non riuscita:', e);
+    if (!errori.length) errori.push(Object.assign({ trovato: false }, p));   // correttore irraggiungibile: ci si fida
+  }
+  return errori;
 }
 
 function aggiornaContatore() {
@@ -651,7 +801,7 @@ async function nuovaSpiegazione() {
   $('board').classList.add('loading');
   bolla(cfg.msg.preparo);
   try {
-    const L = await chiamaGemini(promptGenerazione(), 1.0);
+    const L = await generaLezione(promptGenerazione(), 1.0);
     if (!String(L.spiegazione || '').trim()) throw new Error('spiegazione vuota');
     bolla(cfg.msg.pronto);
     avviaLezione(L);
@@ -689,15 +839,14 @@ function pulisciLavagna() {
 
 /* il prof scrive alla lavagna (e dice a voce) la lezione arrivata da Gemini */
 function avviaLezione(L) {
-  const lz0 = lezione = {
+  const lz0 = lezione = ultimaLezione = {
     spiegazione: String(L.spiegazione || ''),
-    errori: [{ errore: String(L.errore || ''), correzione: String(L.correzione || ''), indizio: String(L.indizio || ''), trovato: false }],
+    errori: Array.isArray(L.errori) && L.errori.length ? L.errori
+      : [{ errore: String(L.errore || ''), correzione: String(L.correzione || ''), indizio: String(L.indizio || ''), trovato: false }],
     aVoce: 0
   };
   const titolo = String(L.titolo || '').trim();
   if (titolo) $('boardtitle').textContent = titolo.slice(0, 60);
-  /* il correttore cerca eventuali errori "involontari" mentre il prof scrive e parla */
-  lezione.pronta = cercaAltriErrori(lezione).then(() => { lz0.revisionato = true; });
   aggiornaContatore();
   erroriRecenti = [...erroriRecenti.slice(-7), lezione.errori[0].errore];
   sessionStorage.setItem(RECENTI_KEY, JSON.stringify(erroriRecenti));
@@ -717,7 +866,6 @@ async function verifica() {
   bolla(cfg.msg.controllo);
 
   const lz = lezione;
-  await lz.pronta;   // aspetta il correttore, se sta ancora rileggendo
   const daTrovare = lz.errori.map((e, i) => Object.assign({ i }, e)).filter(e => !e.trovato);
   const elenco = daTrovare.map((e, k) =>
     (k + 1) + '. "' + e.errore + '" (forma corretta: "' + e.correzione + '")').join('\n');
@@ -754,6 +902,7 @@ Rispondi SOLO con questo JSON:
     const v = await chiamaGemini(prompt, 0.2);
     if (lz !== lezione) throw new Error('lezione cambiata');
     const scelto = daTrovare[(parseInt(v.numero, 10) || 1) - 1] || daTrovare[0];
+    const foto = fotoStato('');   // per "annulla" nel gioco libero
     if (v.esito === 'bravo') { lz.errori[scelto.i].trovato = true; evidenziaErrori(); }
     else mostraPostit(scelto && scelto.indizio);   // il suggerimento non lo dà il prof: è un foglietto
     const resto = rimasti();
@@ -777,6 +926,7 @@ Rispondi SOLO con questo JSON:
         setTimeout(() => setProf(''), 3500);
       }
     } else if (v.esito === 'bravo') {
+      foto.descr = '+10'; registra(foto);
       aggiornaPunti(10);
       setProf('sconfitto');
       stelle();
@@ -786,6 +936,7 @@ Rispondi SOLO con questo JSON:
       }
       bolla('✅ ' + v.commento + ' (+10 punti!)');
     } else if (v.esito === 'quasi') {
+      foto.descr = '+2'; registra(foto);
       aggiornaPunti(2);
       setProf('');
       bolla('🤏 ' + v.commento + ' (+2 punti)');
@@ -838,7 +989,7 @@ async function chiedi() {
   speechSynthesis.cancel();
   bollaChat(q, '');
   try {
-    const L = await chiamaGemini(promptDomanda(q), 0.9);
+    const L = await generaLezione(promptDomanda(q), 0.9);
     if (String(L.spiegazione || '').trim()) {
       /* domanda su un argomento: il prof lo spiega alla lavagna */
       pulisciLavagna();
@@ -978,11 +1129,6 @@ $('chalktext').addEventListener('click', async ev => {
   if (!w || occupato) return;
   if (inAttesa != null) { bolla(msgChiStato()); flashSquadre(); return; }
   const lz = lezione;
-  if (!lz.revisionato) {                              // il correttore sta ancora rileggendo
-    bolla(EN() ? 'One moment, let me read the board again...' : 'Un attimo, rileggo la lavagna...');
-    await lz.pronta;
-    if (lz !== lezione) return;
-  }
   const a = +w.dataset.a, b = +w.dataset.b;
   const idx = lz.errori.findIndex(e => {
     if (e.trovato || !e.errore) return false;

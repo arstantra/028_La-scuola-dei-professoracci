@@ -242,7 +242,7 @@ var PROFS = {
     tema:{ wall:'#f0dce9', c:'#c75b9b', d:'#a34579', dd:'#7d355d' },
     voce:{ pitch:1.2, rate:0.95 },
     teach:{ dur:'5s', kf:'0%,100%{transform:rotate(-1.4deg);} 40%{transform:rotate(1deg) translateY(-4px);} 60%{transform:rotate(.4deg) translateY(-1px);}' },
-    argomento:'arte', tipoErrore:'errore',
+    argomento:'arte', tipoErrore:'errore di arte (un artista, un\'opera, una data, un luogo, un colore, un materiale o una tecnica sbagliati)',
     stileCompito:'inserito con naturalezza nel tuo racconto da professoressa convinta di avere ragione. Tutto il resto deve essere corretto.',
     scusaBravo:'una scusa buffa da artista distratta',
     gongola:'gongola con dolcezza',
@@ -364,7 +364,7 @@ function buildCustomConfig(p) {
     voce: { pitch: p.voce && p.voce.pitch != null ? p.voce.pitch : 1.0,
             rate:  p.voce && p.voce.rate  != null ? p.voce.rate  : 1.0 },
     teach: { dur:'3.4s', kf:'0%,100%{transform:rotate(-1deg);} 50%{transform:rotate(2deg) translateY(-3px);}' },
-    argomento: mat, tipoErrore: 'errore',
+    argomento: mat, tipoErrore: 'errore di contenuto (un fatto, un nome, una data, un numero o una regola sbagliati)',
     stileCompito: 'inserito con naturalezza nel tuo discorso da insegnante convinto di avere ragione. Tutto il resto deve essere corretto.',
     scusaBravo: 'una scusa buffa nel tuo stile',
     persona: 'Sei ' + p.nome + ', insegnante di ' + mat + ' in una scuola immaginaria per bambini e ragazzi.\n' +

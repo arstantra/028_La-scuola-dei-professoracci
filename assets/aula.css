@@ -205,6 +205,17 @@ body.conclasse .chalktext .w:hover { background:rgba(246,243,233,.12); }
 .sqhint a { color:#ffe9b3; }
 .thlink { margin-left:auto; font-weight:600; font-size:15px; color:#fdf6df; opacity:.8; text-underline-offset:3px; }
 .thlink:hover { opacity:1; }
+/* annulla / azzera: piccoli, accanto al registro, mai in mezzo al gioco */
+.thbtn {
+  display:inline-flex; align-items:center; gap:5px; align-self:center;
+  border:2px solid rgba(253,246,223,.55); background:rgba(0,0,0,.18); color:#fdf6df;
+  border-radius:999px; padding:3px 12px 3px 9px; cursor:pointer;
+  font-family:'Fredoka',sans-serif; font-weight:600; font-size:15px; line-height:1.2;
+  transition:background .12s, border-color .12s;
+}
+.thbtn[hidden] { display:none; }
+.thbtn:hover { background:rgba(0,0,0,.32); border-color:#fdf6df; }
+.thbtn.sure, .thbtn.sure:hover { background:#e2574c; border-color:#fff; }
 
 .sqmain {
   width:100%; border:0; cursor:pointer; text-align:left; font:inherit; color:#3a2c18;
