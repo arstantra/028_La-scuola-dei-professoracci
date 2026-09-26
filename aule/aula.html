@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;700;800;900&family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/aula.css?v=11">
+<link rel="stylesheet" href="../assets/aula.css?v=12">
 <link rel="modulepreload" href="https://esm.sh/@google/genai@0.14.1">
 <script src="../assets/professoracci.js?v=9"></script>
 <script src="../assets/classi.js?v=8"></script>
@@ -1211,11 +1211,90 @@ function creaUtterance(testo) {
   if (voce) u.voice = voce;
   return u;
 }
+/* testo pronto da leggere: via emoji e simboli (sennò la voce dice "faccina sorridente") */
+function perVoce(t) {
+  return String(t || '')
+    .replace(/[\p{Extended_Pictographic}\u{1F1E6}-\u{1F1FF}️‍⃣]/gu, '')
+    .replace(/[↶→←↑↓•·*_#~<>]/g, ' ')
+    .replace(/\s+/g, ' ').trim();
+}
 function parla(testo) {
-  const u = creaUtterance(testo);
+  const u = creaUtterance(perVoce(testo));
   if (u) speechSynthesis.speak(u);
+  return u;
 }
 speechSynthesis.getVoices(); // precarica
+
+/* ============ IL FUMETTO SI PUÒ ASCOLTARE ============ */
+/* quello che c'è scritto nel fumetto (in modalità chat: solo la risposta, non la domanda) */
+function testoBolla() {
+  const c = $('btxt').cloneNode(true);
+  c.querySelectorAll('.domanda, .pensa').forEach(n => n.remove());
+  return c.textContent;
+}
+(() => {
+  const b = $('bubble');
+  b.setAttribute('role', 'button');
+  b.tabIndex = 0;
+  b.title = EN() ? 'Tap to listen' : 'Tocca per ascoltare';
+  const ascolta = () => { salutoInSospeso(false); parla(testoBolla()); };
+  b.addEventListener('click', e => { if (!e.target.closest('a, button')) ascolta(); });
+  b.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ascolta(); }
+  });
+})();
+
+/* ============ SALUTO A VOCE ALL'INGRESSO ============ */
+/* Entrando in aula il prof dice ad alta voce la frase del fumetto.
+   Molti browser non lasciano parlare una pagina prima di un clic o di un tocco:
+   in quel caso il fumetto mostra 🔊 e il saluto parte al primo tocco "libero"
+   (fuori da pulsanti e caselle, che hanno già il loro compito).
+   In modalità tranquilla il prof non parla da solo: basta toccare il fumetto. */
+let attesaSaluto = false;
+function salutoInSospeso(si) {
+  attesaSaluto = si;
+  $('bubble').classList.toggle('daascoltare', si);
+}
+function diciSaluto() {
+  salutoInSospeso(false);
+  if ($('btxt').textContent.trim() !== cfg.benvenutoBolla.trim()) return;  // il fumetto è già cambiato
+  parla(cfg.benvenutoBolla);
+}
+function salutaEntrando() {
+  if (!cfg || !('speechSynthesis' in window) || P.isCalma()) return;
+  let tentato = false;
+  const tenta = () => {
+    if (tentato) return; tentato = true;
+    if (speechSynthesis.speaking) return;               // sta già parlando d'altro
+    const u = parla(cfg.benvenutoBolla);
+    if (!u) return;
+    let partito = false;
+    u.addEventListener('start', () => { partito = true; salutoInSospeso(false); });
+    u.addEventListener('error', e => { if (e.error === 'not-allowed' && !partito) salutoInSospeso(true); });
+    setTimeout(() => {
+      if (!partito && !speechSynthesis.speaking) { speechSynthesis.cancel(); salutoInSospeso(true); }
+    }, 1500);
+  };
+  /* le voci arrivano un attimo dopo il caricamento: le aspettiamo (ma non troppo) */
+  if (speechSynthesis.getVoices().length) setTimeout(tenta, 350);
+  else {
+    speechSynthesis.addEventListener('voiceschanged', () => setTimeout(tenta, 150), { once: true });
+    setTimeout(tenta, 900);
+  }
+  document.addEventListener('pointerdown', e => {
+    if (!attesaSaluto) return;
+    if (e.target.closest('#bubble')) return;            // il fumetto si arrangia da solo
+    if (e.target.closest('button, a, input, textarea, select, label, dialog, [role="button"]')) {
+      salutoInSospeso(false);                            // si è già passati ad altro
+      return;
+    }
+    diciSaluto();
+  }, true);
+  document.addEventListener('keydown', () => { if (attesaSaluto) salutoInSospeso(false); }, true);
+}
+$('stopaudio').addEventListener('click', () => salutoInSospeso(false));
+$('calmbtn').addEventListener('click', () => { if (P.isCalma()) { salutoInSospeso(false); speechSynthesis.cancel(); } });
+salutaEntrando();
 
 /* ============ EVENTI ============ */
 $('nuova').addEventListener('click', nuovaSpiegazione);
