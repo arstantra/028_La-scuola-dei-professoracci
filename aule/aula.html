@@ -149,6 +149,8 @@ if (!cfg) document.body.classList.add('senzaprof');
 
 /* ============ CHIAVE ============ */
 const apiKey = localStorage.getItem('professoracci_apikey') || '';
+/* chiave di riserva facoltativa: entra in gioco quando la prima è esaurita (429) */
+const apiKey2 = localStorage.getItem('professoracci_apikey2') || '';
 if (cfg && !apiKey) document.body.classList.add('senzachiave');
 
 /* ============ COSTRUZIONE AULA DAL CONFIG ============ */
@@ -568,13 +570,54 @@ if (cfg) refreshMateriale();
 if (cfg && apiKey) { $('nuova').disabled = false; $('verifica').disabled = false; }
 
 /* ============ GEMINI ============ */
+/* Due chiavi (la seconda facoltativa). Se quella di turno risponde "troppe richieste"
+   (429) o non è valida, si passa subito all'altra, che resta di turno per il resto
+   della sessione: così non si spreca una chiamata ogni volta sulla chiave stanca.
+   Se Google è sovraccarico (503) si riprova una volta dopo un attimo. */
+const TURNO_KEY = 'professoracci_chiave_turno';
+const chiavi = [apiKey, apiKey2].filter((k, i, a) => k && a.indexOf(k) === i);
+const clientAI = {};
+function getTurno() { try { return +(sessionStorage.getItem(TURNO_KEY) || 0) % chiavi.length; } catch (e) { return 0; } }
+function setTurno(i) { try { sessionStorage.setItem(TURNO_KEY, String(i)); } catch (e) {} }
+const pausa = ms => new Promise(r => setTimeout(r, ms));
+const eEsaurita = e => /429|RESOURCE_EXHAUSTED|quota/i.test(String(e && (e.message || e)));
+const eNonValida = e => /API_KEY_INVALID|API key not valid|PERMISSION_DENIED|\b403\b/i.test(String(e && (e.message || e)));
+const eSovraccarico = e => /503|UNAVAILABLE|overloaded/i.test(String(e && (e.message || e)));
+
+async function generaConChiave(i, prompt, temperature) {
+  const k = chiavi[i];
+  const ai = clientAI[k] || (clientAI[k] = new GoogleGenAI({ apiKey: k }));
+  const req = { model: MODEL, contents: prompt, config: { temperature, maxOutputTokens: 800 } };
+  try { return await ai.models.generateContent(req); }
+  catch (e) {
+    if (!eSovraccarico(e)) throw e;
+    await pausa(1500);                                   // Google è affollato: un secondo tentativo
+    return await ai.models.generateContent(req);
+  }
+}
+
 async function chiamaGemini(prompt, temperature) {
-  const ai = new GoogleGenAI({ apiKey });
-  const res = await ai.models.generateContent({
-    model: MODEL,
-    contents: prompt,
-    config: { temperature, maxOutputTokens: 800 }
-  });
+  const primo = getTurno();
+  let ultimoErrore = null;
+  for (let t = 0; t < chiavi.length; t++) {
+    const i = (primo + t) % chiavi.length;
+    try {
+      const res = await generaConChiave(i, prompt, temperature);
+      if (i !== primo) setTurno(i);                      // questa funziona: resta di turno
+      return estraiJson(res);
+    } catch (e) {
+      ultimoErrore = e;
+      if (chiavi.length > 1 && (eEsaurita(e) || eNonValida(e))) {
+        console.info('[Professoracci] chiave ' + (i + 1) + ' non disponibile, provo l\'altra');
+        continue;
+      }
+      throw e;
+    }
+  }
+  throw ultimoErrore;
+}
+
+function estraiJson(res) {
   const testo = res.text ?? res.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
   const m = testo.match(/\{[\s\S]*\}/);
   if (!m) throw new Error('Risposta senza JSON: ' + testo.slice(0, 120));

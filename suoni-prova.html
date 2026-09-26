@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sottofondi d'aula — prova</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<script src="assets/sottofondi.js?v=1"></script>
+<style>
+  :root { --legno:#8a5a33; --legno-d:#6b4423; --carta:#fdf6df; --inchiostro:#3a2c18; --tenue:#8a7658; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body {
+    font-family:'Nunito',sans-serif; color:var(--inchiostro); min-height:100vh;
+    background:#e9dcc3 radial-gradient(circle at 20% 0%, #f4ead4 0, transparent 60%);
+    padding:32px 16px 60px;
+  }
+  .wrap { max-width:880px; margin:0 auto; }
+  a.torna { font-family:'Fredoka',sans-serif; font-weight:600; color:var(--legno-d); text-decoration:none; font-size:15px; }
+  h1 { font-family:'Fredoka',sans-serif; font-weight:700; font-size:clamp(26px,5vw,36px); color:#5d4426; margin-top:10px; }
+  .intro { color:var(--tenue); font-size:15.5px; line-height:1.5; margin-top:6px; max-width:640px; }
+  .comandi {
+    display:flex; flex-wrap:wrap; align-items:center; gap:14px 22px; margin:22px 0 26px;
+    background:var(--carta); border:3px solid var(--legno); border-radius:16px; padding:14px 18px;
+    box-shadow:0 6px 0 var(--legno-d);
+  }
+  .comandi label { display:flex; align-items:center; gap:10px; font-weight:800; font-size:14px; color:#5d4426; }
+  .comandi input[type=range] { width:150px; accent-color:var(--legno); }
+  .btn {
+    font-family:'Fredoka',sans-serif; font-weight:600; font-size:15px; cursor:pointer; color:#fff;
+    background:#3b6ea5; border:3px solid #2c4f78; border-radius:12px; padding:8px 16px;
+    box-shadow:0 3px 0 #223d5c; transition:transform .12s, box-shadow .12s;
+  }
+  .btn:hover { transform:translateY(2px); box-shadow:0 1px 0 #223d5c; }
+  .btn.grigio { background:#a08a68; border-color:#7d6a4c; box-shadow:0 3px 0 #5e4f37; }
+  .stato { font-family:'Caveat',cursive; font-size:22px; font-weight:700; color:#4d8f4d; min-height:26px; }
+  .griglia { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:16px; }
+  .aula {
+    position:relative; text-align:left; cursor:pointer; font:inherit; color:inherit;
+    background:var(--wall); border:3px solid var(--c); border-radius:18px; padding:16px 16px 14px;
+    box-shadow:0 5px 0 var(--d); transition:transform .15s, box-shadow .15s;
+  }
+  .aula:hover { transform:translateY(-2px); }
+  .aula:focus-visible { outline:3px solid var(--inchiostro); outline-offset:3px; }
+  .aula .materia { font-family:'Fredoka',sans-serif; font-weight:600; font-size:12px; letter-spacing:1.2px; color:var(--d); }
+  .aula .prof { font-family:'Fredoka',sans-serif; font-weight:700; font-size:20px; color:var(--dd); margin-top:2px; }
+  .aula .atm { font-family:'Caveat',cursive; font-weight:700; font-size:22px; color:var(--inchiostro); margin-top:6px; }
+  .aula .desc { font-size:13.5px; line-height:1.4; color:#4b3d29; margin-top:4px; }
+  .aula .play {
+    position:absolute; top:14px; right:14px; width:42px; height:42px; border-radius:50%;
+    display:grid; place-items:center; background:var(--c); color:#fff; box-shadow:0 3px 0 var(--dd);
+  }
+  .aula .play svg { width:18px; height:18px; }
+  .aula .ico-stop { display:none; }
+  .aula.on { box-shadow:0 0 0 4px #fff, 0 0 0 7px var(--c), 0 5px 0 7px var(--d); }
+  .aula.on .ico-play { display:none; }
+  .aula.on .ico-stop { display:block; }
+  .onde { display:none; gap:3px; align-items:flex-end; height:16px; margin-top:8px; }
+  .aula.on .onde { display:flex; }
+  .onde i { width:4px; background:var(--c); border-radius:2px; animation:onda 1s ease-in-out infinite; }
+  .onde i:nth-child(2){animation-delay:.2s} .onde i:nth-child(3){animation-delay:.4s} .onde i:nth-child(4){animation-delay:.6s}
+  body.zitto .onde i { animation-play-state:paused; opacity:.35; }
+  @keyframes onda { 0%,100%{height:4px} 50%{height:16px} }
+  .nota { margin-top:28px; font-size:14px; color:var(--tenue); line-height:1.5; }
+  @media (prefers-reduced-motion:reduce) { .onde i { animation:none; height:10px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="torna" href="index.html">‹ Corridoio</a>
+  <h1>Sottofondi d'aula — prova d'ascolto</h1>
+  <p class="intro">Ogni aula ha il suo sottofondo, generato dal browser: niente file e niente diritti.
+    Tocca un'aula per ascoltarla. Poi premi «Fai parlare il prof»: il sottofondo si ferma subito e riparte piano quando il prof ha finito.</p>
+
+  <div class="comandi">
+    <label>🔈 Volume <input type="range" id="vol" min="0" max="1" step="0.05" value="0.6"></label>
+    <button class="btn" id="parla">🗣️ Fai parlare il prof</button>
+    <button class="btn grigio" id="stop">■ Silenzio</button>
+    <span class="stato" id="stato"></span>
+  </div>
+
+  <div class="griglia" id="griglia"></div>
+
+  <p class="nota">Dimmi pure cosa cambiare aula per aula: più raro, più lento, più basso, un altro strumento…
+    Quando sono tutti a posto li collego alle aule con il pulsante 🎵 (spento di partenza, silenzio totale in modalità tranquilla).</p>
+</div>
+
+<script>
+const AULE = [
+  { id:'sgrammaticus', materia:'ITALIANO',   prof:'Prof. Sgrammaticus',   atm:'biblioteca',   desc:'Silenzio da biblioteca e un carillon che ogni tanto lascia cadere due note.', t:['#bcd9e8','#5a4fcf','#463db3','#37308c'] },
+  { id:'confusione',   materia:'STORIA',     prof:'Prof. Confusione',     atm:'clavicembalo', desc:'Un clavicembalo lontano che pizzica frammenti di melodie antiche.', t:['#ecd9b5','#b3622e','#8f4e24','#6e3c1b'] },
+  { id:'sbagliotti',   materia:'MATEMATICA', prof:'Prof. Sbagliotti',     atm:'tictac',       desc:'Un tic-tac regolare e piccoli rintocchi di marimba che contano.', t:['#d7dfe8','#3b6ea5','#2c4f78','#223d5c'] },
+  { id:'terranova',    materia:'GEOGRAFIA',  prof:'Prof. Terranova',      atm:'vento',        desc:'Vento leggero che va e viene, uccellini in lontananza.', t:['#d8e6cf','#4d8f4d','#3a6f3a','#2c552c'] },
+  { id:'bubbolo',      materia:'SCIENZE',    prof:'Prof. Bubbolo',        atm:'laboratorio',  desc:'Bollicine di laboratorio e un ronzio morbido di macchinari.', t:['#d2e9e6','#2aa198','#1f7d76','#175f5a'] },
+  { id:'storditella',  materia:'ARTE',       prof:'Prof.ssa Storditella', atm:'sogno',        desc:'Accordi sospesi che sfumano uno nell\'altro, come nuvole.', t:['#f0dce9','#c75b9b','#a34579','#7d355d'] },
+  { id:'missspelling', materia:'INGLESE',    prof:'Miss Spelling',        atm:'tea',          desc:'Ora del tè: tazzine che tintinnano e un pizzicato leggero.', t:['#e9dccb','#9e2a3a','#7d1f2d','#5e1622'] }
+];
+const nomi = Object.fromEntries(Sottofondi.elenco().map(a => [a.id, a.nome]));
+const $ = id => document.getElementById(id);
+const PLAY = '<svg class="ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z"/></svg>';
+const STOP = '<svg class="ico-stop" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
+
+$('griglia').innerHTML = AULE.map(a => `
+  <button class="aula" data-id="${a.id}" style="--wall:${a.t[0]};--c:${a.t[1]};--d:${a.t[2]};--dd:${a.t[3]}">
+    <span class="play">${PLAY}${STOP}</span>
+    <div class="materia">${a.materia}</div>
+    <div class="prof">${a.prof}</div>
+    <div class="atm">${nomi[a.atm]}</div>
+    <div class="desc">${a.desc}</div>
+    <div class="onde"><i></i><i></i><i></i><i></i></div>
+  </button>`).join('');
+
+function aggiorna() {
+  const c = Sottofondi.corrente();
+  document.querySelectorAll('.aula').forEach(b => {
+    b.classList.toggle('on', c === Sottofondi.atmosferaPer(b.dataset.id));
+  });
+  $('stato').textContent = c ? '♪ ' + nomi[c] : '';
+}
+document.querySelectorAll('.aula').forEach(b => b.addEventListener('click', () => {
+  if (Sottofondi.corrente() === Sottofondi.atmosferaPer(b.dataset.id)) Sottofondi.ferma();
+  else Sottofondi.avvia(b.dataset.id);
+  aggiorna();
+}));
+$('stop').addEventListener('click', () => { Sottofondi.ferma(); aggiorna(); });
+$('vol').addEventListener('input', e => Sottofondi.setVolume(e.target.value));
+
+const FRASI = [
+  'Benvenuto nella MIA aula. Io sono il Professor Sgrammaticus: la grammatica in persona!',
+  'Salve. Prof. Sbagliotti, genio matematico. I numeri mi temono e mi rispettano.',
+  'Oh, ciao caro... io sono la Prof.ssa Storditella. Amo l\'arte, i colori e... oh, guarda che bella nuvola!'
+];
+$('parla').addEventListener('click', () => {
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(FRASI[Math.floor(Math.random() * FRASI.length)]);
+  u.lang = 'it-IT';
+  const v = speechSynthesis.getVoices().find(v => /^it/i.test(v.lang)); if (v) u.voice = v;
+  u.onstart = () => document.body.classList.add('zitto');
+  u.onend = u.onerror = () => document.body.classList.remove('zitto');
+  speechSynthesis.speak(u);
+});
+speechSynthesis && speechSynthesis.getVoices();
+if (!Sottofondi.supportato) $('stato').textContent = 'Questo browser non supporta i suoni generati.';
+</script>
+</body>
+</html>

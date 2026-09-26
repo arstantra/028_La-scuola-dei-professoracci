@@ -152,6 +152,13 @@ body::after {
   box-shadow:0 4px 0 #223d5c; transition:transform .12s, box-shadow .12s;
 }
 .keyrow button:hover { transform:translateY(2px); box-shadow:0 2px 0 #223d5c; }
+.riserva { display:flex; flex-direction:column; gap:6px; margin-top:12px; font-size:13px; line-height:1.35; color:#8a7658; }
+.riserva b { color:#5d4426; }
+.riserva input {
+  font-family:'Nunito',sans-serif; font-weight:700; font-size:14px; color:#3a2c18;
+  background:#fffdf6; border:2px dashed #d9bd8a; border-radius:12px; padding:9px 14px;
+}
+.riserva input:focus { outline:none; border-style:solid; border-color:#8a5a33; }
 .keymsg { font-family:'Caveat',cursive; font-size:20px; font-weight:600; color:#4d8f4d; margin-top:8px; min-height:24px; }
 .keymsg.err { color:#c94f44; }
 
@@ -347,6 +354,11 @@ footer {
       <input type="password" id="apikey" placeholder="AQ.............................." autocomplete="off">
       <button id="savekey">CONSEGNA</button>
     </div>
+    <label class="riserva" for="apikey2">
+      <span><b>Chiave di riserva</b> · facoltativa — se la prima si stanca, i professori passano da soli a questa.
+        Creala in un <b>progetto diverso</b> di AI Studio (meglio ancora con un altro account Google), altrimenti si stancano insieme.</span>
+      <input type="password" id="apikey2" placeholder="AQ.......... (facoltativa)" autocomplete="off">
+    </label>
     <div class="keymsg" id="keymsg"></div>
     <div class="shutter">
       <div class="closedsign">✓ Chiave consegnata — sportello chiuso</div>
@@ -459,15 +471,25 @@ const seg = document.getElementById('segreteria');
 const inp = document.getElementById('apikey');
 const msg = document.getElementById('keymsg');
 function setMsg(t, err) { msg.textContent = t; msg.classList.toggle('err', !!err); }
+const KEY2 = 'professoracci_apikey2';                    // chiave di riserva (facoltativa)
+const inp2 = document.getElementById('apikey2');
 function refresh() {
-  const k = getKey();
+  const k = getKey(), k2 = localStorage.getItem(KEY2) || '';
   seg.classList.toggle('ok', !!k);
-  if (k) { inp.value = k; setMsg('Chiave consegnata: i professori ti aspettano.'); }
+  inp2.value = k2;
+  if (k) {
+    inp.value = k;
+    setMsg(k2 ? 'Due chiavi consegnate: i professori hanno anche la riserva.' : 'Chiave consegnata: i professori ti aspettano.');
+  }
 }
 document.getElementById('savekey').addEventListener('click', () => {
-  const v = inp.value.trim();
+  const v = inp.value.trim(), v2 = inp2.value.trim();
   if (v.length < 20) { setMsg('Questa chiave sembra troppo corta...', true); return; }
+  if (v2 && v2.length < 20) { setMsg('La chiave di riserva sembra troppo corta...', true); return; }
+  if (v2 && v2 === v) { setMsg('La chiave di riserva è uguale alla prima: ne serve un\'altra.', true); return; }
   localStorage.setItem(KEY, v);
+  if (v2) localStorage.setItem(KEY2, v2); else localStorage.removeItem(KEY2);
+  try { sessionStorage.removeItem('professoracci_chiave_turno'); } catch (e) {}
   refresh();
   setTimeout(() => seg.classList.add('closed'), 800);   // la saracinesca scende
 });
