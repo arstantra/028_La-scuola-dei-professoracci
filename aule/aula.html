@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;700;800;900&family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/aula.css?v=10">
+<link rel="stylesheet" href="../assets/aula.css?v=11">
 <link rel="modulepreload" href="https://esm.sh/@google/genai@0.14.1">
 <script src="../assets/professoracci.js?v=9"></script>
 <script src="../assets/classi.js?v=8"></script>
@@ -74,7 +74,6 @@
         <span class="sqhint" id="sqhint"></span>
         <a class="thlink regl" href="../registro.html" title="Classe, gruppi e livello si scelgono nel registro">registro</a>
         <button class="thbtn" id="annulla" hidden title="Annulla l'ultimo punteggio"><svg class="ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg><span>annulla</span></button>
-        <button class="thbtn" id="azzera" hidden title="Riporta a zero i punti e ricomincia la partita"><svg class="ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg><span>azzera</span></button>
       </div>
       <div class="sqgrid" id="sqgrid"></div>
     </div>
@@ -245,8 +244,8 @@ function aggiornaScore(pop) {
   aggiornaAnnulla();
 }
 
-/* ============ ANNULLA / AZZERA ============
-   Prima di ogni punteggio (e prima di azzerare) si fotografano i punti
+/* ============ ANNULLA ============
+   Prima di ogni punteggio si fotografano i punti
    e lo stato della lavagna. "Annulla" rimette tutto com'era: se i punti
    erano andati alla squadra sbagliata, la lavagna torna a chiedere
    "chi l'ha trovato?" e l'insegnante tocca la squadra giusta. */
@@ -267,17 +266,13 @@ function registra(f) {
   aggiornaAnnulla();
 }
 function aggiornaAnnulla() {
-  const b = $('annulla'), z = $('azzera');
-  if (!b || !z) return;
+  const b = $('annulla');
+  if (!b) return;
   const cid = classe() ? classe().id : null;
   const ultimo = storia[storia.length - 1];
   const top = ultimo && ultimo.classeId === cid ? ultimo : null;   // un'altra classe in gioco: niente annulla
   b.hidden = !top;
   b.title = top ? 'Annulla: ' + top.descr : '';
-  const c = classe();
-  z.hidden = !(c ? c.punti : punti);
-  z.title = c ? 'Riporta a zero i punti della classe ' + c.nome + ' e ricomincia la partita (si può annullare)'
-              : 'Riporta a zero i punti del gioco libero (si può annullare)';
 }
 function annulla() {
   if (occupato) return;
@@ -307,26 +302,7 @@ function annulla() {
   renderClasse();
   aggiornaScore(true);
 }
-function confermaBtn(btn, testo, azione) {
-  if (btn.classList.contains('sure')) { btn.classList.remove('sure'); btn.querySelector('span').textContent = btn.dataset.orig; azione(); return; }
-  const s = btn.querySelector('span');
-  btn.dataset.orig = s.textContent;
-  btn.classList.add('sure'); s.textContent = testo;
-  clearTimeout(btn._t);
-  btn._t = setTimeout(() => { btn.classList.remove('sure'); s.textContent = btn.dataset.orig; }, 3000);
-}
-function azzera() {
-  if (occupato) return;
-  const c = classe();
-  registra(fotoStato(EN() ? 'reset all points' : 'azzera tutti i punti'));
-  if (c) C.azzeraPunti(c.id);
-  else { punti = 0; localStorage.setItem('professoracci_punti', 0); }
-  bolla(EN() ? '⟲ New game! Everyone starts from zero.' : '⟲ Nuova partita! Tutti ripartono da zero punti.');
-  renderClasse();
-  aggiornaScore(true);
-}
 $('annulla').addEventListener('click', annulla);
-$('azzera').addEventListener('click', e => confermaBtn(e.currentTarget, EN() ? 'sure? tap again' : 'sicuro? tocca ancora', azzera));
 
 /* il registro sa a quale aula tornare */
 const LINK_REGISTRO = '../registro.html?torna=' + encodeURIComponent('aule/aula.html?prof=' + profId);
@@ -620,6 +596,14 @@ function regoleErrore() {
     'Prima di rispondere rileggi la spiegazione frase per frase: se trovi altri errori oltre a quello voluto, correggili.\n' +
     BUONA_FEDE;
 }
+/* Trappole dell'italiano che il modello tende a sbagliare (es. Luca preso per
+   femminile → "gli" corretto in "le"). Vale per chi scrive, chi corregge e chi valuta. */
+const NOTA_ITALIANO =
+  'ATTENZIONE AI NOMI: molti nomi MASCHILI finiscono in -a (Luca, Andrea, Nicola, Mattia, Elia, Tobia, Enea, Gianluca, Battista, Zaccaria...): ' +
+  'sono maschi, quindi per loro si usa "gli" (non "le"), "lui", "bravo", "arrivato". Non considerare mai un errore il maschile riferito a questi nomi. ' +
+  'In generale segnala come errore SOLO ciò che è sicuramente sbagliato: nel dubbio, non è un errore.';
+const notaLingua = () => (EN() ? '' : '\n' + NOTA_ITALIANO);
+
 /* L'ordine dei campi obbliga a PROGETTARE l'errore prima di scrivere:
    prima la forma giusta, poi quella sbagliata, poi il testo che la contiene. */
 function jsonLezione(conTipo) {
@@ -693,12 +677,12 @@ ${m.testo}
 COMPITO: scrivi una breve spiegazione (2-4 frasi, massimo 60 parole) rivolta a ${cfg.livelli[C.getLivello()]}.
 La spiegazione deve essere basata ESCLUSIVAMENTE sul materiale della lezione qui sopra: usa solo argomenti, fatti, nomi e numeri presenti nel materiale, senza aggiungere contenuti esterni.
 La spiegazione deve contenere ESATTAMENTE UN ${cfg.tipoErrore} rispetto a ciò che dice il materiale, ${cfg.stileCompito}
-${regoleErrore()}` + jsonRichiesto;
+${regoleErrore()}${notaLingua()}` + jsonRichiesto;
   }
   return base +
 `COMPITO: scrivi una breve spiegazione di ${cfg.argomento} (2-4 frasi, massimo 60 parole) rivolta a ${cfg.livelli[C.getLivello()]}.
 La spiegazione deve contenere ESATTAMENTE UN ${cfg.tipoErrore}, ${cfg.stileCompito}
-${regoleErrore()}` + jsonRichiesto;
+${regoleErrore()}${notaLingua()}` + jsonRichiesto;
 }
 
 /* CASELLA DELLE DOMANDE: la classe chiede e il prof spiega PROPRIO quello
@@ -715,7 +699,7 @@ CASO A — ti chiede di spiegare o raccontare qualcosa (una persona, un fatto, u
 Scrivi alla lavagna una breve spiegazione (2-4 frasi, massimo 60 parole) rivolta a ${cfg.livelli[C.getLivello()]}, che risponde PROPRIO a quella domanda e parla ESATTAMENTE dell'argomento richiesto: se chiedono di Giotto parli di Giotto, non di Leonardo né di altri; se chiedono delle frazioni parli delle frazioni. Non cambiare argomento e non allargarti ad altro.
 ${m ? 'Se la domanda riguarda il MATERIALE DELLA LEZIONE qui sotto, usa i fatti del materiale; altrimenti rispondi comunque sull\'argomento richiesto.\n<<<\n' + m.testo + '\n>>>\n' : ''}La spiegazione deve contenere ESATTAMENTE UN ${cfg.tipoErrore}, ${cfg.stileCompito}
 Se l'argomento richiesto non si presta a un ${cfg.tipoErrore}, fai invece un errore di contenuto sull'argomento stesso (un fatto, una data, un nome o un numero sbagliato).
-${regoleErrore()}
+${regoleErrore()}${notaLingua()}
 In questo caso rispondi con questo JSON:
 ${jsonLezione(true)}
 
@@ -747,7 +731,7 @@ Controlla con attenzione: "${p.errore}", così come è scritto nel testo, è DAV
 Scrivi "dichiarato_vero": true solo se è davvero sbagliato; false se in realtà è giusto, se è identico alla correzione o se la correzione non è migliore.
 2) Trova TUTTI gli ALTRI errori veri presenti nel testo (non ripetere quello del punto 1): ${cfg.tipoErrore}, oppure errori evidenti di grammatica o di ortografia. Sono gli errori che una maestra segnerebbe con la penna rossa.
 NON segnalare: scelte di stile, esagerazioni, vanterie o tono del personaggio, metafore, frasi strane ma corrette, punteggiatura accettabile.
-Per ogni errore cita ESATTAMENTE le parole sbagliate così come compaiono nel testo (il pezzo più corto possibile).
+Per ogni errore cita ESATTAMENTE le parole sbagliate così come compaiono nel testo (il pezzo più corto possibile).${notaLingua()}
 ${EN() ? 'Scrivi "correzione" e "indizio" in inglese semplice.' : 'Scrivi "correzione" e "indizio" in italiano, adatti a bambini.'}
 
 Rispondi SOLO con questo JSON (lista vuota se non ci sono altri errori):
@@ -891,7 +875,7 @@ Poi scrivi un commento nel tuo personaggio (2-3 frasi):
 - se "bravo": te ne accorgi solo ADESSO, resti sorpreso e ammetti lo sbaglio a malincuore con ${cfg.scusaBravo}, poi fai i complimenti;
 - se "quasi": vacilli un po' e non sei più così sicuro, ma non ammetti niente e non dici che cosa potrebbe essere sbagliato;
 - se "sbagliato": ${cfg.gongola || 'gongola bonariamente'} e difendi con convinzione quello che hai scritto, perché per te è tutto giusto.
-Non parlare mai di sbagli "nascosti", "da trovare" o "ancora da scoprire", non dare indizi e non svelare correzioni.
+Non parlare mai di sbagli "nascosti", "da trovare" o "ancora da scoprire", non dare indizi e non svelare correzioni.${notaLingua()}
 
 ${cfg.notaLingua || ''}
 
